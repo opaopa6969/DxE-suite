@@ -140,6 +140,30 @@ Go/No-Go:         Imaizumi + Washizu + Boku
 Incident Review:   Imaizumi + Sengoku + Red Team
 ```
 
+## Dialogue Patterns — 20 Patterns + 5 Presets
+
+Patterns determine "from which angle to attack design gaps." Template (theme) × Pattern (angle) drives the dialogue.
+
+### Presets (ready-to-use combinations)
+
+| Preset | Patterns | Use Case |
+|---|---|---|
+| 🆕 new-project | zero-state, role-contrast, escalation-chain | New projects |
+| 🔧 feature-extension | before-after, cross-persona-conflict, expertise-contrast | Adding features |
+| 🚀 pre-release | scale-break, security-adversary, concurrent-operation, disaster-recovery | Pre-release |
+| 📢 advocacy | before-after, app-type-variation, role-contrast | Internal advocacy |
+| 🔍 comprehensive | 7 patterns | Thorough DGE |
+
+### Pattern Categories
+
+**Comparison (A)**: before-after / role-contrast / app-type-variation / expertise-contrast / platform-contrast
+
+**Discovery (B)**: zero-state / return-after-absence / escalation-chain / cross-persona-conflict / migration-path / multi-tenant / concurrent-operation
+
+**Stress (C)**: scale-break / hallucination-probe / convergence-test / drift-detection / security-adversary / accessibility-barrier / disaster-recovery / i18n-mismatch
+
+See [kit/patterns.md](kit/patterns.md) for details.
+
 ## Imaizumi Method — 5 Types of Questions
 
 | Type | Question | Discovers |

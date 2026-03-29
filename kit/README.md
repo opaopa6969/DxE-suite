@@ -41,6 +41,18 @@ Go/No-Go:       今泉 + 鷲津 + 僕
 障害振り返り:    今泉 + 千石 + Red Team
 ```
 
+## パターン（プリセット）
+
+| プリセット | 用途 |
+|---|---|
+| 🆕 new-project | 新規プロジェクト |
+| 🔧 feature-extension | 機能追加 |
+| 🚀 pre-release | リリース前チェック |
+| 📢 advocacy | 社内提案 |
+| 🔍 comprehensive | 網羅的 DGE |
+
+詳細は [patterns.md](./patterns.md) を参照。
+
 ## フォルダ構成
 
 ```
@@ -48,6 +60,7 @@ dge/
 ├── README.md          ← これ
 ├── LICENSE
 ├── method.md          ← DGE の方法論
+├── patterns.md        ← 20 パターン + 5 プリセット
 ├── characters/
 │   └── catalog.md     ← 12 キャラの一覧 + prompt
 ├── templates/         ← テーマ別テンプレート

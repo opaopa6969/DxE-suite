@@ -139,6 +139,30 @@ Go/No-Go:       今泉 + 鷲津 + 僕
 障害振り返り:    今泉 + 千石 + Red Team
 ```
 
+## 会話劇パターン — 20 パターン + 5 プリセット
+
+パターンは「どういう角度で設計の穴を攻めるか」を決める。テンプレート（テーマ）× パターン（角度）の二軸で会話劇が生成される。
+
+### プリセット（すぐ使える組み合わせ）
+
+| プリセット | パターン | 用途 |
+|---|---|---|
+| 🆕 new-project | zero-state, role-contrast, escalation-chain | 新規プロジェクト |
+| 🔧 feature-extension | before-after, cross-persona-conflict, expertise-contrast | 機能追加 |
+| 🚀 pre-release | scale-break, security-adversary, concurrent-operation, disaster-recovery | リリース前 |
+| 📢 advocacy | before-after, app-type-variation, role-contrast | 社内提案 |
+| 🔍 comprehensive | 7 パターン網羅 | 網羅的 DGE |
+
+### パターン一覧
+
+**対比パターン (A)**: before-after / role-contrast / app-type-variation / expertise-contrast / platform-contrast
+
+**探索パターン (B)**: zero-state / return-after-absence / escalation-chain / cross-persona-conflict / migration-path / multi-tenant / concurrent-operation
+
+**限界探索パターン (C)**: scale-break / hallucination-probe / convergence-test / drift-detection / security-adversary / accessibility-barrier / disaster-recovery / i18n-mismatch
+
+詳細は [kit/patterns.md](kit/patterns.md) を参照。
+
 ## 今泉メソッド — 5 Types の問い
 
 | Type | 問い | 発見するもの |
