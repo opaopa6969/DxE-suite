@@ -16,6 +16,40 @@ DGE discovers "what's not written."
 
 Characters debate in a structured dialogue, surfacing undocumented assumptions, hidden constraints, and overlooked considerations.
 
+## DGE in 3 Minutes — Explained via Dialogue
+
+> Senpai (Narrator): Let's explain the DGE toolkit using DGE's own format.
+
+**👤 Imaizumi**: "What does DGE actually do? What happens when I npm install it?"
+
+**☕ Yang**: "Simple. `npm install @unlaxer/dge-toolkit`, then `npx dge-install`. A `dge/` folder and skill files land in your project. Then just tell Claude Code 'run DGE on this' and you're done."
+
+**👤 Imaizumi**: "What comes out?"
+
+**🎩 Sengoku**: "A structured dialogue where characters debate your design from different angles. I attack quality issues, Imaizumi questions assumptions, Red Team runs attack scenarios. Along the way, 'Gaps' emerge — problems not written in the spec."
+
+**👤 Imaizumi**: "Once gaps are found?"
+
+**☕ Yang**: "Three choices. Run DGE again to dig deeper, implement, or save for later."
+
+**👤 Imaizumi**: "What happens when I choose 'implement'?"
+
+**🎩 Sengoku**: "You don't jump to code. First, Spec files are generated from the gaps — Use Cases, Tech Specs, ADRs, Design Questions, Action Items — saved to `dge/specs/` as `status: draft`. Human review is mandatory before implementation."
+
+**⚖ Saul**: "Important caveat. DGE Specs are *proposals*, not decisions. If your project already has `docs/`, that's the Source of Truth. DGE writes only inside `dge/` and never touches your existing files."
+
+**😰 Boku**: "...What about updates? When new characters or templates are added...?"
+
+**☕ Yang**: "`npm update @unlaxer/dge-toolkit` then `npx dge-update`. Your session records and custom files are never touched. Only toolkit files get updated safely."
+
+**👤 Imaizumi**: "What if the project doesn't use npm?"
+
+**☕ Yang**: "Copy the `kit/` folder manually. npm is convenient, not required."
+
+→ **Summary**: DGE is a pipeline: discover gaps via dialogue → generate specs → review → implement. Install via npm or manual copy. Updates via npm or manual overwrite. Coexists independently with your project inside `dge/`.
+
+---
+
 ## Results
 
 - **unlaxer-parser** (SLE 2026 submission planned): 5 sessions, 108 gaps discovered
