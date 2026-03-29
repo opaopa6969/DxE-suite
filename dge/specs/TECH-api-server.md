@@ -1,5 +1,5 @@
 ---
-status: reviewed
+status: implemented
 source_session: design-materials/intake/api-service-design.md, recommend-algorithm-design.md, recommend-algorithm-deepdive.md
 source_gap: "#82, #71, #72, #73, #74, #79, #80, #81, #90"
 ---
