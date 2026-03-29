@@ -9,7 +9,7 @@
 
 ### 1.1 脅威シナリオ
 
-DGE の手法は論文として公開済み（ICSE 2027 SEIP Accepted）であり、toolkit は MIT ライセンスで 12 ファイル・957 行。LLM プロバイダーが「読んだら翌日実装できる」規模である。
+DGE の手法は論文として投稿予定であり、toolkit は MIT ライセンスで 12 ファイル・957 行。LLM プロバイダーが「読んだら翌日実装できる」規模である。
 
 具体的な脅威シナリオ:
 
@@ -106,7 +106,7 @@ LLM プロバイダーが設計レビュー機能を内蔵することは、DGE 
 
 ```
 現状:
-  - ICSE 2027 SEIP Accepted（査読済み、camera-ready 完了）
+  - ICSE 2027 SEIP 投稿予定
   - 「DGE」という用語の定義者としてのポジション確立済み
 
 次のアクション:
@@ -210,7 +210,7 @@ Session 003 の Red Team の指摘は正鋭:
 #### 既知のデータ
 
 ```
-プロジェクト: unlaxer-parser（SLE 2026 → ICSE 2027 SEIP で引用）
+プロジェクト: unlaxer-parser（SLE 2026 投稿予定）
 規模: production parser framework, 10^9 transactions/month
 DGE sessions: 5 回
 発見 gaps: 108
