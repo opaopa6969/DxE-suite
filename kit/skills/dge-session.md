@@ -126,10 +126,29 @@ session 出力を保存。ファイル名は kebab-case。
 
 | 選択 | アクション |
 |------|-----------|
-| 1 | Step 2 に戻る（テーマ = 前回の Gap） |
+| 1 | **Step 9B へ（前回コンテキスト付き深掘り）** |
 | 2 | **自動反復モードに入る（Step 9A）** |
-| 3 | **Step 10 へ（Spec 化）** |
+| 3 | **Step 10 へ（累積 Spec 化）** |
 | 4 | 何もしない |
+
+### Step 9B: DGE を回す（前回コンテキスト維持）
+
+前回の session サマリーを表示してテーマ選択を促す:
+
+```
+前回の DGE 結果:
+  Session: [前回のファイルパス]
+  Gap: N 件（Critical: X / High: X / Medium: X / Low: X）
+
+テーマを選んでください:
+1. 前回の Critical/High Gap を深掘り（推奨）
+2. 前回の Gap 全体を別角度で再検討
+3. 新しいテーマを指定
+```
+
+- 選択肢 1: 前回の Critical/High Gap から最も重要なものをテーマに自動設定 → Step 3 へ
+- 選択肢 2: 前回と同じテーマ、パターンを変えて再実行 → Step 3.5 へ（パターン再選択）
+- 選択肢 3: Step 2 へ（通常のテーマ確認）
 
 ### Step 9A: 自動反復モード
 
@@ -158,20 +177,27 @@ session 出力を保存。ファイル名は kebab-case。
 3. 後で
 ```
 
-### Step 10: Spec 化（「実装する」選択時）
+### Step 10: 累積 Spec 化（「実装する」選択時）
 
-1. Critical/High の Gap を抽出
-2. Gap Category → 成果物マッピングに従い Spec を自動生成
-3. `dge/specs/` に保存（status: draft、DGE 生成警告ヘッダ付き）
-4. Spec 一覧を表示:
+**現 session だけでなく、同テーマの過去 session（dge/sessions/ 内）の Gap も統合して Spec 化する。**
+
+1. 現 session + 同テーマの過去 session ファイルを読み込む
+2. 全 session から Critical/High の Gap を抽出し、重複を除外する
+3. Gap Category → 成果物マッピングに従い Spec を自動生成
+4. `dge/specs/` に保存（status: draft、DGE 生成警告ヘッダ付き）
+5. Spec 一覧を表示:
 
 ```
 ## Spec 生成完了
 
-| ファイル | 種類 | 元 Gap |
-|---------|------|-------|
-| UC-xxx.md | Use Case | Gap-1 |
-| TECH-xxx.md | Tech Spec | Gap-3 |
+対象: N sessions から M 件の Gap（重複除外後）
+
+| ファイル | 種類 | 元 Gap | 元 Session |
+|---------|------|-------|-----------|
+| UC-xxx.md | Use Case | Gap-1 | session-1.md |
+| TECH-xxx.md | Tech Spec | Gap-3 | session-2.md |
+
+Medium の Gap（N 件）は Spec 化していません。必要なら指示してください。
 
 どうしますか？
 1. レビューOK → status を reviewed に更新して実装開始

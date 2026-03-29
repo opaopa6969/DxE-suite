@@ -81,9 +81,9 @@ method.md, characters/catalog.md, patterns.md を読む。
 
 | 選択 | アクション |
 |------|-----------|
-| 1 | Step 2 に戻る |
+| 1 | **Step 9B（前回コンテキスト付き深掘り）** |
 | 2 | Step 9A（自動反復） |
-| 3 | Step 10（Spec 化） |
+| 3 | **Step 10（累積 Spec 化）** |
 | 4 | intake/ → dge-sessions/completed/ に移動 |
 | 5 | そのまま |
 
@@ -91,9 +91,26 @@ method.md, characters/catalog.md, patterns.md を読む。
 パターン自動ローテーション → 生成 → 保存 → 収束判定。
 上限 5 回。追加 +3（hard limit 8）。収束で Step 10 へ。
 
-### Step 10: Spec 化
+### Step 9B: DGE を回す（前回コンテキスト維持）
+```
+前回の DGE 結果:
+  Session: [前回のファイルパス]
+  Gap: N 件（Critical: X / High: X / Medium: X / Low: X）
+
+テーマを選んでください:
+1. 前回の Critical/High Gap を深掘り（推奨）
+2. 前回の Gap 全体を別角度で再検討
+3. 新しいテーマを指定
+```
+- 1 → 前回 C/H Gap から自動テーマ設定 → Step 3
+- 2 → 同テーマ、パターン再選択 → Step 3.5
+- 3 → Step 2（通常テーマ確認）
+
+### Step 10: 累積 Spec 化
+**現 session + 同テーマの過去 session（intake/ 内）の Gap を統合して Spec 化。** 重複除外。
 Critical/High → マッピングに従い Spec 生成 → `dge/specs/` に保存。
 ```
+対象: N sessions から M 件の Gap（重複除外後）
 1. レビューOK → reviewed に更新 → 実装
 2. 修正指示
 3. 後で
