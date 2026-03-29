@@ -106,7 +106,7 @@ if [ -f "${SRC}/skills/dge-update.md" ]; then
 fi
 
 echo ""
-echo "  Will NOT touch: dge/sessions/, dge/custom/"
+echo "  Will NOT touch: dge/sessions/, dge/custom/, dge/projects/, dge/specs/"
 echo ""
 
 if [ "${UPDATED}" -eq 0 ]; then
@@ -143,4 +143,4 @@ done
 
 echo ""
 echo "Updated to v${SRC_VERSION}."
-echo "  dge/sessions/ and dge/custom/ were not touched."
+echo "  dge/sessions/, dge/custom/, dge/projects/, dge/specs/ were not touched."

@@ -65,7 +65,8 @@ method.md, characters/catalog.md, patterns.md を読む。
 
 ### Step 6: Gap 構造化（Category + Severity）
 
-### Step 7: intake/ に保存
+### Step 7: intake/ に保存 + プロジェクト更新
+session 保存後、`dge/projects/` のプロジェクトファイルがあれば更新（session 追加、Gap 再集計）。
 
 ### Step 8: サマリー + 選択肢
 ```
@@ -91,20 +92,21 @@ method.md, characters/catalog.md, patterns.md を読む。
 パターン自動ローテーション → 生成 → 保存 → 収束判定。
 上限 5 回。追加 +3（hard limit 8）。収束で Step 10 へ。
 
-### Step 9B: DGE を回す（前回コンテキスト維持）
-```
-前回の DGE 結果:
-  Session: [前回のファイルパス]
-  Gap: N 件（Critical: X / High: X / Medium: X / Low: X）
+### Step 9B: DGE を回す（前回コンテキスト維持 + プロジェクトナビゲーション）
 
-テーマを選んでください:
-1. 前回の Critical/High Gap を深掘り（推奨）
-2. 前回の Gap 全体を別角度で再検討
-3. 新しいテーマを指定
+プロジェクトファイル（`dge/projects/`）があれば TreeView 表示:
 ```
-- 1 → 前回 C/H Gap から自動テーマ設定 → Step 3
-- 2 → 同テーマ、パターン再選択 → Step 3.5
-- 3 → Step 2（通常テーマ確認）
+## プロジェクト: [name]
+├── ✅ テーマ A（N sessions, Gap: C/H/M/L）
+├── ⬜ テーマ B
+└── ⬜ テーマ C
+
+1. テーマ A → 深掘り  2. テーマ B → 新規  3. テーマ C → 新規  4. 追加
+```
+プロジェクトファイルがなければ従来の 3 択:
+```
+1. 前回の C/H Gap を深掘り  2. 別角度で再検討  3. 新テーマ
+```
 
 ### Step 10: 累積 Spec 化
 **現 session + 同テーマの過去 session（intake/ 内）の Gap を統合して Spec 化。** 重複除外。

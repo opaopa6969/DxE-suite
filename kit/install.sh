@@ -27,7 +27,7 @@ DGE_DIR="${TARGET_DIR}/dge"
 if [ -d "${DGE_DIR}" ]; then
   echo "  dge/ already exists — skipping (won't overwrite your files)"
 else
-  mkdir -p "${DGE_DIR}/characters" "${DGE_DIR}/templates" "${DGE_DIR}/sessions" "${DGE_DIR}/custom"
+  mkdir -p "${DGE_DIR}/characters" "${DGE_DIR}/templates" "${DGE_DIR}/sessions" "${DGE_DIR}/custom" "${DGE_DIR}/projects" "${DGE_DIR}/specs"
   cp "${SRC}/README.md" "${DGE_DIR}/"
   cp "${SRC}/LICENSE" "${DGE_DIR}/"
   cp "${SRC}/method.md" "${DGE_DIR}/"

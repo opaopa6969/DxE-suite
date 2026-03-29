@@ -1,5 +1,5 @@
 ---
-status: draft
+status: reviewed
 source_session: design-materials/intake/api-service-design.md
 source_gap: "#71, #72"
 ---

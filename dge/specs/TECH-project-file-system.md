@@ -1,5 +1,5 @@
 ---
-status: draft
+status: implemented
 source_session: design-materials/intake/project-navigation-design.md
 source_gap: "#93, #92, #95, #97"
 ---
