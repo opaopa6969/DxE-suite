@@ -33,6 +33,7 @@ else
   cp "${SRC}/method.md" "${DGE_DIR}/"
   cp "${SRC}/characters/catalog.md" "${DGE_DIR}/characters/"
   cp "${SRC}/templates/"*.md "${DGE_DIR}/templates/"
+  [ -f "${SRC}/integration-guide.md" ] && cp "${SRC}/integration-guide.md" "${DGE_DIR}/"
   # Version tracking for updates
   SRC_VERSION="$(cat "${SRC}/version.txt" 2>/dev/null || echo "1.0.0")"
   echo "${SRC_VERSION}" > "${DGE_DIR}/version.txt"

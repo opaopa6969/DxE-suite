@@ -23,12 +23,16 @@
 4. **サマリー表示後、ユーザーの次のアクション指示を待つ。** 勝手に次の session や実装を開始しない。
 5. **サマリーの後に選択肢を提示する:** DGE を回す / 実装する / 後で
 6. **初回チェック:** CLAUDE.md に DGE の記述があるか確認する。なければ「CLAUDE.md に DGE の記述を追記しますか？（次回から自動で認識されます）」と聞く。Yes なら追記して続行、No ならそのまま続行。
+7. **「実装する」を選んだ場合、Critical/High の Gap について Spec ファイルを `dge/specs/` に生成してからでなければ実装に進まない。** Medium 以下は SHOULD。Low は Action Item のみ。
+8. **`dge/specs/` に生成する全ファイルの冒頭に DGE 生成警告ヘッダを入れ、`status: draft` のフロントマターを付与する。**
+9. **DGE は `dge/` 内にのみ書き込む。プロジェクトの docs/ や既存ファイルを直接変更しない。**（CLAUDE.md への初回追記提案のみ例外）
 
 ## SHOULD ルール（推奨）
 1. テンプレート候補が 1 つなら自動選択し報告する。2 つ以上ならユーザーに提示する。
 2. Gap 詳細は Observe / Suggest / Act の構造で書く。
 3. 会話劇は 3-5 Scene で構成する。先輩（ナレーション）で各 Scene の背景を設定する。
 4. サマリー表示時に全文ファイルへのパスを表示する。
+5. Medium の Gap も Spec 化する（Low は Action Item のみで十分）。
 
 ## 判断ルール（auto-decide vs ask）
 
@@ -41,6 +45,8 @@
 | キャラクター選択 | 常に | ユーザーに確認（例外なし） |
 | 保存先 | 初回 or ディレクトリ不在 | ユーザーに確認 |
 | 保存先 | 2 回目以降 and ディレクトリ存在 | 前回と同じ場所に保存 |
+| 実装 vs 深掘り | DGE で具体的な実装仕様が書ける状態 | 「実装する」を提案 |
+| 実装 vs 深掘り | 未決事項や曖昧な点が残っている | 「DGE を回す」を提案 |
 
 ## 手順
 
@@ -73,15 +79,14 @@
 「先輩」はキャラクターではなく narrator。
 技術的背景を neutral に語り、キャラが議論に入る context を提供する。
 
-### Step 6: Gap を Spec に落とす
+### Step 6: Gap を構造化
 各 Gap について:
 ```
 Gap: [タイトル]
   Observe: [現状の問題]
   Suggest: [提案]
-  UC:      UC-XXX-01: [Use Case]
-  API:     METHOD /api/path { body } → { response }
-  SQL:     CREATE TABLE ... / ALTER TABLE ...
+  Category: [11 カテゴリのいずれか]
+  Severity: [Critical/High/Medium/Low]
 ```
 
 ### Step 7: ファイルに保存
@@ -107,7 +112,7 @@ session 出力を markdown ファイルとして保存する。
 
 どうしますか？
 - **DGE を回す** → この結果をさらに深掘り
-- **実装する** → Gap を Task に変換
+- **実装する** → Spec 化してから実装
 - **後で** → 保存したまま終了
 ```
 
@@ -118,8 +123,99 @@ session 出力を markdown ファイルとして保存する。
 | ユーザーの判断 | アクション |
 |---------------|-----------|
 | DGE を回す | Step 2 に戻る（テーマ = 前回の Gap や提案） |
-| 実装する | Gap を Task に変換し、実装を開始 |
+| 実装する | **Step 10 へ進む（Spec 化フロー）** |
 | 後で | 何もしない。ファイルはそのまま |
+
+### Step 10: Spec 化（「実装する」選択時）
+
+1. Critical/High の Gap を抽出する
+2. 各 Gap の Category に応じた成果物を生成する（下記マッピング参照）
+3. `dge/specs/` に全ファイルを保存する（status: draft、DGE 生成警告ヘッダ付き）
+4. 生成した Spec 一覧を表示する:
+
+```
+## Spec 生成完了
+
+以下の Spec を dge/specs/ に生成しました:
+
+| ファイル | 種類 | 元 Gap |
+|---------|------|-------|
+| UC-xxx.md | Use Case | Gap-1 |
+| TECH-xxx.md | Tech Spec | Gap-3 |
+| ADR-NNN-xxx.md | ADR | Gap-5 |
+
+Medium の Gap（N 件）は Spec 化していません。必要なら指示してください。
+
+どうしますか？
+- **レビューOK** → status を reviewed に更新して実装開始
+- **修正指示** → Spec を修正して再表示
+- **後で** → draft のまま残す
+```
+
+5. **ユーザーの応答を待つ**
+6. レビューOK → 全 Spec の status を `reviewed` に自動更新 → 実装開始
+7. 修正 → 指示に従い Spec を修正して再表示
+8. 後で → draft のまま残す
+
+## Gap Category → 成果物マッピング
+
+| Gap Category | 主要成果物 | 補助 |
+|---|---|---|
+| Missing logic | UC + TECH | — |
+| Spec-impl mismatch | DQ | ADR |
+| Type/coercion gap | TECH | — |
+| Error quality | TECH | — |
+| Integration gap | TECH | — |
+| Test coverage | ACT | — |
+| Business gap | ADR / DQ | — |
+| Safety gap | TECH + ACT | — |
+| Ops gap | ACT | — |
+| Message gap | UC | — |
+| Legal gap | ADR + ACT | — |
+
+## Spec ファイルテンプレート
+
+### 共通フロントマター + 警告ヘッダ（MUST）
+```yaml
+---
+status: draft          # draft → reviewed → migrated
+source_session: [session ファイルパス]
+source_gap: [Gap 番号]
+migrated_to:           # migrated の場合のみ記入
+---
+```
+```
+<!-- DGE 生成: この Spec は DGE session から自動生成された提案です。
+     実装前に必ず人間がレビューしてください。
+     既存 docs と矛盾する場合、既存 docs が Source of Truth です。 -->
+```
+
+### UC-[name].md — Use Case
+`# UC-[name]: [タイトル]` → Trigger / Actors / Flow / Exceptions / Acceptance Criteria
+
+### TECH-[name].md — Tech Spec
+`# TECH-[name]: [タイトル]` → 変更内容 / API / Data Model / 影響範囲
+
+### ADR-NNN-[name].md — Architecture Decision Record
+`# ADR-NNN: [タイトル]` → Context / Options (A, B) / Decision (未決定) / Consequences
+
+### DQ-[name].md — Design Question
+`# DQ-[name]: [質問]` → Context / Options / 決定期限
+
+### ACT-[name].md — Action Item
+`# ACT-[name]: [やること]` → 内容 / 担当
+
+## Spec ライフサイクル
+
+```
+draft → reviewed → migrated
+         ↑ 修正     ↓ 正本への転記
+         └────┘     migrated_to: [正本パス]
+```
+
+- **draft**: DGE が自動生成した状態。未レビュー
+- **reviewed**: 人間がレビュー済み。実装可能
+- **migrated**: プロジェクトの正式な docs/ に転記済み。このファイルは参照用
 
 ## 出力フォーマット仕様
 
@@ -162,3 +258,4 @@ session 出力を markdown ファイルとして保存する。
 - 1 Session は 3-5 Scene
 - 合計 15-30 分が目安
 - 会話劇の後、必ずユーザーにレビューしてもらう（会話劇 → レビュー の往復が本質）
+- DGE の Spec と既存 docs が矛盾する場合、**既存 docs が Source of Truth**。DGE Spec は提案
