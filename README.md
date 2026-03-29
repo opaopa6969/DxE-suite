@@ -1,4 +1,6 @@
-# DGE — Design-Gap Exploration / Dialogue-driven Gap Extraction
+# DGE — Dialogue-driven Gap Extraction
+
+[English](README.en.md)
 
 > "Spec review を何回しても見つからなかったことが、会話劇 10 分で出てきた。"
 
@@ -17,60 +19,71 @@ DGE は「書いてないことの発見」。
 
 ## 実績
 
-- **unlaxer-parser** (SLE 2026 Accepted): 5 sessions で 108 gaps を発見
+- **unlaxer-parser** (SLE 2026 投稿予定): 5 sessions で 108 gaps を発見
 - **AskOS**: 11+ sessions で 14,978 行の設計ドキュメントを生成、16 gaps を adversarial review で発見
 
-## クイックスタート
+## インストール
 
-### 1. プロジェクトにコピー
+### npm
 
 ```bash
-# プロジェクトに dge/ フォルダをコピー
-cp -r dge/ /path/to/your-project/dge/
-
-# Claude Code の skills にコピー
-cp dge/skills/*.md /path/to/your-project/.claude/skills/
+npm install @unlaxer/dge-toolkit
+npx dge-install
 ```
 
-### 2. Claude Code に「DGE して」と言う
+`dge/` フォルダと `.claude/skills/` に skill ファイルがプロジェクトに作成されます。
+
+### バージョンアップ
+
+```bash
+npm update @unlaxer/dge-toolkit
+npx dge-update    # toolkit ファイルのみ上書き。sessions/ と custom/ は触らない
+```
+
+または Claude Code で「DGE を更新して」と言えば skill が案内します。
+
+### ローカルから install（npm 未公開時）
+
+```bash
+# tarball から
+cd kit && npm pack && cd ..
+npm install ./kit/unlaxer-dge-toolkit-1.0.0.tgz
+npx dge-install
+
+# または直接パスから
+npm install /path/to/DGE-toolkit/kit
+npx dge-install
+```
+
+### 手動コピー（npm 不要）
+
+```bash
+cp -r kit/ your-project/dge/
+cp kit/skills/*.md your-project/.claude/skills/
+```
+
+DGE-toolkit は MIT ライセンスです。`dge/LICENSE` をプロジェクトに含めてください。
+
+### npm パッケージの管理
+
+バージョニング、公開手順、同期方法は [PUBLISHING.md](PUBLISHING.md) を参照。
+
+## 使い方
+
+Claude Code で一言:
 
 ```
 Human: 「認証 API の設計を DGE して」
-Agent: (dge/ を読む → テンプレート選択 → キャラ選択 → 会話劇生成 → gap 抽出)
 ```
 
-### 3. Gap を Spec に変換
-
-会話劇で発見された Gap が Use Case, API, Data Model に変換される。
-
-## フォルダ構成
-
-```
-dge/
-├── README.md              ← これ。最初に読む。
-├── method.md              ← DGE の方法論（今泉メソッド、Observe→Suggest→Act）
-├── characters/
-│   ├── catalog.md         ← 12 キャラの一覧 + prompt + 使い分け
-│   └── custom-guide.md    ← オリジナルキャラの作り方（自由入力対応）
-├── templates/
-│   ├── api-design.md      ← API 設計の DGE
-│   ├── feature-planning.md← 新機能企画の DGE
-│   ├── go-nogo.md         ← Go/No-Go 判断の DGE
-│   ├── incident-review.md ← 障害振り返りの DGE
-│   └── security-review.md ← セキュリティレビューの DGE
-├── skills/
-│   ├── dge-session.md     ← .claude/skills/ に置くと「DGE して」で発動
-│   └── dge-template-create.md ← 新しいテンプレートを作る skill
-└── examples/
-    └── askos-adversarial.md ← 実際の DGE session 例（4 幕の大論戦）
-```
+他の LLM（ChatGPT, Gemini 等）で使う場合は [method.md](kit/method.md) のクイックスタート（方法 A）を参照。
 
 ## キャラクター早見表
 
 ```
 前提が怪しい    → 👤 今泉   「そもそも聞いたんですか？」
 品質が低い      → 🎩 千石   「お客様への侮辱です」
-全部複雑        → ☕ ヤン   「要らなくない？紅茶ください」
+全部複雑        → ☕ ヤン   「要らなくない？」
 前に進みすぎ    → 😰 僕     「小規模にしませんか...？」
 大胆さが足りない → 👑 ラインハルト 「攻めろ」
 数字が甘い      → 🦅 鷲津   「IRR は？」
@@ -89,14 +102,10 @@ API 設計:        今泉 + 千石 + 僕
 新機能企画:      今泉 + ヤン + 僕
 セキュリティ:    千石 + Red Team + ハウス
 Go/No-Go:       今泉 + 鷲津 + 僕
-VC 準備:         今泉 + 鷲津 + ラインハルト + 僕
 障害振り返り:    今泉 + 千石 + Red Team
-プロダクトレビュー: 大和田 + 利根川 + ハウス + ソウル
 ```
 
 ## 今泉メソッド — 5 Types の問い
-
-DGE の最も強力な武器:
 
 | Type | 問い | 発見するもの |
 |------|------|------------|
@@ -105,6 +114,21 @@ DGE の最も強力な武器:
 | 3 | 「他にないの」 | 暗黙の制約 |
 | 4 | 「誰が困るの」 | 影響の不明確 |
 | 5 | 「前もそうだった」 | 過去の失敗の想起 |
+
+## ドキュメント
+
+| ファイル | 内容 |
+|---------|------|
+| [method.md](kit/method.md) | 方法論の全体（3分版 + 詳細 + クイックスタート） |
+| [characters/catalog.md](kit/characters/catalog.md) | 12 キャラの一覧 + prompt + 使い分け |
+| [characters/atlas.md](characters/atlas.md) | 文化圏別マッピング（英語圏・中国語圏の対応キャラ） |
+| [characters/custom-guide.md](characters/custom-guide.md) | オリジナルキャラの作り方 |
+| [templates/](kit/templates/) | テーマ別テンプレート（API設計、機能企画、Go/No-Go、障害振り返り、セキュリティ） |
+| [gap-definition.md](gap-definition.md) | Gap の定義・分類・優先度計算 |
+| [quality-criteria.md](quality-criteria.md) | 出力品質基準・チェックリスト |
+| [limitations.md](limitations.md) | DGE の限界と注意点 |
+| [DISCLAIMER.md](DISCLAIMER.md) | 免責事項・IP に関する注意 |
+| [paper/](paper/) | 学術論文・実験設計（会話劇によるフィクション含む） |
 
 ## ライセンス
 

@@ -1,0 +1,37 @@
+{
+  "name": "@unlaxer/dge-toolkit",
+  "version": "1.0.0",
+  "description": "DGE (Dialogue-driven Gap Extraction) — 会話劇で設計の穴を発見するメソッドkit",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/xxx/DGE-toolkit"
+  },
+  "keywords": [
+    "design-review",
+    "gap-analysis",
+    "dialogue",
+    "claude-code",
+    "llm",
+    "spec-review",
+    "dge"
+  ],
+  "bin": {
+    "dge-install": "./install.sh",
+    "dge-update": "./update.sh"
+  },
+  "files": [
+    "LICENSE",
+    "README.md",
+    "method.md",
+    "version.txt",
+    "characters/",
+    "templates/",
+    "skills/",
+    "install.sh",
+    "update.sh"
+  ],
+  "scripts": {
+    "postinstall": "node -e \"console.log('\\n  DGE toolkit installed.\\n  Run: npx dge-install\\n  to set up dge/ and .claude/skills/ in your project.\\n  Run: npx dge-update\\n  to update existing dge/ files.\\n')\""
+  }
+}
