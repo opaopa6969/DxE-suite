@@ -20,7 +20,8 @@
 - YAML がなければ quick 相当で動く。
 
 ### Step 1: 読み込み
-- `dge/characters/index.md`（名前 + 推奨のみ）
+- **locale 判定**: 日本語入力 → ja、英語入力 → en。flow YAML に `locale` 指定あればそれ
+- ja → `dge/characters/index.md`、en → `dge/characters/index.en.md`（名前 + 推奨のみ）
 - `dge/patterns.md`
 - `dge/method.md`
 - flow YAML の must_rules, auto_merge を確認
@@ -34,7 +35,7 @@ quick / brainstorm ではスキップ。
 
 ### Step 4: キャラ選択
 推奨セットを提示。quick は表示のみ。design-review / brainstorm は確認待ち。
-**確定後、選択キャラの個別ファイル（`dge/characters/{name}.md`）を読む。**
+**確定後、選択キャラの個別ファイルを読む。** ja → `dge/characters/{name}.md`、en → `dge/characters/en/{name}.md`
 
 ### Step 5: 会話劇生成
 先輩ナレーション → キャラ対話 → `→ Gap 発見:` or `→ アイデア:` マーカー。
