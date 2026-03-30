@@ -31,7 +31,7 @@ else
   cp "${SRC}/README.md" "${DGE_DIR}/"
   cp "${SRC}/LICENSE" "${DGE_DIR}/"
   cp "${SRC}/method.md" "${DGE_DIR}/"
-  cp "${SRC}/characters/catalog.md" "${DGE_DIR}/characters/"
+  cp "${SRC}/characters/"*.md "${DGE_DIR}/characters/"
   cp "${SRC}/templates/"*.md "${DGE_DIR}/templates/"
   [ -f "${SRC}/integration-guide.md" ] && cp "${SRC}/integration-guide.md" "${DGE_DIR}/"
   [ -f "${SRC}/patterns.md" ] && cp "${SRC}/patterns.md" "${DGE_DIR}/"

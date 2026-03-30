@@ -32,7 +32,7 @@
 
 ### Step 1: Kit 読み込み（全 flow 共通）
 1. `dge/method.md` を読む（なければ install 案内）
-2. `dge/characters/catalog.md` の **使い分け早見表とテーマ別推奨のみ** を読む（各キャラの prompt は Step 4 で選択後に読む — lazy loading）
+2. `dge/characters/index.md` を読む（名前 + アイコン + 推奨組み合わせのみ。各キャラの prompt は個別ファイルから Step 4 で選択後に読む — lazy loading）
 3. `dge/custom/characters/*.md` があれば **ファイル名と冒頭の name/icon のみ** 読む（Prompt Core は選択後）
 4. `dge/patterns.md` を読む
 5. `dge/flows/{判定した flow}.yaml` を読む。**YAML の must_rules, workflow, post_actions, auto_merge を実際に参照して動作を決定する。** YAML がなければ下記のデフォルト動作。
@@ -57,7 +57,7 @@
 
 built-in + カスタムキャラの名前・アイコン一覧を表示（Step 1 で読み込み済み）。
 
-**キャラ確定後、選択された 3-5 名の prompt_core と personality セクションのみ読み込む（lazy loading）。** 19 キャラ全員の prompt を読む必要はない。
+**キャラ確定後、選択された 3-5 名の個別ファイル（`dge/characters/{name}.md`）を読み込む（lazy loading）。** 19 キャラ全員の prompt を読む必要はない。選択されたキャラの prompt_core と personality のみ。
 
 ### Step 5: 会話劇生成（全 flow 共通）
 - flow の extract.marker を使う（デフォルト: `→ Gap 発見:`、brainstorm: `→ アイデア:`）
@@ -113,6 +113,8 @@ DGE のみ: N 件（深い洞察） / 素のみ: N 件（網羅的） / 両方: 
 ```
 
 auto_merge OFF の場合はマージ結果を省略し、DGE の発見のみ表示。
+
+**auto_merge フォールバック**: subagent が失敗・タイムアウト（120 秒）した場合、「素の LLM レビューの取得に失敗しました」と 1 行表示し、DGE の結果のみでサマリーを出す。session は中断しない。
 
 選択肢は flow YAML の post_actions から表示。デフォルト:
 ```
