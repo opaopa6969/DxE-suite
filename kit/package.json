@@ -1,6 +1,6 @@
 {
   "name": "@unlaxer/dge-toolkit",
-  "version": "2.0.1",
+  "version": "2.1.0",
   "description": "DGE (Dialogue-driven Gap Extraction) — 会話劇で設計の穴を発見するメソッドkit",
   "license": "MIT",
   "repository": {
@@ -18,7 +18,8 @@
   ],
   "bin": {
     "dge-install": "./install.sh",
-    "dge-update": "./update.sh"
+    "dge-update": "./update.sh",
+    "dge-tool": "./bin/dge-tool.js"
   },
   "files": [
     "LICENSE",
@@ -34,6 +35,7 @@
     "INTERNALS.md",
     "CUSTOMIZING.md",
     "dialogue-techniques.md",
+    "bin/",
     "install.sh",
     "update.sh"
   ],

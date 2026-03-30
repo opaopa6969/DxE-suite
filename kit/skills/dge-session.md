@@ -36,6 +36,9 @@
 3. `dge/custom/characters/*.md` があれば Prompt Core を読む
 4. `dge/patterns.md` を読む
 5. `dge/version.txt` があれば 1 行表示
+6. **dge-tool 検出**: Bash で `dge-tool version` を実行。
+   - 成功 → `🔧 Tool mode (dge-tool vX.X.X)` と表示。以降 Step 7, 8 で dge-tool を使用
+   - 失敗 → Skill mode（従来通り）。dge-tool なしでも全機能動作
 
 ### Step 2: テーマ確認（全 flow 共通）
 明確なら次へ。不明確なら掘り下げる。
@@ -62,6 +65,15 @@ built-in + カスタムキャラを統合表示。
 - brainstorm: アイデアに分類を付与（severity なし）
 
 ### Step 7: 保存（全 flow 共通、MUST）
+
+**Tool mode**: Bash で実行:
+```
+echo "<session 全文>" | dge-tool save <output_dir>/<theme>.md
+```
+→ "SAVED: ..." が返れば成功。失敗したら Write ツールでフォールバック。
+
+**Skill mode**: Write ツールでファイル保存。
+
 flow の output_dir に保存（デフォルト: `dge/sessions/`）。
 プロジェクトファイルがあれば更新。
 
@@ -81,7 +93,13 @@ flow の output_dir に保存（デフォルト: `dge/sessions/`）。
 **全文**: `[ファイルパス]`
 ```
 
-選択肢は flow YAML の post_actions から表示。YAML がない場合のデフォルト:
+**Tool mode**: Bash で実行:
+```
+dge-tool prompt <flow>
+```
+→ 番号付き選択肢が返る。そのまま表示。失敗したらデフォルト選択肢でフォールバック。
+
+**Skill mode**: 選択肢は flow YAML の post_actions から表示。YAML がない場合のデフォルト:
 ```
 1. DGE を回す
 2. 実装できるまで回す
