@@ -89,6 +89,41 @@ DGE toolkit v2 does this automatically — runs both in parallel, isolated, and 
 
 ---
 
+## Real World: DGE Found a Path Traversal + Auto-Accept Kill Chain
+
+This one's from an actual project — a personal terminal multiplexer tool (not production, just my own dev setup). I ran DGE with Sengoku (quality), Red Team (attacker), House (hidden problems), Imaizumi (assumptions), and Saul (legal).
+
+**10 Critical gaps in one session.** Here are the top 3 that a plain review would never combine:
+
+### The Template API Path Traversal
+
+**⚔ Levi**: "Show me the template duplicate code."
+```javascript
+const source = path.join(USER_TEMPLATES_DIR, sourceName);
+await fs.copy(source, dest);
+```
+"No sanitization on `sourceName`. Send `../../.ssh/id_ed25519` and your SSH private key gets copied to the templates directory. Then `GET /api/templates` reads it out. Game over."
+
+→ Gap: CWE-22 Path Traversal — arbitrary file read via template API
+
+### The Windows File Destruction Combo
+
+**🏥 House** (barging in uninvited): "One more thing. `/mnt/c/var` is mounted read-write. The auto-accept feature sends `y` to confirmation prompts. Now imagine a process asks `Delete all files in /mnt/c/var? (y/n)` — auto-accept sends `y`. Your Windows data is gone. Nobody designed this attack. It's an *emergent* kill chain from two features that were never meant to interact."
+
+→ Gap: RW mount + auto-accept = unintended file destruction vector
+
+### The Cross-Session Mislinking
+
+**🎭 Socrates**: "Everyone assumes `setMetadata` is safe. But look — it's read-modify-write with `await` in between. Another request can overwrite during the gap. If auto-accept targets the wrong session because metadata got corrupted by a race condition..."
+
+→ Gap: Metadata race condition → auto-accept sends `y` to the wrong session
+
+**None of these are single-point bugs.** They're *combinations* — path traversal + API exposure, RW mount + auto-accept, race condition + auto-accept. A plain AI review would list "add input validation" and "add authentication" separately. DGE characters combined them into attack chains because they argue *with each other*, building on each other's findings.
+
+*(This was a personal tool, not deployed publicly. But if it had been... yeah.)*
+
+---
+
 ## 19 Characters × 8 Dialogue Techniques × 20 Patterns
 
 DGE isn't just random arguing. It's structured:
