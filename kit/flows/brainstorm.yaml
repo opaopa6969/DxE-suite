@@ -1,5 +1,6 @@
 name: brainstorm
 display_name: "💡 ブレスト — アイデアを発散させる"
+auto_merge: false  # ブレストは素のレビュー不要
 
 trigger_keywords: ["ブレスト", "brainstorm", "アイデア", "発想"]
 

@@ -59,6 +59,8 @@ built-in + カスタムキャラを統合表示。
 ### Step 5: 会話劇生成（全 flow 共通）
 - flow の extract.marker を使う（デフォルト: `→ Gap 発見:`、brainstorm: `→ アイデア:`）
 - 先輩（ナレーション）で背景設定 → キャラ対話 → マーカー挿入
+- **auto_merge が true（デフォルト）の場合**: 会話劇生成と同時に、バックグラウンドで isolated subagent を起動して素の LLM レビューを開始する。subagent は `isolation: "worktree"` で DGE の context を持たない。会話劇が終わる頃には素のレビューも完了している。
+- auto_merge を OFF にしたい場合: 「マージなしで DGE して」と指示するか、flow YAML で `auto_merge: false` を設定
 
 ### Step 6: 構造化（flow による）
 - quick / design-review: Gap に Category + Severity を付与
@@ -84,29 +86,39 @@ flow の output_dir に保存（デフォルト: `dge/sessions/`）。
 
 **Flow**: [flow 名]
 **テーマ**: [テーマ]
-**Gap/アイデア数**: N 件
 
-| # | Gap/Idea | Severity |
-|---|---------|----------|
+### DGE の発見
+**Gap 数**: N 件（Critical: X / High: X / Medium: X）
+
+| # | Gap | Severity |
+|---|-----|----------|
 （主要なものを表示）
+
+### 素の LLM の発見（auto_merge ON の場合）
+**Gap 数**: N 件（isolated subagent による独立レビュー）
+
+### マージ結果（auto_merge ON の場合）
+| # | Gap | Source | Severity |
+|---|-----|--------|----------|
+| 1 | ... | DGE のみ | High |
+| 2 | ... | 両方 | Critical |
+| 3 | ... | 素のみ | Medium |
+
+DGE のみ: N 件（深い洞察） / 素のみ: N 件（網羅的） / 両方: N 件（確実に重要）
 
 **全文**: `[ファイルパス]`
 ```
 
-**Tool mode**: Bash で実行:
-```
-dge-tool prompt <flow>
-```
-→ 番号付き選択肢が返る。そのまま表示。失敗したらデフォルト選択肢でフォールバック。
+auto_merge OFF の場合はマージ結果を省略し、DGE の発見のみ表示。
 
-**Skill mode**: 選択肢は flow YAML の post_actions から表示。YAML がない場合のデフォルト:
+選択肢は flow YAML の post_actions から表示。デフォルト:
 ```
 1. DGE を回す
 2. 実装できるまで回す
 3. 実装する
-4. 素の LLM でも回してマージ
-5. 後で
+4. 後で
 ```
+auto_merge OFF の場合のみ追加: `5. 素の LLM でも回してマージ`
 
 **ユーザーの応答を待つ。**
 

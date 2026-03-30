@@ -1,5 +1,6 @@
 name: quick
 display_name: "⚡ クイック — 会話劇で Gap を見つける"
+auto_merge: true  # 素の LLM レビューを自動でバックグラウンド実行。false で無効化
 
 trigger_keywords: ["DGE して", "DGE", "壁打ち", "gap を探して"]
 

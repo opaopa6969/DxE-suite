@@ -1,5 +1,6 @@
 name: design-review
 display_name: "🔍 設計レビュー — 仕様の穴を見つけて Spec に変換"
+auto_merge: true
 
 trigger_keywords: ["詳しく", "本格的に", "full", "設計レビュー", "Spec"]
 
