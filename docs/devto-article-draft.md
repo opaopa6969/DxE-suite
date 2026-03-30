@@ -124,6 +124,43 @@ await fs.copy(source, dest);
 
 ---
 
+## Real World: DGE Designed a 3-Layer Architecture in One Session
+
+Different flavor. This time DGE didn't find bugs — it **designed and shipped** an architecture.
+
+### The Problem
+
+A platform management tool (Volta) had IPs, paths, and SSH keys hardcoded in 11 files. `192.168.1.50` appeared in Python scripts, Node.js configs, and shell commands. Moving to a different server meant editing 11 files by hand.
+
+### One DGE Session
+
+Characters: Yang (simplification), Sengoku (architecture quality), Levi (implementation rigor).
+
+**☕ Holmes (Yang equivalent)**: "11 files with hardcoded IPs. Why not one config file?"
+
+**🎩 Picard (Sengoku equivalent)**: "One file isn't enough. You need three layers:
+1. **Portable config** (git): node names, roles, runtime types. No IPs.
+2. **Environment config** (.gitignore): actual IPs, paths, SSH keys. Machine-specific.
+3. **Plugin config**: per-resolver settings, injected at load time."
+
+**⚔ Hartman (Levi equivalent)**: "Plugin registry only covers start/stop/restart. What about config? Add `_config` injection to the registry loader."
+
+### Result
+
+3 commits. Same day. All 20 gaps resolved:
+
+| Commit | What |
+|--------|------|
+| 1 | 3-layer architecture + Python/Node.js config readers + 6 scripts updated |
+| 2 | Plugin config injection + env fallback removed + serviceManager routing |
+| 3 | Setup check CLI + API endpoint + Setup Wizard UI |
+
+**DGE → Architecture → Implementation in one day.** The 3-layer design (portable / environment / plugin) came directly from the character dialogue. Yang said "one file", Sengoku said "three layers", Levi said "add config injection" — and that's exactly what got built.
+
+No design doc. No architecture review meeting. Just characters arguing for 30 minutes.
+
+---
+
 ## 19 Characters × 8 Dialogue Techniques × 20 Patterns
 
 DGE isn't just random arguing. It's structured:
