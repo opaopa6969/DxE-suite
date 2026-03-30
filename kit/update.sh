@@ -134,6 +134,20 @@ cp "${SRC}/characters/"*.md "${DGE_DIR}/characters/"
 cp "${SRC}/templates/"*.md "${DGE_DIR}/templates/"
 echo "${SRC_VERSION}" > "${DGE_DIR}/version.txt"
 
+# Update new files (flows, docs, bin)
+for f in INTERNALS.md CUSTOMIZING.md dialogue-techniques.md patterns.md integration-guide.md; do
+  [ -f "${SRC}/${f}" ] && cp "${SRC}/${f}" "${DGE_DIR}/${f}"
+done
+if [ -d "${SRC}/flows" ]; then
+  mkdir -p "${DGE_DIR}/flows"
+  cp "${SRC}/flows/"*.yaml "${DGE_DIR}/flows/" 2>/dev/null || true
+fi
+if [ -d "${SRC}/bin" ]; then
+  mkdir -p "${DGE_DIR}/bin"
+  cp "${SRC}/bin/"* "${DGE_DIR}/bin/" 2>/dev/null || true
+  chmod +x "${DGE_DIR}/bin/"* 2>/dev/null || true
+fi
+
 # Update skills
 mkdir -p "${SKILLS_DIR}"
 for f in "${SRC}/skills/"*.md; do

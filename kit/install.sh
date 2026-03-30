@@ -42,6 +42,12 @@ else
     mkdir -p "${DGE_DIR}/flows"
     cp "${SRC}/flows/"*.yaml "${DGE_DIR}/flows/" 2>/dev/null || true
   fi
+  if [ -d "${SRC}/bin" ]; then
+    mkdir -p "${DGE_DIR}/bin"
+    cp "${SRC}/bin/"* "${DGE_DIR}/bin/" 2>/dev/null || true
+    chmod +x "${DGE_DIR}/bin/"* 2>/dev/null || true
+    echo "  dge/bin/ created"
+  fi
   # Version tracking for updates
   SRC_VERSION="$(cat "${SRC}/version.txt" 2>/dev/null || echo "1.0.0")"
   echo "${SRC_VERSION}" > "${DGE_DIR}/version.txt"

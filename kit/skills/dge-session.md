@@ -24,7 +24,7 @@
 - `dge/patterns.md`
 - `dge/method.md`
 - flow YAML の must_rules, auto_merge を確認
-- `dge-tool version` で tool mode 検出（失敗しても続行）
+- `node dge/bin/dge-tool.js version` または `npx dge-tool version` で tool mode 検出（失敗しても続行）
 
 ### Step 2: テーマ確認
 明確なら次へ。曖昧なら掘り下げ。
