@@ -35,6 +35,12 @@ else
   cp "${SRC}/templates/"*.md "${DGE_DIR}/templates/"
   [ -f "${SRC}/integration-guide.md" ] && cp "${SRC}/integration-guide.md" "${DGE_DIR}/"
   [ -f "${SRC}/patterns.md" ] && cp "${SRC}/patterns.md" "${DGE_DIR}/"
+  [ -f "${SRC}/INTERNALS.md" ] && cp "${SRC}/INTERNALS.md" "${DGE_DIR}/"
+  [ -f "${SRC}/CUSTOMIZING.md" ] && cp "${SRC}/CUSTOMIZING.md" "${DGE_DIR}/"
+  if [ -d "${SRC}/flows" ]; then
+    mkdir -p "${DGE_DIR}/flows"
+    cp "${SRC}/flows/"*.yaml "${DGE_DIR}/flows/" 2>/dev/null || true
+  fi
   # Version tracking for updates
   SRC_VERSION="$(cat "${SRC}/version.txt" 2>/dev/null || echo "1.0.0")"
   echo "${SRC_VERSION}" > "${DGE_DIR}/version.txt"
