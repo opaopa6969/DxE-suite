@@ -58,6 +58,8 @@ const CHARACTER_COVERAGE: Record<string, Partial<ThemeRequirements>> = {
   chr_beane: { needs_financial_rigor: 0.5, needs_risk_assessment: 0.6 },
   chr_kouhai: { needs_simplification: 0.4, needs_assumption_check: 0.3 },
   chr_hayashi: { needs_simplification: 0.9, needs_user_empathy: 0.5 },
+  chr_ukyo: { needs_quality_focus: 0.8, needs_assumption_check: 0.7 },
+  chr_socrates: { needs_assumption_check: 0.9, needs_bold_vision: 0.5 },
 };
 
 const AXIS_LABELS: Record<string, string> = {
