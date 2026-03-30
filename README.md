@@ -94,10 +94,12 @@ MIT licensed. Keep `dge/LICENSE` in your project.
 
 | Command | Description |
 |---------|-------------|
-| "Run DGE" / "DGE して" | Generate dialogue, find gaps |
-| "Run until ready to implement" | Auto-iteration mode (until convergence) |
-| "Add a character" / "キャラを追加して" | Create custom character (named or wizard) |
-| "Update DGE" / "DGE を更新して" | Check version, update guidance |
+| "Run DGE" | Generate dialogue, find gaps |
+| "Run DGE in detail" | Design-review mode with templates + patterns |
+| "Brainstorm this" | Idea divergence with Yes-and dialogue |
+| "Run until ready to implement" | Auto-iteration (until convergence) |
+| "Add a character" | Create custom character (named or wizard) |
+| "Update DGE" | Check version, update guidance |
 
 For other LLMs (ChatGPT, Gemini, etc.), see Quick Start (Method A) in [method.md](kit/method.md).
 
