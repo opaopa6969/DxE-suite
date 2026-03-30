@@ -22,12 +22,15 @@ Multiple DGE themes organized in TreeView. See progress at a glance.
 Say "add Guts from Berserk" to permanently add a famous character. LLM analyzes personality, quotes, and trauma.
 Wizard mode lets you create original characters through Q&A.
 
-**⚙ Customize the flow**
-Use DGE beyond design review. Flow definition YAML lets you change extraction types, artifacts, and actions.
-Fiction, decision-making, education — the character dialogue engine applies to anything.
+**🔀 Auto-merge DGE + plain LLM**
+By default, runs a plain LLM review in the background alongside dialogue. Merges DGE's deep insights with plain's comprehensive checklist. Isolated subagent, bias-free.
 
-**🔧 API Server (optional)**
-Character management + axes-vector recommendation engine as REST API. `npm start` to launch.
+**⚙ Customize the flow**
+3 flows: ⚡ quick (instant dialogue), 🔍 design-review (with Spec generation), 💡 brainstorm (idea divergence).
+Flow YAML lets you change extraction types, artifacts, and actions. Applicable to fiction, decision-making, and more.
+
+**🔧 API Server + CLI tool (optional)**
+Character management + axes-vector recommendation engine. `dge-tool` CLI enforces MUST rules via code.
 
 ## DGE in 3 Minutes — Explained via Dialogue
 
