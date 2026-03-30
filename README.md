@@ -36,27 +36,27 @@ Character management + axes-vector recommendation engine. `dge-tool` CLI enforce
 
 > Senpai (Narrator): Let's explain DGE using its own characters.
 
-**👤 Imaizumi**: "What does DGE actually do?"
+**👤 Columbo**: "Just one more thing... what does DGE actually do?"
 
-**☕ Yang**: "`npm install @unlaxer/dge-toolkit`, then `npx dge-install`. Tell Claude Code 'run DGE' and you're done."
+**☕ Holmes**: "`npm install @unlaxer/dge-toolkit`, then `npx dge-install`. Tell Claude Code 'run DGE' and you're done. Boring setup, I know."
 
-**👤 Imaizumi**: "What comes out?"
+**👤 Columbo**: "And what comes out?"
 
-**🎩 Sengoku**: "A structured dialogue where characters debate your design. 'Gaps' — problems not written in the spec — emerge along the way."
+**🎩 Picard**: "A structured dialogue where characters debate your design. 'Gaps' — problems not written in the spec — emerge along the way."
 
-**👤 Imaizumi**: "Once gaps are found?"
+**👤 Columbo**: "My wife was asking me... what happens once gaps are found?"
 
-**☕ Yang**: "Four choices. Run DGE again, auto-iterate until convergence, implement, or save for later."
+**☕ Holmes**: "Four choices. Run DGE again, auto-iterate until convergence, implement, or save for later."
 
-**👤 Imaizumi**: "What about 'implement'?"
+**👤 Columbo**: "And 'implement'?"
 
-**🎩 Sengoku**: "No jumping to code. Specs are auto-generated from gaps first — Use Cases, Tech Specs, ADRs. Human review is mandatory."
+**🎩 Picard**: "No jumping to code. Specs are auto-generated from gaps first — Use Cases, Tech Specs, ADRs. Human review is mandatory. This crew does not cut corners."
 
-**👤 Imaizumi**: "I heard you can add any character?"
+**👤 Columbo**: "One more thing... I heard you can add any character?"
 
-**☕ Yang**: "Say 'add Guts from Berserk' and the LLM analyzes personality, quotes, backstory — saved permanently. You can also create originals through a wizard."
+**☕ Holmes**: "'Add Guts from Berserk' and the LLM analyzes personality, quotes, backstory — saved permanently. Originals too, through a wizard. Mildly interesting."
 
-**⚖ Saul**: "Important: DGE Specs are *proposals*. If your project has `docs/`, that's the Source of Truth. DGE writes only inside `dge/`."
+**⚖ Saul**: "Important: DGE Specs are *proposals*. If your project has `docs/`, that's the Source of Truth. DGE writes only inside `dge/`. Let's just say... I know a guy who lost his docs to an overeager tool."
 
 → **Summary**: Dialogue → Gaps → Specs → Review → Implement. Custom characters for more angles. Projects for tracking.
 
@@ -104,22 +104,29 @@ For other LLMs (ChatGPT, Gemini, etc.), see Quick Start (Method A) in [method.md
 ## Character Quick Reference
 
 ```
-Shaky assumptions  → 👤 Imaizumi  "Did you actually ask anyone?"
-Low quality        → 🎩 Sengoku   "This is an insult to the customer"
-Over-complicated   → ☕ Yang      "Do we even need this?"
-Moving too fast    → 😰 Boku      "Can we make this smaller...?"
-Not bold enough    → 👑 Reinhard  "Attack."
-Numbers don't add  → 🦅 Washizu  "What's the IRR?"
-Attack resilience  → 😈 Red Team  "What if a competitor does this?"
-Revenue reality    → 🦈 Owada    "How much does this make?"
-Missing impl       → ⚔ Levi      "Dirty. Build it."
-User truth         → 🎰 Tonegawa "Say it in the user's words"
-Hidden problems    → 🏥 House    "Everybody lies"
-Legal risk         → ⚖ Saul     "Did you write the ToS?"
+Shaky assumptions  → 👤 Columbo       "Just one more thing..."
+Low quality        → 🎩 Picard        "Make it so" (only when worthy)
+Over-complicated   → ☕ Holmes        "Boring! Eliminate the unnecessary"
+Moving too fast    → 😰 Charlie Brown "Good grief... can we make this smaller?"
+Not bold enough    → 👑 Steve Jobs    "Think different. Ship it."
+Numbers don't add  → 🦅 Gekko         "Greed is good. Show me the numbers."
+Corporate politics → 👔 Don Draper    "Let me handle the room"
+Attack resilience  → 😈 Red Team      "What if a competitor does this?"
+Legal risk         → ⚖ Saul          "Let's just say I know a guy"
+Missing impl       → ⚔ Hartman       "What is your major malfunction?"
+User truth         → 🎰 Durden        "You are not your framework"
+Hidden problems    → 🏥 House         "Everybody lies"
+Not understood     → 🧑‍🏫 Mr. Rogers   "Let's think about this together"
+Bad UX             → 🎨 Jony Ive      "Does it feel inevitable?"
+No measurement     → 📊 Beane         "What does the data say?"
+Chaos              → 🤝 Kouhai        "Let's be constructive"
+Too complex        → 🪄 Tyson         "Imagine you're..."
+Small contradiction→ 🕵 Monk          "Something's not right here"
+Fixed thinking     → 🎭 Socrates      "Why do you think so?"
 + Custom 🎭 "Add Guts from Berserk" to add any character
 ```
 
-For English-native mappings (Columbo, Captain Picard, etc.), see [characters/atlas.md](characters/atlas.md).
+Japanese character set also available — see [characters/index.md](kit/characters/index.md). Locale auto-detected from input language.
 
 ## Dialogue Patterns — 20 Patterns + 5 Presets
 
