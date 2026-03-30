@@ -269,7 +269,8 @@ npx dge-install
 DGE（Design-Gap Exploration / Dialogue-driven Gap Extraction）は、パーサーフレームワーク [unlaxer](https://github.com/opaopa6969/unlaxer) の開発過程で生まれた設計レビュー手法です。
 
 - unlaxer-parser の設計に 5 回の DGE session を適用し、108 個の Gap を発見
-- SLE (Software Language Engineering) 2026 への論文投稿を予定
+- DGE で架空の査読劇を生成して、実際の新機能の開発に役立てています
+  - 実例: [DGE Session: Ternary 演算子の設計 — バグの温床を事前に潰す](https://github.com/opaopa6969/unlaxer-parser/blob/master/paper/dge-ternary.md)
 
 DGE toolkit は MIT ライセンスで公開されています。
 
