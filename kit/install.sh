@@ -27,7 +27,7 @@ DGE_DIR="${TARGET_DIR}/dge"
 if [ -d "${DGE_DIR}" ]; then
   echo "  dge/ already exists — skipping (won't overwrite your files)"
 else
-  mkdir -p "${DGE_DIR}/characters" "${DGE_DIR}/templates" "${DGE_DIR}/sessions" "${DGE_DIR}/custom" "${DGE_DIR}/projects" "${DGE_DIR}/specs"
+  mkdir -p "${DGE_DIR}/characters" "${DGE_DIR}/templates" "${DGE_DIR}/sessions" "${DGE_DIR}/custom/characters" "${DGE_DIR}/projects" "${DGE_DIR}/specs"
   cp "${SRC}/README.md" "${DGE_DIR}/"
   cp "${SRC}/LICENSE" "${DGE_DIR}/"
   cp "${SRC}/method.md" "${DGE_DIR}/"
@@ -44,7 +44,7 @@ fi
 # Copy skill to .claude/skills/
 SKILLS_DIR="${TARGET_DIR}/.claude/skills"
 mkdir -p "${SKILLS_DIR}"
-for SKILL in dge-session.md dge-update.md; do
+for SKILL in dge-session.md dge-update.md dge-character-create.md; do
   if [ -f "${SRC}/skills/${SKILL}" ]; then
     if [ -f "${SKILLS_DIR}/${SKILL}" ]; then
       echo "  .claude/skills/${SKILL} already exists — skipping"

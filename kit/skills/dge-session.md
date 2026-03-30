@@ -64,8 +64,9 @@
 
 ### Step 1: 初回チェックと DGE Kit 読み込み
 1. `dge/method.md` を読む（なければ install 案内）
-2. `dge/characters/catalog.md` を読む
-3. `dge/patterns.md` を読む
+2. `dge/characters/catalog.md` を読む（built-in キャラ）
+3. `dge/custom/characters/*.md` があれば各ファイルの Prompt Core セクションを読む（カスタムキャラ）
+4. `dge/patterns.md` を読む
 4. `dge/version.txt` があればバージョンを 1 行表示
 5. CLAUDE.md に DGE の記述があるか確認（MUST-6）
 
@@ -90,6 +91,18 @@
 ユーザーが指定しなければ自動推奨を使う。
 
 ### Step 4: キャラクターを提案
+built-in + カスタムキャラを統合して表示:
+```
+--- built-in ---
+👤 今泉  🎩 千石  ☕ ヤン  😰 僕  👑 ラインハルト  ...
+--- カスタム ---（dge/custom/characters/ にあれば）
+⚔ ガッツ  🔧 田中先輩  ...
+
+推奨: [テーマに応じた推奨セット]
+変更しますか？
+```
+選択されたキャラの Personality セクションを追加読み込み。
+ユーザーが「深い議論にして」と言った場合のみ Backstory も読み込む。
 **ユーザーの応答を待つ。**
 
 ### Step 5: 会話劇を生成
