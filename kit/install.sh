@@ -37,6 +37,7 @@ else
   [ -f "${SRC}/patterns.md" ] && cp "${SRC}/patterns.md" "${DGE_DIR}/"
   [ -f "${SRC}/INTERNALS.md" ] && cp "${SRC}/INTERNALS.md" "${DGE_DIR}/"
   [ -f "${SRC}/CUSTOMIZING.md" ] && cp "${SRC}/CUSTOMIZING.md" "${DGE_DIR}/"
+  [ -f "${SRC}/dialogue-techniques.md" ] && cp "${SRC}/dialogue-techniques.md" "${DGE_DIR}/"
   if [ -d "${SRC}/flows" ]; then
     mkdir -p "${DGE_DIR}/flows"
     cp "${SRC}/flows/"*.yaml "${DGE_DIR}/flows/" 2>/dev/null || true
