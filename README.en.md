@@ -2,58 +2,61 @@
 
 [日本語](README.md)
 
-> "What 10 rounds of spec review couldn't find, 10 minutes of dialogue surfaced."
+> Spec review verifies "what's written." DGE discovers "what's not written."
 
-## What is DGE?
+## What You Can Do
 
-**DGE** carries two meanings:
+**🎭 Find design gaps through dialogue**
+Say "run DGE" to start. Characters debate your design and surface undocumented assumptions, hidden constraints, and overlooked considerations.
 
-- **Design-Gap Exploration** — exploring gaps in design (what it does)
-- **Dialogue-driven Gap Extraction** — extracting gaps through dialogue (how it works)
+**📋 Convert Gaps to Specs**
+Say "implement" to auto-generate Use Cases / Tech Specs / ADRs / Design Questions. Review, then implement.
 
-Spec review verifies "what's written."
-DGE discovers "what's not written."
+**🔄 Auto-iterate until convergence**
+Say "run until ready to implement" for auto-iteration. DGE runs repeatedly with different angles until no new Critical/High gaps emerge.
 
-Characters debate in a structured dialogue, surfacing undocumented assumptions, hidden constraints, and overlooked considerations.
+**📁 Manage as projects**
+Multiple DGE themes organized in TreeView. See progress at a glance.
+
+**🎭 Add any character you want**
+Say "add Guts from Berserk" to permanently add a famous character. LLM analyzes personality, quotes, and trauma.
+Wizard mode lets you create original characters through Q&A.
+
+**🔧 API Server (optional)**
+Character management + axes-vector recommendation engine as REST API. `npm start` to launch.
 
 ## DGE in 3 Minutes — Explained via Dialogue
 
-> Senpai (Narrator): Let's explain the DGE toolkit using DGE's own format.
+> Senpai (Narrator): Let's explain DGE using its own characters.
 
-**👤 Imaizumi**: "What does DGE actually do? What happens when I npm install it?"
+**👤 Imaizumi**: "What does DGE actually do?"
 
-**☕ Yang**: "Simple. `npm install @unlaxer/dge-toolkit`, then `npx dge-install`. A `dge/` folder and skill files land in your project. Then just tell Claude Code 'run DGE on this' and you're done."
+**☕ Yang**: "`npm install @unlaxer/dge-toolkit`, then `npx dge-install`. Tell Claude Code 'run DGE' and you're done."
 
 **👤 Imaizumi**: "What comes out?"
 
-**🎩 Sengoku**: "A structured dialogue where characters debate your design from different angles. I attack quality issues, Imaizumi questions assumptions, Red Team runs attack scenarios. Along the way, 'Gaps' emerge — problems not written in the spec."
+**🎩 Sengoku**: "A structured dialogue where characters debate your design. 'Gaps' — problems not written in the spec — emerge along the way."
 
 **👤 Imaizumi**: "Once gaps are found?"
 
-**☕ Yang**: "Three choices. Run DGE again to dig deeper, implement, or save for later."
+**☕ Yang**: "Four choices. Run DGE again, auto-iterate until convergence, implement, or save for later."
 
-**👤 Imaizumi**: "What happens when I choose 'implement'?"
+**👤 Imaizumi**: "What about 'implement'?"
 
-**🎩 Sengoku**: "You don't jump to code. First, Spec files are generated from the gaps — Use Cases, Tech Specs, ADRs, Design Questions, Action Items — saved to `dge/specs/` as `status: draft`. Human review is mandatory before implementation."
+**🎩 Sengoku**: "No jumping to code. Specs are auto-generated from gaps first — Use Cases, Tech Specs, ADRs. Human review is mandatory."
 
-**⚖ Saul**: "Important caveat. DGE Specs are *proposals*, not decisions. If your project already has `docs/`, that's the Source of Truth. DGE writes only inside `dge/` and never touches your existing files."
+**👤 Imaizumi**: "I heard you can add any character?"
 
-**😰 Boku**: "...What about updates? When new characters or templates are added...?"
+**☕ Yang**: "Say 'add Guts from Berserk' and the LLM analyzes personality, quotes, backstory — saved permanently. You can also create originals through a wizard."
 
-**☕ Yang**: "`npm update @unlaxer/dge-toolkit` then `npx dge-update`. Your session records and custom files are never touched. Only toolkit files get updated safely."
+**⚖ Saul**: "Important: DGE Specs are *proposals*. If your project has `docs/`, that's the Source of Truth. DGE writes only inside `dge/`."
 
-**👤 Imaizumi**: "What if the project doesn't use npm?"
-
-**☕ Yang**: "Copy the `kit/` folder manually. npm is convenient, not required."
-
-→ **Summary**: DGE is a pipeline: discover gaps via dialogue → generate specs → review → implement. Install via npm or manual copy. Updates via npm or manual overwrite. Coexists independently with your project inside `dge/`.
-
----
+→ **Summary**: Dialogue → Gaps → Specs → Review → Implement. Custom characters for more angles. Projects for tracking.
 
 ## Results
 
 - **unlaxer-parser** (SLE 2026 submission planned): 5 sessions, 108 gaps discovered
-- **AskOS**: 11+ sessions, 14,978 lines of design documents generated, 16 gaps from adversarial review
+- **AskOS**: 11+ sessions, 14,978 lines of design documents, 16 gaps from adversarial review
 
 ## Installation
 
@@ -64,28 +67,11 @@ npm install @unlaxer/dge-toolkit
 npx dge-install
 ```
 
-Creates `dge/` folder and skill files in `.claude/skills/` in your project.
-
-### Version update
+### Update
 
 ```bash
 npm update @unlaxer/dge-toolkit
-npx dge-update    # overwrites toolkit files only. sessions/ and custom/ are never touched
-```
-
-Or tell Claude Code "update DGE" and the skill will guide you.
-
-### Local install (before npm publish)
-
-```bash
-# From tarball
-cd kit && npm pack && cd ..
-npm install ./kit/unlaxer-dge-toolkit-1.0.0.tgz
-npx dge-install
-
-# Or from local path
-npm install /path/to/DGE-toolkit/kit
-npx dge-install
+npx dge-update    # overwrites toolkit files only. sessions/ custom/ projects/ specs/ untouched
 ```
 
 ### Manual copy (no npm required)
@@ -95,21 +81,18 @@ cp -r kit/ your-project/dge/
 cp kit/skills/*.md your-project/.claude/skills/
 ```
 
-DGE-toolkit is MIT licensed. Keep `dge/LICENSE` in your project.
-
-### npm package management
-
-See [PUBLISHING.md](PUBLISHING.md) for versioning, publishing, and sync procedures.
+MIT licensed. Keep `dge/LICENSE` in your project.
 
 ## Usage
 
-One line in Claude Code:
+| Command | Description |
+|---------|-------------|
+| "Run DGE" / "DGE して" | Generate dialogue, find gaps |
+| "Run until ready to implement" | Auto-iteration mode (until convergence) |
+| "Add a character" / "キャラを追加して" | Create custom character (named or wizard) |
+| "Update DGE" / "DGE を更新して" | Check version, update guidance |
 
-```
-Human: "Run DGE on the auth API design"
-```
-
-For other LLMs (ChatGPT, Gemini, etc.), see the Quick Start (Method A) in [method.md](kit/method.md).
+For other LLMs (ChatGPT, Gemini, etc.), see Quick Start (Method A) in [method.md](kit/method.md).
 
 ## Character Quick Reference
 
@@ -126,25 +109,12 @@ Missing impl       → ⚔ Levi      "Dirty. Build it."
 User truth         → 🎰 Tonegawa "Say it in the user's words"
 Hidden problems    → 🏥 House    "Everybody lies"
 Legal risk         → ⚖ Saul     "Did you write the ToS?"
++ Custom 🎭 "Add Guts from Berserk" to add any character
 ```
 
-For English-native character mappings (Columbo, Captain Picard, etc.), see [characters/atlas.md](characters/atlas.md).
-
-## Recommended Combinations by Theme
-
-```
-API Design:        Imaizumi + Sengoku + Boku
-Feature Planning:  Imaizumi + Yang + Boku
-Security:          Sengoku + Red Team + House
-Go/No-Go:         Imaizumi + Washizu + Boku
-Incident Review:   Imaizumi + Sengoku + Red Team
-```
+For English-native mappings (Columbo, Captain Picard, etc.), see [characters/atlas.md](characters/atlas.md).
 
 ## Dialogue Patterns — 20 Patterns + 5 Presets
-
-Patterns determine "from which angle to attack design gaps." Template (theme) × Pattern (angle) drives the dialogue.
-
-### Presets (ready-to-use combinations)
 
 | Preset | Patterns | Use Case |
 |---|---|---|
@@ -154,40 +124,32 @@ Patterns determine "from which angle to attack design gaps." Template (theme) ×
 | 📢 advocacy | before-after, app-type-variation, role-contrast | Internal advocacy |
 | 🔍 comprehensive | 7 patterns | Thorough DGE |
 
-### Pattern Categories
-
-**Comparison (A)**: before-after / role-contrast / app-type-variation / expertise-contrast / platform-contrast
-
-**Discovery (B)**: zero-state / return-after-absence / escalation-chain / cross-persona-conflict / migration-path / multi-tenant / concurrent-operation
-
-**Stress (C)**: scale-break / hallucination-probe / convergence-test / drift-detection / security-adversary / accessibility-barrier / disaster-recovery / i18n-mismatch
-
 See [kit/patterns.md](kit/patterns.md) for details.
 
-## Imaizumi Method — 5 Types of Questions
+## API Server (optional)
 
-| Type | Question | Discovers |
-|------|----------|-----------|
-| 1 | "In the first place..." | Unvalidated assumptions |
-| 2 | "So basically..." | Essence / true nature |
-| 3 | "Any other options?" | Hidden alternatives |
-| 4 | "Who gets hurt?" | Unclear impact |
-| 5 | "Wasn't this true before?" | Historical failure patterns |
+Character management + axes-vector recommendation engine.
+
+```bash
+cd server && npm install && npm start
+# → http://localhost:3456
+```
+
+See [server/README.md](server/README.md) for details.
 
 ## Documentation
 
 | File | Contents |
 |------|----------|
 | [method.md](kit/method.md) | Full methodology (3-min TL;DR + details + quick start) |
-| [characters/catalog.md](kit/characters/catalog.md) | 12 characters + prompts + usage guide |
-| [characters/atlas.md](characters/atlas.md) | Cross-cultural mapping (EN/CN character equivalents) |
-| [characters/custom-guide.md](characters/custom-guide.md) | How to create custom characters |
-| [templates/](kit/templates/) | Theme templates (API design, feature planning, Go/No-Go, incident review, security) |
-| [gap-definition.md](gap-definition.md) | Gap definition, classification, priority scoring |
-| [quality-criteria.md](quality-criteria.md) | Output quality standards & checklists |
-| [limitations.md](limitations.md) | Honest assessment of DGE limitations |
+| [patterns.md](kit/patterns.md) | 20 patterns + 5 presets |
+| [characters/catalog.md](kit/characters/catalog.md) | 12 characters + prompts |
+| [characters/atlas.md](characters/atlas.md) | Cross-cultural mapping (EN/CN) |
+| [integration-guide.md](kit/integration-guide.md) | Existing workflow integration guide |
+| [templates/](kit/templates/) | Theme templates (5 types) |
 | [DISCLAIMER.md](DISCLAIMER.md) | Disclaimers & IP notes |
-| [paper/](paper/) | Academic papers & experiment design (includes fictional review dialogues) |
+| [PUBLISHING.md](PUBLISHING.md) | npm maintainer guide |
+| [paper/](paper/) | Academic papers (includes fictional review dialogues) |
 
 ## License
 
