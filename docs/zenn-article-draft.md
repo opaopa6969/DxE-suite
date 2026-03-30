@@ -305,7 +305,7 @@ npx dge-install
 
 ---
 
-## 参考: DGE の学術的背景
+## 参考: 実際に使ってる事例
 
 DGE（Design-Gap Exploration / Dialogue-driven Gap Extraction）は、パーサーフレームワーク [unlaxer-parser](https://github.com/opaopa6969/unlaxer-parser) の開発過程で生まれた設計レビュー手法です。
 
