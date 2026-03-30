@@ -127,6 +127,10 @@ For English-native mappings (Columbo, Captain Picard, etc.), see [characters/atl
 | 🚀 pre-release | scale-break, security-adversary, concurrent-operation, disaster-recovery | Pre-release |
 | 📢 advocacy | before-after, app-type-variation, role-contrast | Internal advocacy |
 | 🔍 comprehensive | 7 patterns | Thorough DGE |
+| 🔥 hotfix | escalation-chain, disaster-recovery, drift-detection | Incident response |
+| 🤝 onboarding | zero-state, expertise-contrast, return-after-absence | New member |
+| 💰 monetization | role-contrast, scale-break, cross-persona-conflict | Pricing/BM |
+| 🧹 tech-debt | drift-detection, before-after, convergence-test | Refactoring |
 
 See [kit/patterns.md](kit/patterns.md) for details.
 

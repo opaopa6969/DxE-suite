@@ -53,6 +53,10 @@
 | 🚀 `pre-release` | scale-break, security-adversary, concurrent-operation, disaster-recovery | リリース前チェック |
 | 📢 `advocacy` | before-after, app-type-variation, role-contrast | 社内提案・導入説得 |
 | 🔍 `comprehensive` | zero-state, role-contrast, escalation-chain, cross-persona-conflict, scale-break, security-adversary, migration-path | 網羅的 DGE |
+| 🔥 `hotfix` | escalation-chain, disaster-recovery, drift-detection | 障害対応・振り返り |
+| 🤝 `onboarding` | zero-state, expertise-contrast, return-after-absence | 新メンバー受け入れ |
+| 💰 `monetization` | role-contrast, scale-break, cross-persona-conflict | 課金・ビジネスモデル検証 |
+| 🧹 `tech-debt` | drift-detection, before-after, convergence-test | リファクタリング前の洗い出し |
 
 ## テンプレート → プリセット 自動推奨
 
@@ -61,7 +65,7 @@
 | api-design | feature-extension |
 | feature-planning | new-project |
 | go-nogo | advocacy |
-| incident-review | comprehensive |
+| incident-review | hotfix |
 | security-review | pre-release |
 
 パターンを指定しなければ、テンプレートに応じたプリセットが自動的に使われます。
