@@ -1,6 +1,48 @@
 name: design-review
 display_name: "🔍 設計レビュー — 仕様の穴を見つけて Spec に変換"
 
+trigger_keywords: ["詳しく", "本格的に", "full", "設計レビュー", "Spec"]
+
+workflow:
+  steps:
+    - id: init
+      display_name: "Kit 読み込み"
+    - id: theme
+      display_name: "テーマ確認"
+    - id: template
+      display_name: "テンプレート選択"
+    - id: pattern
+      display_name: "パターン選択"
+    - id: characters
+      display_name: "キャラ選択"
+      mode: confirm
+    - id: dialogue
+      display_name: "会話劇生成"
+    - id: extract_gaps
+      display_name: "Gap 構造化"
+    - id: save
+      display_name: "保存 + プロジェクト更新"
+    - id: summary
+      display_name: "サマリー + 選択肢"
+    - id: spec
+      display_name: "Spec 化（実装選択時）"
+
+must_rules:
+  - id: save
+    text: "会話劇は保存（無条件）"
+  - id: output_table
+    text: "Gap 一覧テーブルを出力"
+  - id: choices
+    text: "一覧の後に番号付き選択肢を提示（省略しない）"
+  - id: character_confirm
+    text: "キャラ選択はユーザー確認"
+  - id: spec_before_impl
+    text: "実装前に Critical/High の Spec を生成"
+  - id: spec_header
+    text: "Spec に DGE 生成警告ヘッダ + status: draft"
+  - id: write_scope
+    text: "dge/ 内にのみ書き込む"
+
 extract:
   type: gap
   marker: "→ Gap 発見:"
@@ -64,6 +106,8 @@ post_actions:
     display_name: "実装できるまで回す"
   - id: implement
     display_name: "実装する → Spec 化"
+  - id: merge_plain
+    display_name: "素の LLM でも回してマージ"
   - id: later
     display_name: "後で"
 
