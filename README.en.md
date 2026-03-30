@@ -22,6 +22,10 @@ Multiple DGE themes organized in TreeView. See progress at a glance.
 Say "add Guts from Berserk" to permanently add a famous character. LLM analyzes personality, quotes, and trauma.
 Wizard mode lets you create original characters through Q&A.
 
+**⚙ Customize the flow**
+Use DGE beyond design review. Flow definition YAML lets you change extraction types, artifacts, and actions.
+Fiction, decision-making, education — the character dialogue engine applies to anything.
+
 **🔧 API Server (optional)**
 Character management + axes-vector recommendation engine as REST API. `npm start` to launch.
 
@@ -146,6 +150,9 @@ See [server/README.md](server/README.md) for details.
 | [characters/catalog.md](kit/characters/catalog.md) | 12 characters + prompts |
 | [characters/atlas.md](characters/atlas.md) | Cross-cultural mapping (EN/CN) |
 | [integration-guide.md](kit/integration-guide.md) | Existing workflow integration guide |
+| [INTERNALS.md](kit/INTERNALS.md) | Internal architecture (flow, dataflow, state diagrams + hooks) |
+| [CUSTOMIZING.md](kit/CUSTOMIZING.md) | Customization guide (Level 1/2/3 + fork howto) |
+| [flows/design-review.yaml](kit/flows/design-review.yaml) | Default flow definition |
 | [templates/](kit/templates/) | Theme templates (5 types) |
 | [DISCLAIMER.md](DISCLAIMER.md) | Disclaimers & IP notes |
 | [PUBLISHING.md](PUBLISHING.md) | npm maintainer guide |

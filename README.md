@@ -22,6 +22,10 @@
 「ガッツを追加して」で有名キャラを永続追加。LLM が性格・名言・トラウマまで分析。
 wizard モードなら対話形式でオリジナルキャラも作れる。
 
+**⚙ フローをカスタマイズする**
+設計レビュー以外にも使える。フロー定義 YAML で抽出タイプ・成果物・選択肢を変更。
+創作、意思決定、教育 — キャラクター対話エンジンとして何にでも応用可能。
+
 **🔧 API サーバー（オプション）**
 キャラ管理 + axes ベクトル推奨エンジンの REST API。`npm start` で起動。
 
@@ -151,6 +155,9 @@ curl -X POST localhost:3456/api/characters/recommend \
 | [characters/catalog.md](kit/characters/catalog.md) | 12 キャラ + prompt + 使い分け |
 | [characters/atlas.md](characters/atlas.md) | 文化圏別マッピング（英語圏・中国語圏） |
 | [integration-guide.md](kit/integration-guide.md) | 既存 workflow との統合ガイド |
+| [INTERNALS.md](kit/INTERNALS.md) | 内部構造（フロー図・データフロー図・ステート図・Hook 一覧） |
+| [CUSTOMIZING.md](kit/CUSTOMIZING.md) | カスタマイズガイド（Level 1/2/3 + fork 方法） |
+| [flows/design-review.yaml](kit/flows/design-review.yaml) | デフォルトフロー定義 |
 | [templates/](kit/templates/) | テーマ別テンプレート（5 種） |
 | [DISCLAIMER.md](DISCLAIMER.md) | 免責事項・IP に関する注意 |
 | [PUBLISHING.md](PUBLISHING.md) | npm メンテナ向けガイド |
