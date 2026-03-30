@@ -32,13 +32,14 @@
 
 ### Step 1: Kit 読み込み（全 flow 共通）
 1. `dge/method.md` を読む（なければ install 案内）
-2. `dge/characters/catalog.md` を読む
-3. `dge/custom/characters/*.md` があれば Prompt Core を読む
+2. `dge/characters/catalog.md` の **使い分け早見表とテーマ別推奨のみ** を読む（各キャラの prompt は Step 4 で選択後に読む — lazy loading）
+3. `dge/custom/characters/*.md` があれば **ファイル名と冒頭の name/icon のみ** 読む（Prompt Core は選択後）
 4. `dge/patterns.md` を読む
-5. `dge/version.txt` があれば 1 行表示
-6. **dge-tool 検出**: Bash で `dge-tool version` を実行。
-   - 成功 → `🔧 Tool mode (dge-tool vX.X.X)` と表示。以降 Step 7, 8 で dge-tool を使用
-   - 失敗 → Skill mode（従来通り）。dge-tool なしでも全機能動作
+5. `dge/flows/{判定した flow}.yaml` を読む。**YAML の must_rules, workflow, post_actions, auto_merge を実際に参照して動作を決定する。** YAML がなければ下記のデフォルト動作。
+6. `dge/version.txt` があれば 1 行表示
+7. **dge-tool 検出**: Bash で `dge-tool version` を実行。
+   - 成功 → `🔧 Tool mode (dge-tool vX.X.X)` と表示
+   - 失敗 → Skill mode（従来通り）
 
 ### Step 2: テーマ確認（全 flow 共通）
 明確なら次へ。不明確なら掘り下げる。
@@ -50,11 +51,13 @@
 プリセットを推奨。quick / brainstorm ではスキップ（自動選択）。
 
 ### Step 4: キャラクター提案
-- **quick**: 推奨セットを 1 行表示。確認は求めない。変更したければユーザーが指示。
+- **quick**: 推奨セットを 1 行表示。確認は求めない。
   `キャラ: 今泉 + 千石 + 僕（変更したい場合は指示してください）`
 - **design-review / brainstorm**: 推奨セットを提示し確認を待つ。
 
-built-in + カスタムキャラを統合表示。
+built-in + カスタムキャラの名前・アイコン一覧を表示（Step 1 で読み込み済み）。
+
+**キャラ確定後、選択された 3-5 名の prompt_core と personality セクションのみ読み込む（lazy loading）。** 19 キャラ全員の prompt を読む必要はない。
 
 ### Step 5: 会話劇生成（全 flow 共通）
 - flow の extract.marker を使う（デフォルト: `→ Gap 発見:`、brainstorm: `→ アイデア:`）
@@ -200,7 +203,8 @@ flow YAML の post_actions の id に応じて分岐:
    2. 後で
    ```
 
-5. **マージ結果をファイルに保存**: `dge/sessions/{theme}-merged.md`
+5. **素の LLM の生出力を保存**: `dge/sessions/{theme}-plain-raw.md`（再現性の担保）
+6. **マージ結果をファイルに保存**: `dge/sessions/{theme}-merged.md`
 
 ### Step 10: 累積 Spec 化（design-review のみ）
 同テーマの全 session Gap を統合 → Critical/High を Spec 化 → `dge/specs/` に保存。
