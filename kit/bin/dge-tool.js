@@ -82,19 +82,112 @@ function cmdVersion() {
   console.log(`dge-tool v${VERSION}`);
 }
 
+function cmdCompare() {
+  // Reads two JSON gap lists from stdin and generates comparison table
+  // Input format: { "dge": [...gaps], "plain": [...gaps] }
+  let input = '';
+  process.stdin.setEncoding('utf8');
+  process.stdin.on('data', chunk => { input += chunk; });
+  process.stdin.on('end', () => {
+    try {
+      const data = JSON.parse(input);
+      const dge = data.dge || [];
+      const plain = data.plain || [];
+
+      // Simple title-based dedup
+      const dgeSet = new Set(dge.map(g => g.gap.toLowerCase().trim()));
+      const plainSet = new Set(plain.map(g => g.gap.toLowerCase().trim()));
+
+      const both = [];
+      const dgeOnly = [];
+      const plainOnly = [];
+
+      for (const g of dge) {
+        const key = g.gap.toLowerCase().trim();
+        // Check if any plain gap is similar (substring match or word overlap)
+        let found = false;
+        for (const p of plain) {
+          const pKey = p.gap.toLowerCase().trim();
+          // Substring check (works for Japanese)
+          const isSubstring = key.includes(pKey) || pKey.includes(key);
+          // Word overlap for English
+          const gWords = new Set(key.split(/[\s/・、。]+/).filter(w => w.length > 1));
+          const pWords = new Set(pKey.split(/[\s/・、。]+/).filter(w => w.length > 1));
+          const overlap = [...gWords].filter(w => pWords.has(w)).length;
+          const similarity = overlap / Math.min(gWords.size, pWords.size);
+          if (isSubstring || similarity > 0.5) {
+            both.push({ ...g, source: '両方', plain_match: p.gap });
+            found = true;
+            plainSet.delete(pKey);
+            break;
+          }
+        }
+        if (!found) dgeOnly.push({ ...g, source: 'DGE のみ' });
+      }
+
+      for (const p of plain) {
+        const pKey = p.gap.toLowerCase().trim();
+        if (plainSet.has(pKey)) {
+          plainOnly.push({ ...p, source: '素のみ' });
+        }
+      }
+
+      // Stats
+      const dgeC = dge.filter(g => g.severity === 'Critical').length;
+      const dgeH = dge.filter(g => g.severity === 'High').length;
+      const plainC = plain.filter(g => g.severity === 'Critical').length;
+      const plainH = plain.filter(g => g.severity === 'High').length;
+
+      console.log('## マージ結果: DGE + 素の LLM（isolated）');
+      console.log('');
+      console.log('### 数値比較');
+      console.log('| 指標 | DGE | 素の LLM |');
+      console.log('|------|-----|---------|');
+      console.log(`| Gap 総数 | ${dge.length} | ${plain.length} |`);
+      console.log(`| Critical | ${dgeC} | ${plainC} |`);
+      console.log(`| High | ${dgeH} | ${plainH} |`);
+      console.log('');
+      console.log('### Gap 一覧（統合）');
+      console.log('| # | Gap | Source | Severity |');
+      console.log('|---|-----|--------|----------|');
+
+      let n = 1;
+      for (const g of both) {
+        console.log(`| ${n++} | ${g.gap} | 両方 | ${g.severity} |`);
+      }
+      for (const g of dgeOnly) {
+        console.log(`| ${n++} | ${g.gap} | DGE のみ | ${g.severity} |`);
+      }
+      for (const g of plainOnly) {
+        console.log(`| ${n++} | ${g.gap} | 素のみ | ${g.severity} |`);
+      }
+
+      console.log('');
+      console.log(`DGE のみ: ${dgeOnly.length} 件（深い洞察）`);
+      console.log(`素のみ: ${plainOnly.length} 件（網羅的チェック）`);
+      console.log(`両方: ${both.length} 件（確実に重要）`);
+    } catch (e) {
+      console.error('ERROR: invalid JSON input. Expected: { "dge": [...], "plain": [...] }');
+      process.exit(1);
+    }
+  });
+}
+
 function cmdHelp() {
   console.log(`dge-tool v${VERSION} — DGE MUST enforcement CLI
 
 Commands:
   save <file>       Save stdin to file (ensures MUST: always save)
   prompt [flow]     Show numbered choices from flow YAML (ensures MUST: show choices)
+  compare           Merge DGE + plain gaps from stdin JSON (isolated comparison)
   version           Show version
   help              Show this help
 
 Examples:
   echo "session content" | dge-tool save dge/sessions/auth-api.md
   dge-tool prompt quick
-  dge-tool prompt design-review`);
+  dge-tool prompt design-review
+  echo '{"dge":[...],"plain":[...]}' | dge-tool compare`);
 }
 
 // Dispatch
@@ -104,6 +197,9 @@ switch (command) {
     break;
   case 'prompt':
     cmdPrompt();
+    break;
+  case 'compare':
+    cmdCompare();
     break;
   case 'version':
   case '-v':

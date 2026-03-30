@@ -133,8 +133,62 @@ flow YAML の post_actions の id に応じて分岐:
 ### Step 9B: 前回コンテキスト + プロジェクトナビゲーション
 プロジェクトファイルがあれば TreeView 表示。なければ前回サマリー + 3 択。
 
-### Step 9C: 素の LLM マージ
-subagent で同じテーマを素でレビュー → DGE Gap とマージ → DGE のみ / 素のみ / 両方 をラベル付け。
+### Step 9C: 素の LLM マージ（isolated subagent）
+
+**重要: DGE の結果を知らない独立した agent で素のレビューを行う。** これにより DGE の Gap を「補完する」バイアスを排除する。
+
+1. **isolated subagent を起動**: Agent ツールで `isolation: "worktree"` を指定。
+   DGE session の context を一切持たない別プロセスが実行する。
+
+   subagent へのプロンプト:
+   ```
+   以下の設計ドキュメントをレビューしてください。
+   問題点、考慮漏れ、矛盾を全て挙げてください。
+   各問題に Category と Severity (Critical / High / Medium / Low) をつけてください。
+   テーブル形式で出力: | # | Gap | Category | Severity |
+
+   [テーマの設計ドキュメント / コンテキスト]
+   ```
+
+   **subagent には DGE の Gap 一覧や会話劇を渡さない。** 完全に独立したレビュー。
+
+2. **素の Gap 一覧を受け取る**
+
+3. **DGE の Gap と素の Gap をマージ**:
+   - Gap タイトルの意味的類似度で重複を判定
+   - 同じ問題 → 「両方」ラベル（信頼度が高い）
+   - DGE のみ → 「DGE のみ」ラベル（深い洞察の可能性）
+   - 素のみ → 「素のみ」ラベル（網羅的チェック）
+
+4. **比較表を表示**:
+   ```
+   ## マージ結果: DGE + 素の LLM（isolated）
+
+   ### 数値比較
+   | 指標 | DGE | 素の LLM |
+   |------|-----|---------|
+   | Gap 総数 | N | N |
+   | Critical | N | N |
+   | High | N | N |
+   | カテゴリ数 | N/11 | N/11 |
+
+   ### Gap 一覧（統合）
+   | # | Gap | Source | Severity |
+   |---|-----|--------|----------|
+   | 1 | [gap] | DGE のみ | High |
+   | 2 | [gap] | 両方 | Critical |
+   | 3 | [gap] | 素のみ | Medium |
+
+   DGE のみ: N 件（深い洞察）
+   素のみ: N 件（網羅的チェック）
+   両方: N 件（確実に重要）
+
+   どうしますか？
+   1. 実装する → マージ済み Gap から Spec 化
+   2. 後で
+   ```
+
+5. **マージ結果をファイルに保存**: `dge/sessions/{theme}-merged.md`
 
 ### Step 10: 累積 Spec 化（design-review のみ）
 同テーマの全 session Gap を統合 → Critical/High を Spec 化 → `dge/specs/` に保存。
