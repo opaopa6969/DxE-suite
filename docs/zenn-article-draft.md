@@ -5,7 +5,7 @@
 
 ## TL;DR
 
-- `npm install @unlaxer/dge-toolkit && npx dge-install`
+- プロジェクトルートで `npm install @unlaxer/dge-toolkit && npx dge-install`
 - Claude Code に「DGE して」と言う
 - キャラクターが勝手に喧嘩を始めて、仕様書の穴を見つけてくれる
 - 仕事が楽しくなる（生産性が上がるかは知らない）
