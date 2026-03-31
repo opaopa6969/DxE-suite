@@ -2,7 +2,8 @@
 
 [日本語](README.ja.md)
 
-> Spec review verifies "what's written." DGE discovers "what's not written."
+> **Plain AI reviews what you wrote. DGE finds what you forgot to write.**
+> Characters argue about your design — one questions assumptions, another guards quality, a third says "do we even need this?" — and in between their arguments, gaps emerge. 3 gaps in 2 minutes. The kind that change your architecture.
 
 ## What You Can Do
 

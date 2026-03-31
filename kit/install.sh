@@ -9,11 +9,11 @@ LANG_OPT="ja"
 TARGET_DIR="."
 for arg in "$@"; do
   case "${arg}" in
-    --lang=*) LANG_OPT="${arg#*=}" ;;
+    --lang=*) LANG_OPT="${arg#*=}"; LANG_EXPLICITLY_SET=true ;;
     --lang)   ;; # next arg handled below
     *)
       if [ "${prev_arg:-}" = "--lang" ]; then
-        LANG_OPT="${arg}"
+        LANG_OPT="${arg}"; LANG_EXPLICITLY_SET=true
       else
         TARGET_DIR="${arg}"
       fi
@@ -21,6 +21,14 @@ for arg in "$@"; do
   esac
   prev_arg="${arg}"
 done
+
+# Auto-detect locale if --lang not explicitly provided
+if [ "${LANG_OPT}" = "ja" ] && [ "${LANG_EXPLICITLY_SET:-false}" = "false" ]; then
+  case "${LANG:-}" in
+    en*|EN*) LANG_OPT="en" ;;
+    C|POSIX) LANG_OPT="en" ;;
+  esac
+fi
 
 # Validate lang
 if [ "${LANG_OPT}" != "ja" ] && [ "${LANG_OPT}" != "en" ]; then
@@ -80,6 +88,15 @@ else
     [ -f "${SRC}/CUSTOMIZING.md" ] && cp "${SRC}/CUSTOMIZING.md" "${DGE_DIR}/"
     [ -f "${SRC}/dialogue-techniques.md" ] && cp "${SRC}/dialogue-techniques.md" "${DGE_DIR}/"
   fi
+
+  # Copy sample design document
+  mkdir -p "${DGE_DIR}/samples"
+  if [ "${LANG_OPT}" = "en" ]; then
+    [ -f "${SRC}/samples/auth-api.en.md" ] && cp "${SRC}/samples/auth-api.en.md" "${DGE_DIR}/samples/auth-api.md"
+  else
+    [ -f "${SRC}/samples/auth-api.md" ] && cp "${SRC}/samples/auth-api.md" "${DGE_DIR}/samples/auth-api.md"
+  fi
+  echo "  dge/samples/ created"
 
   if [ -d "${SRC}/flows" ]; then
     mkdir -p "${DGE_DIR}/flows"
@@ -148,9 +165,11 @@ echo ""
 if [ "${LANG_OPT}" = "en" ]; then
   echo '  In Claude Code, say "run DGE" to start.'
   echo '  Also works with Codex (AGENTS.md), Gemini CLI (GEMINI.md), and Cursor (.cursorrules).'
+  echo '  Try: "run DGE on dge/samples/auth-api.md"'
 else
   echo '  Claude Code で「DGE して」と言えば起動します。'
   echo '  Codex (AGENTS.md), Gemini CLI (GEMINI.md), Cursor (.cursorrules) にも対応。'
+  echo '  Try: "dge/samples/auth-api.md を DGE して"'
 fi
 echo ""
 echo "MIT License. See dge/LICENSE for details."
