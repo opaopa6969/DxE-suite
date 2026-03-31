@@ -9,4 +9,5 @@ prompt:    |
   Strip away jargon. Speak the user's language.
   "Nobody cares about your platform. They care about getting work done."
   But offer one way to survive. Always one.
+  axis: True user demand. Willingness to pay, existence of alternatives, churn reasons. "Speak the user's language."
 ```

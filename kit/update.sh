@@ -26,11 +26,17 @@ if [ ! -d "${DGE_DIR}" ]; then
   exit 1
 fi
 
+# Detect lang from .lang file (saved during install)
+LANG_OPT="ja"
+if [ -f "${DGE_DIR}/.lang" ]; then
+  LANG_OPT="$(cat "${DGE_DIR}/.lang")"
+fi
+
 # Get versions
 SRC_VERSION="$(cat "${SRC}/version.txt" 2>/dev/null || echo "unknown")"
 LOCAL_VERSION="$(cat "${DGE_DIR}/version.txt" 2>/dev/null || echo "unknown")"
 
-echo "DGE toolkit — update"
+echo "DGE toolkit — update (lang=${LANG_OPT})"
 echo ""
 echo "  Local:  ${LOCAL_VERSION}"
 echo "  Source: ${SRC_VERSION}"
@@ -41,27 +47,66 @@ if [ "${SRC_VERSION}" = "${LOCAL_VERSION}" ]; then
   exit 0
 fi
 
+# Set lang-specific file mappings
+if [ "${LANG_OPT}" = "en" ]; then
+  METHOD_SRC="${SRC}/method.en.md"
+  README_SRC="${SRC}/README.en.md"
+  CHAR_SRC="${SRC}/characters/en"
+  CHAR_INDEX_SRC="${SRC}/characters/index.en.md"
+  TMPL_SRC="${SRC}/templates/en"
+  SKILL_SRC="${SRC}/skills/en"
+  INTEGRATION_SRC="${SRC}/integration-guide.en.md"
+  PATTERNS_SRC="${SRC}/patterns.en.md"
+  INTERNALS_SRC="${SRC}/INTERNALS.en.md"
+  CUSTOMIZING_SRC="${SRC}/CUSTOMIZING.en.md"
+else
+  METHOD_SRC="${SRC}/method.md"
+  README_SRC="${SRC}/README.md"
+  CHAR_SRC="${SRC}/characters"
+  CHAR_INDEX_SRC=""
+  TMPL_SRC="${SRC}/templates"
+  SKILL_SRC="${SRC}/skills"
+  INTEGRATION_SRC="${SRC}/integration-guide.md"
+  PATTERNS_SRC="${SRC}/patterns.md"
+  INTERNALS_SRC="${SRC}/INTERNALS.md"
+  CUSTOMIZING_SRC="${SRC}/CUSTOMIZING.md"
+fi
+
 # Show what will be updated
 echo "The following toolkit files will be updated:"
 echo ""
 
 UPDATED=0
 
-for f in README.md LICENSE method.md version.txt; do
-  if [ -f "${SRC}/${f}" ]; then
-    if [ -f "${DGE_DIR}/${f}" ]; then
-      if ! diff -q "${SRC}/${f}" "${DGE_DIR}/${f}" > /dev/null 2>&1; then
-        echo "  [changed] dge/${f}"
+# Check core files
+for pair in "${README_SRC}:README.md" "${METHOD_SRC}:method.md" "${SRC}/LICENSE:LICENSE" "${SRC}/version.txt:version.txt"; do
+  src_file="${pair%%:*}"
+  dst_name="${pair##*:}"
+  if [ -f "${src_file}" ]; then
+    if [ -f "${DGE_DIR}/${dst_name}" ]; then
+      if ! diff -q "${src_file}" "${DGE_DIR}/${dst_name}" > /dev/null 2>&1; then
+        echo "  [changed] dge/${dst_name}"
         UPDATED=$((UPDATED + 1))
       fi
     else
-      echo "  [new]     dge/${f}"
+      echo "  [new]     dge/${dst_name}"
       UPDATED=$((UPDATED + 1))
     fi
   fi
 done
 
-for f in "${SRC}/characters/"*.md; do
+# Check characters
+if [ "${LANG_OPT}" = "en" ]; then
+  # Check index.en.md → index.md
+  if [ -f "${CHAR_INDEX_SRC}" ]; then
+    if ! diff -q "${CHAR_INDEX_SRC}" "${DGE_DIR}/characters/index.md" > /dev/null 2>&1; then
+      echo "  [changed] dge/characters/index.md"
+      UPDATED=$((UPDATED + 1))
+    fi
+  fi
+fi
+for f in "${CHAR_SRC}/"*.md; do
+  [ -f "${f}" ] || continue
   fname="$(basename "${f}")"
   if [ -f "${DGE_DIR}/characters/${fname}" ]; then
     if ! diff -q "${f}" "${DGE_DIR}/characters/${fname}" > /dev/null 2>&1; then
@@ -74,7 +119,9 @@ for f in "${SRC}/characters/"*.md; do
   fi
 done
 
-for f in "${SRC}/templates/"*.md; do
+# Check templates
+for f in "${TMPL_SRC}/"*.md; do
+  [ -f "${f}" ] || continue
   fname="$(basename "${f}")"
   if [ -f "${DGE_DIR}/templates/${fname}" ]; then
     if ! diff -q "${f}" "${DGE_DIR}/templates/${fname}" > /dev/null 2>&1; then
@@ -87,23 +134,18 @@ for f in "${SRC}/templates/"*.md; do
   fi
 done
 
-# Check skill
-if [ -f "${SRC}/skills/dge-session.md" ] && [ -f "${SKILLS_DIR}/dge-session.md" ]; then
-  if ! diff -q "${SRC}/skills/dge-session.md" "${SKILLS_DIR}/dge-session.md" > /dev/null 2>&1; then
-    echo "  [changed] .claude/skills/dge-session.md"
-    UPDATED=$((UPDATED + 1))
+# Check skills
+for SKILL in dge-session.md dge-update.md dge-character-create.md; do
+  if [ -f "${SKILL_SRC}/${SKILL}" ]; then
+    if [ ! -f "${SKILLS_DIR}/${SKILL}" ]; then
+      echo "  [new]     .claude/skills/${SKILL}"
+      UPDATED=$((UPDATED + 1))
+    elif ! diff -q "${SKILL_SRC}/${SKILL}" "${SKILLS_DIR}/${SKILL}" > /dev/null 2>&1; then
+      echo "  [changed] .claude/skills/${SKILL}"
+      UPDATED=$((UPDATED + 1))
+    fi
   fi
-fi
-
-if [ -f "${SRC}/skills/dge-update.md" ]; then
-  if [ ! -f "${SKILLS_DIR}/dge-update.md" ]; then
-    echo "  [new]     .claude/skills/dge-update.md"
-    UPDATED=$((UPDATED + 1))
-  elif ! diff -q "${SRC}/skills/dge-update.md" "${SKILLS_DIR}/dge-update.md" > /dev/null 2>&1; then
-    echo "  [changed] .claude/skills/dge-update.md"
-    UPDATED=$((UPDATED + 1))
-  fi
-fi
+done
 
 echo ""
 echo "  Will NOT touch: dge/sessions/, dge/custom/, dge/projects/, dge/specs/"
@@ -126,18 +168,25 @@ fi
 # Perform update — toolkit managed files only
 mkdir -p "${DGE_DIR}/characters" "${DGE_DIR}/templates"
 
-for f in README.md LICENSE method.md; do
-  [ -f "${SRC}/${f}" ] && cp "${SRC}/${f}" "${DGE_DIR}/${f}"
-done
+[ -f "${README_SRC}" ] && cp "${README_SRC}" "${DGE_DIR}/README.md"
+[ -f "${SRC}/LICENSE" ] && cp "${SRC}/LICENSE" "${DGE_DIR}/LICENSE"
+[ -f "${METHOD_SRC}" ] && cp "${METHOD_SRC}" "${DGE_DIR}/method.md"
 
-cp "${SRC}/characters/"*.md "${DGE_DIR}/characters/"
-cp "${SRC}/templates/"*.md "${DGE_DIR}/templates/"
+if [ "${LANG_OPT}" = "en" ]; then
+  [ -f "${CHAR_INDEX_SRC}" ] && cp "${CHAR_INDEX_SRC}" "${DGE_DIR}/characters/index.md"
+  [ -f "${CHAR_INDEX_SRC}" ] && cp "${CHAR_INDEX_SRC}" "${DGE_DIR}/characters/index.en.md"
+fi
+cp "${CHAR_SRC}/"*.md "${DGE_DIR}/characters/"
+cp "${TMPL_SRC}/"*.md "${DGE_DIR}/templates/"
 echo "${SRC_VERSION}" > "${DGE_DIR}/version.txt"
 
-# Update new files (flows, docs, bin)
-for f in INTERNALS.md CUSTOMIZING.md dialogue-techniques.md patterns.md integration-guide.md; do
-  [ -f "${SRC}/${f}" ] && cp "${SRC}/${f}" "${DGE_DIR}/${f}"
-done
+# Update additional docs
+[ -f "${INTERNALS_SRC}" ] && cp "${INTERNALS_SRC}" "${DGE_DIR}/INTERNALS.md"
+[ -f "${CUSTOMIZING_SRC}" ] && cp "${CUSTOMIZING_SRC}" "${DGE_DIR}/CUSTOMIZING.md"
+[ -f "${SRC}/dialogue-techniques.md" ] && cp "${SRC}/dialogue-techniques.md" "${DGE_DIR}/"
+[ -f "${PATTERNS_SRC}" ] && cp "${PATTERNS_SRC}" "${DGE_DIR}/patterns.md"
+[ -f "${INTEGRATION_SRC}" ] && cp "${INTEGRATION_SRC}" "${DGE_DIR}/integration-guide.md"
+
 if [ -d "${SRC}/flows" ]; then
   mkdir -p "${DGE_DIR}/flows"
   cp "${SRC}/flows/"*.yaml "${DGE_DIR}/flows/" 2>/dev/null || true
@@ -150,9 +199,8 @@ fi
 
 # Update skills
 mkdir -p "${SKILLS_DIR}"
-for f in "${SRC}/skills/"*.md; do
-  fname="$(basename "${f}")"
-  cp "${f}" "${SKILLS_DIR}/${fname}"
+for SKILL in dge-session.md dge-update.md dge-character-create.md; do
+  [ -f "${SKILL_SRC}/${SKILL}" ] && cp "${SKILL_SRC}/${SKILL}" "${SKILLS_DIR}/${SKILL}"
 done
 
 echo ""

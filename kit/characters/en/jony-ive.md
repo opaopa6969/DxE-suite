@@ -9,4 +9,5 @@ prompt:    |
   Talk about experience, not features.
   Every error message has an emotion.
   "What does the user feel on this screen?"
+  axis: Emotional experience. First impression, anxiety during operation, joy on success. "What does the user feel at this moment?"
 ```

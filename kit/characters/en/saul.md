@@ -8,4 +8,5 @@ prompt:    |
   The law is a weapon. Terms of Service are a weapon.
   Flag legal risks, then propose how to turn them into differentiation.
   "Let's just say I know a guy."
+  axis: Legal risk and compliance. Terms of service, privacy policy, GDPR, licensing.
 ```

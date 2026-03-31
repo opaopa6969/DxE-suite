@@ -8,42 +8,43 @@ DGE toolkit の内部構造。カスタマイズする際の参考に。
 
 ```mermaid
 flowchart TD
-    Start(["DGE して"]) --> S0{"Step 0: flow 判定"}
+    Start(["DGE して"]) --> S0{"Step 0: flow + 構造 判定"}
 
     S0 -->|"DGE して / 壁打ち"| Quick["⚡ quick"]
     S0 -->|"詳しく / Spec / 設計レビュー"| Full["🔍 design-review"]
     S0 -->|"ブレスト / アイデア"| Brain["💡 brainstorm"]
 
-    subgraph Quick Flow
-        Q1["Kit 読み込み + dge-tool 検出"] --> Q2["テーマ確認"]
-        Q2 --> Q4["キャラ表示（確認なし）"]
-        Q4 --> Q5["会話劇生成"]
-        Q5 --> Q7["保存（MUST）"]
-        Q7 --> Q8["Gap 一覧 + 選択肢（MUST）"]
+    S0 -->|構造キーワード検出| Struct{"構造 自動選択"}
+    Struct -->|"査読 / レビュー"| Tribunal["⚖ tribunal"]
+    Struct -->|"攻撃 / セキュリティ"| Wargame["⚔ wargame"]
+    Struct -->|"ピッチ / 投資"| Pitch["💰 pitch"]
+    Struct -->|"診断 / 専門家"| Consult["🏥 consult"]
+    Struct -->|"障害 / 振り返り"| Invest["🔥 investigation"]
+    Struct -->|該当なし| Quick
+
+    subgraph "Phase 0（全構造共通）"
+        P0["プロジェクトコンテキスト自動収集\nREADME / docs / tree / deps / git log"]
     end
 
-    subgraph Design Review Flow
-        D1["Kit 読み込み + dge-tool 検出"] --> D2["テーマ確認"]
-        D2 --> D3["テンプレート選択"]
-        D3 --> D35["パターン選択"]
-        D35 --> D4["キャラ確認 ⏸"]
-        D4 --> D5["会話劇生成"]
-        D5 --> D6["Gap 構造化"]
-        D6 --> D7["保存（MUST）"]
-        D7 --> D8["Gap 一覧 + 選択肢（MUST）"]
+    subgraph "座談会型（roundtable）"
+        Q1["Kit 読み込み"] --> Q2["テーマ確認"]
+        Q2 --> Q4["キャラ選択（axis ベース）"]
+        Q4 --> Q5["会話劇生成\n応答義務あり"]
+        Q5 --> Q7["保存 + Gap 一覧 + 選択肢"]
     end
 
-    subgraph Brainstorm Flow
-        B1["Kit 読み込み + dge-tool 検出"] --> B2["テーマ確認"]
-        B2 --> B4["キャラ確認 ⏸"]
-        B4 --> B5["会話劇生成（Yes-and）"]
-        B5 --> B7["保存（MUST）"]
-        B7 --> B8["アイデア一覧 + 選択肢（MUST）"]
+    subgraph "マルチフェーズ型（tribunal / wargame / pitch / consult / investigation）"
+        M1["Kit 読み込み"] --> M2["テーマ確認 + 評価者/部門選択 ⏸"]
+        M2 --> MP1["Phase 1: 独立評価（非対話）\nフォーマット強制"]
+        MP1 --> MP2["Phase 2: 反論対話\n応答義務あり"]
+        MP2 --> MP3["Phase 3: 統合\nGap 一覧"]
+        MP3 --> M7["保存 + 選択肢"]
     end
 
-    Quick --> Q1
-    Full --> D1
-    Brain --> B1
+    Quick & Full & Brain --> P0
+    Tribunal & Wargame & Pitch & Consult & Invest --> P0
+    P0 --> Q1
+    P0 --> M1
 ```
 
 ### 選択肢後の分岐
@@ -140,6 +141,16 @@ stateDiagram-v2
         quick --> design_review: "詳しくやる"
         quick --> brainstorm: "ブレストして"
         design_review --> quick: "シンプルに戻す"
+        quick --> tribunal: "査読して"
+        quick --> wargame: "攻撃して"
+        quick --> pitch: "ピッチして"
+        quick --> consult: "診断して"
+        quick --> investigation: "振り返って"
+        tribunal --> quick: "座談会型に切替"
+        wargame --> quick: "座談会型に切替"
+        pitch --> quick: "座談会型に切替"
+        consult --> quick: "座談会型に切替"
+        investigation --> quick: "座談会型に切替"
     }
 
     state "プロジェクト" as Project {
@@ -165,7 +176,9 @@ stateDiagram-v2
     }
 ```
 
-## 3 つの flow の比較
+## flow + 構造の比較
+
+### flow（モード）
 
 | | ⚡ quick | 🔍 design-review | 💡 brainstorm |
 |---|---------|------------------|---------------|
@@ -178,6 +191,17 @@ stateDiagram-v2
 | 抽出 | Gap | Gap | アイデア |
 | Spec 化 | なし | あり | なし |
 | 話法 | 標準 | 標準 | Yes-and |
+
+### 構造（structure）
+
+| | 🗣 roundtable | ⚖ tribunal | ⚔ wargame | 💰 pitch | 🏥 consult | 🔥 investigation |
+|---|--------------|-----------|----------|---------|-----------|----------------|
+| Phase 数 | 1 | 3 | 3 | 3 | 3 | 3 |
+| Phase 0 | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| 独立評価 | なし | 査読者 3 人 | Red Team | 起業家ピッチ | 各専門科 | 各部門証言 |
+| 応答義務 | キャラ間 | 反論必須 | 防御必須 | 全質問応答 | カンファ統合 | Five Whys |
+| フォーマット | 自由 | S/S/W/Q/V | 攻撃計画 | P/S/M/T/A | 所見/リスク/推奨 | 時系列+証言 |
+| 最適テーマ | 汎用 | 論文/設計 | セキュリティ | 事業判断 | 多領域設計 | 障害分析 |
 
 ## Hook ポイント一覧
 

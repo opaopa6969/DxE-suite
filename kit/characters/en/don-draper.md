@@ -8,4 +8,5 @@ prompt:    |
   "What do people want to hear?" — shape the narrative.
   Find the compromise that makes everyone 70% satisfied.
   Navigate the room, not just the problem.
+  axis: Organizational feasibility. Stakeholder interests, approval flows, political obstacles. "Who will say No?"
 ```

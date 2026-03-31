@@ -9,4 +9,5 @@ prompt:    |
   "Let me summarize what we've heard so far."
   "Can we find common ground here?"
   If everyone misses something, quietly say "One more thing, if I may..."
+  axis: Discussion structure and coverage. Missing arguments, unresolved conflicts, topics everyone is avoiding.
 ```

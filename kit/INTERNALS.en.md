@@ -4,46 +4,47 @@ Internal structure of the DGE toolkit. Use as a reference when customizing.
 
 ## Flow Diagrams
 
-### Overall Flow (automatic flow detection → branching)
+### Overall Flow (flow + structure detection → branching)
 
 ```mermaid
 flowchart TD
-    Start(["Run DGE"]) --> S0{"Step 0: Flow Detection"}
+    Start(["Run DGE"]) --> S0{"Step 0: flow + structure detection"}
 
     S0 -->|"Run DGE / Sounding Board"| Quick["⚡ quick"]
     S0 -->|"In Detail / Spec / Design Review"| Full["🔍 design-review"]
     S0 -->|"Brainstorm / Ideas"| Brain["💡 brainstorm"]
 
-    subgraph Quick Flow
-        Q1["Kit Loading + dge-tool Detection"] --> Q2["Theme Confirmation"]
-        Q2 --> Q4["Character Display (no confirmation)"]
-        Q4 --> Q5["Dialogue Generation"]
-        Q5 --> Q7["Save (MUST)"]
-        Q7 --> Q8["Gap List + Options (MUST)"]
+    S0 -->|Structure keyword detected| Struct{"Structure auto-selection"}
+    Struct -->|"Peer review / Review"| Tribunal["⚖ tribunal"]
+    Struct -->|"Attack / Security"| Wargame["⚔ wargame"]
+    Struct -->|"Pitch / Investment"| Pitch["💰 pitch"]
+    Struct -->|"Diagnosis / Expert"| Consult["🏥 consult"]
+    Struct -->|"Incident / Retrospective"| Invest["🔥 investigation"]
+    Struct -->|No match| Quick
+
+    subgraph "Phase 0 (common to all structures)"
+        P0["Project context auto-collection\nREADME / docs / tree / deps / git log"]
     end
 
-    subgraph Design Review Flow
-        D1["Kit Loading + dge-tool Detection"] --> D2["Theme Confirmation"]
-        D2 --> D3["Template Selection"]
-        D3 --> D35["Pattern Selection"]
-        D35 --> D4["Character Confirmation ⏸"]
-        D4 --> D5["Dialogue Generation"]
-        D5 --> D6["Gap Structuring"]
-        D6 --> D7["Save (MUST)"]
-        D7 --> D8["Gap List + Options (MUST)"]
+    subgraph "Roundtable type (roundtable)"
+        Q1["Kit Loading"] --> Q2["Theme Confirmation"]
+        Q2 --> Q4["Character Selection (axis-based)"]
+        Q4 --> Q5["Dialogue Generation\nwith response obligation"]
+        Q5 --> Q7["Save + Gap List + Options"]
     end
 
-    subgraph Brainstorm Flow
-        B1["Kit Loading + dge-tool Detection"] --> B2["Theme Confirmation"]
-        B2 --> B4["Character Confirmation ⏸"]
-        B4 --> B5["Dialogue Generation (Yes-and)"]
-        B5 --> B7["Save (MUST)"]
-        B7 --> B8["Idea List + Options (MUST)"]
+    subgraph "Multi-phase type (tribunal / wargame / pitch / consult / investigation)"
+        M1["Kit Loading"] --> M2["Theme Confirmation + Evaluator/Division Selection ⏸"]
+        M2 --> MP1["Phase 1: Independent Evaluation (non-dialogue)\nFormat enforced"]
+        MP1 --> MP2["Phase 2: Adversarial Dialogue\nwith response obligation"]
+        MP2 --> MP3["Phase 3: Synthesis\nGap List"]
+        MP3 --> M7["Save + Options"]
     end
 
-    Quick --> Q1
-    Full --> D1
-    Brain --> B1
+    Quick & Full & Brain --> P0
+    Tribunal & Wargame & Pitch & Consult & Invest --> P0
+    P0 --> Q1
+    P0 --> M1
 ```
 
 ### Branching After Options
@@ -140,6 +141,16 @@ stateDiagram-v2
         quick --> design_review: "Go into detail"
         quick --> brainstorm: "Brainstorm"
         design_review --> quick: "Back to simple"
+        quick --> tribunal: "Peer review"
+        quick --> wargame: "Attack"
+        quick --> pitch: "Pitch"
+        quick --> consult: "Diagnose"
+        quick --> investigation: "Retrospective"
+        tribunal --> quick: "Switch to roundtable"
+        wargame --> quick: "Switch to roundtable"
+        pitch --> quick: "Switch to roundtable"
+        consult --> quick: "Switch to roundtable"
+        investigation --> quick: "Switch to roundtable"
     }
 
     state "Project" as Project {
@@ -165,7 +176,9 @@ stateDiagram-v2
     }
 ```
 
-## Comparison of the 3 Flows
+## flow + structure Comparison
+
+### flow (mode)
 
 | | ⚡ quick | 🔍 design-review | 💡 brainstorm |
 |---|---------|------------------|---------------|
@@ -178,6 +191,17 @@ stateDiagram-v2
 | Extraction | Gap | Gap | Idea |
 | Spec Generation | None | Yes | None |
 | Speech Style | Standard | Standard | Yes-and |
+
+### structure
+
+| | 🗣 roundtable | ⚖ tribunal | ⚔ wargame | 💰 pitch | 🏥 consult | 🔥 investigation |
+|---|--------------|-----------|----------|---------|-----------|----------------|
+| Phases | 1 | 3 | 3 | 3 | 3 | 3 |
+| Phase 0 | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Independent Eval | None | 3 Reviewers | Red Team | Entrepreneur Pitch | Each Specialty | Each Division Testimony |
+| Response Obligation | Between characters | Rebuttal required | Defense required | All questions answered | Conference synthesis | Five Whys |
+| Format | Free | S/S/W/Q/V | Attack Plan | P/S/M/T/A | Findings/Risk/Recommendation | Timeline+Testimony |
+| Best Theme | General | Papers/Design | Security | Business Decisions | Multi-domain Design | Incident Analysis |
 
 ## Hook Points List
 

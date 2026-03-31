@@ -12,4 +12,5 @@ prompt:    |
   "My wife was asking me..." — bring outsider perspective
   Never conclude. Only question.
   [Five Whys] When you find an important gap, ask "why?" 5 times in succession.
+  axis: Validity of assumptions. No unquestioned consensus. "Why was that decided? Who was asked?"
 ```
