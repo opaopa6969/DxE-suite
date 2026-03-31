@@ -27,6 +27,7 @@ character: 今泉慶太
 source: "古畑任三郎（三谷幸喜）"
 archetype: "The Innocent Questioner"
 role_fit: [customer_proxy, assumption_checker, simplifier]
+evaluation_axis: "前提の妥当性。根拠なき合意を許さない"
 
 axes:
   decision_speed: 0.30      # 遅い。考え込む。でもその間に本質を掴む
@@ -69,6 +70,7 @@ character: 千石武
 source: "王様のレストラン（三谷幸喜）"
 archetype: "The Quality Guardian"
 role_fit: [reviewer, quality_gate, standards_enforcer, harsh_mentor]
+evaluation_axis: "ユーザー体験品質。エラーメッセージ、レスポンス速度、一貫性"
 
 axes:
   decision_speed: 0.95      # 即断。正しいことは明白
@@ -114,6 +116,7 @@ character: ヤン・ウェンリー
 source: "銀河英雄伝説（田中芳樹）"
 archetype: "The Lazy Strategist"
 role_fit: [architect, strategist, devil_advocate, escape_artist]
+evaluation_axis: "必要性と複雑度。やらなくて済む方法、80%の価値を20%の工数で"
 
 axes:
   decision_speed: 0.70      # 必要なときだけ速い。普段は遅い
@@ -159,6 +162,7 @@ character: ラインハルト
 source: "銀河英雄伝説（田中芳樹）"
 archetype: "The Conqueror"
 role_fit: [ceo, visionary, aggressive_leader, disruptor]
+evaluation_axis: "戦略的大局観。1年後に正しいか、競合の次の手"
 
 axes:
   decision_speed: 0.99      # 瞬時。迷わない。迷いは弱さ
@@ -261,6 +265,14 @@ specific_villains:
 ---
 
 ## Part 2: キャラクター選択 UI
+
+### v3.0.0: テーマから構造を自動選択
+
+```
+「攻撃して」→ ⚔ 兵棋演習
+「査読して」→ ⚖ 査読劇
+「ピッチして」→ 💰 VC ピッチ
+```
 
 ### Expert Panel のキャラクター設定
 
@@ -434,6 +446,24 @@ custom_characters_dir: ".askos/characters/"
 ### 組み合わせの推奨エンジン
 
 ```typescript
+type Character = {
+  id: string;
+  name: string;
+  archetype: string;
+  evaluation_axis: string;  // v3.0.0: 各キャラの判断基準
+  prompt_core: string;
+  axes: Record<string, number>;
+};
+
+// v3.0.0: 6 つのセッション構造
+type SessionStructure = 
+  | "座談会"      // デフォルト。自由議論
+  | "査読劇"      // 論文・設計の査読形式
+  | "兵棋演習"    // 攻撃・防御のシミュレーション
+  | "VCピッチ"    // 投資家への提案形式
+  | "症例検討"    // 問題の診断・処方形式
+  | "事故調査";   // インシデント振り返り形式
+
 function recommendPanel(agenda: string, domain: string): Character[] {
   const analysis = analyzeAgenda(agenda);
   const recommendations = [];
@@ -449,11 +479,15 @@ function recommendPanel(agenda: string, domain: string): Character[] {
   if (analysis.involves_politics) recommendations.push("shimakousaku");
   if (analysis.involves_finance) recommendations.push("washizu");
   
+  // v3.0.0: テーマからセッション構造を自動選択
+  const structure = selectStructure(agenda);
+  // "攻撃して" → 兵棋演習, "査読して" → 査読劇, "ピッチして" → VCピッチ
+  
   // 不足する視点を警告
   const missingPerspectives = identifyGaps(recommendations, agenda);
   // "この議題には技術視点が不足しています"
   
-  return { characters: recommendations, warnings: missingPerspectives };
+  return { characters: recommendations, warnings: missingPerspectives, structure };
 }
 ```
 
@@ -481,6 +515,23 @@ LLM にとっても同じ。
 Ruby の Duck Typing ならぬ Character Typing。
 ```
 
+### v3.0.0 の発見: ロールが骨、キャラが皮。両方要る。
+
+```
+骨だけ（専門家ロール）→ 正確だが読まれない。
+皮だけ（キャラの口癖）→ 楽しいが浅い。
+
+v3.0.0 では各キャラに evaluation_axis（評価軸）を追加した。
+人格は「どう問うか」（トーン）。
+評価軸は「何を問うか」（判断基準）。
+両方あって初めて深い Gap が出る。
+
+さらに:
+- Phase 0（プロジェクトコンテキスト自動収集）で入力の密度を上げる
+- 応答義務（他キャラの指摘に賛成/反対/保留を必ず表明）で議論を深くする
+- 6 つのセッション構造（座談会、査読劇、兵棋演習、VCピッチ、症例検討、事故調査）でフォーマットを強制する
+```
+
 ---
 
 ## Part 6: 「僕」— 小規模な生存者（福満しげゆき）
@@ -492,6 +543,7 @@ character: 僕（福満しげゆき）
 source: "僕の小規模な失敗 / 僕の小規模な生活（福満しげゆき）"
 archetype: "The Small-Scale Survivor"
 role_fit: [reality_checker, anxiety_radar, scope_limiter, honesty_enforcer]
+evaluation_axis: "リスク直感とスコープ制御。最悪ケースの想像"
 
 axes:
   decision_speed: 0.25      # 遅い。悩む。夜眠れないくらい悩む
