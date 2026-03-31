@@ -203,6 +203,37 @@ for SKILL in dge-session.md dge-update.md dge-character-create.md; do
   [ -f "${SKILL_SRC}/${SKILL}" ] && cp "${SKILL_SRC}/${SKILL}" "${SKILLS_DIR}/${SKILL}"
 done
 
+# Multi-tool support: update DGE section in AGENTS.md, GEMINI.md, .cursorrules
+DGE_SECTION_FILE="${SRC}/agents-dge-section.md"
+if [ "${LANG_OPT}" = "en" ]; then
+  DGE_SECTION_FILE="${SRC}/agents-dge-section.en.md"
+fi
+
+for CONFIG_FILE in AGENTS.md GEMINI.md .cursorrules; do
+  TARGET_CONFIG="${TARGET_DIR}/${CONFIG_FILE}"
+  if [ -f "${TARGET_CONFIG}" ]; then
+    if grep -q "DGE — Dialogue-driven Gap Extraction" "${TARGET_CONFIG}" 2>/dev/null; then
+      # Remove old DGE section (from heading to next ## heading or EOF)
+      awk '
+        /^## DGE — Dialogue-driven Gap Extraction/ { skip=1; next }
+        skip && /^## / { skip=0 }
+        !skip { print }
+      ' "${TARGET_CONFIG}" > "${TARGET_CONFIG}.tmp"
+      mv "${TARGET_CONFIG}.tmp" "${TARGET_CONFIG}"
+      echo "" >> "${TARGET_CONFIG}"
+      cat "${DGE_SECTION_FILE}" >> "${TARGET_CONFIG}"
+      echo "  ${CONFIG_FILE} — DGE section updated"
+    else
+      echo "" >> "${TARGET_CONFIG}"
+      cat "${DGE_SECTION_FILE}" >> "${TARGET_CONFIG}"
+      echo "  ${CONFIG_FILE} — DGE section appended"
+    fi
+  else
+    cat "${DGE_SECTION_FILE}" > "${TARGET_CONFIG}"
+    echo "  ${CONFIG_FILE} created"
+  fi
+done
+
 echo ""
 echo "Updated to v${SRC_VERSION}."
 echo "  dge/sessions/, dge/custom/, dge/projects/, dge/specs/ were not touched."

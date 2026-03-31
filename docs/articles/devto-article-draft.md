@@ -119,6 +119,7 @@ await fs.copy(source, dest);
 - **19 characters** (Columbo, Picard, Holmes, Red Team, Socrates...) — each with distinct blind spots
 - **3 modes**: Quick (instant), Design Review (structured), Brainstorm (ideas)
 - **Custom characters**: `add Batman` — personality analyzed, saved, available next session
+- **Multi-tool**: Works with Claude Code, Codex, Gemini CLI, and Cursor out of the box
 - **20 conversation patterns** × **8 dialogue techniques** — not random arguing, structured exploration
 
 Details: [GitHub](https://github.com/opaopa6969/DGE-toolkit) · [INTERNALS.md](https://github.com/opaopa6969/DGE-toolkit/blob/main/kit/INTERNALS.en.md) · [CUSTOMIZING.md](https://github.com/opaopa6969/DGE-toolkit/blob/main/kit/CUSTOMIZING.en.md)

@@ -90,6 +90,19 @@ cp kit/skills/*.md your-project/.claude/skills/
 
 MIT licensed. Keep `dge/LICENSE` in your project.
 
+### Multi-tool Support
+
+DGE works with multiple AI coding tools:
+
+| Tool | Config file | How it works |
+|------|------------|--------------|
+| Claude Code | `.claude/skills/dge-session.md` | Full skill with auto-trigger |
+| Codex (OpenAI) | `AGENTS.md` | DGE section auto-appended |
+| Gemini CLI | `GEMINI.md` | DGE section auto-appended |
+| Cursor | `.cursorrules` | DGE section auto-appended |
+
+All config files are generated automatically by `npx dge-install`. If AGENTS.md, GEMINI.md, or .cursorrules already exists, the DGE section is appended without touching existing content.
+
 ## Usage
 
 | Command | Description |

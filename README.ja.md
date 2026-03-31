@@ -90,6 +90,19 @@ cp kit/skills/*.md your-project/.claude/skills/
 
 MIT ライセンス。`dge/LICENSE` をプロジェクトに含めてください。
 
+### マルチツール対応
+
+DGE は複数の AI コーディングツールで動作します:
+
+| ツール | 設定ファイル | 動作方式 |
+|--------|------------|----------|
+| Claude Code | `.claude/skills/dge-session.md` | skill 自動発動 |
+| Codex (OpenAI) | `AGENTS.md` | DGE セクション自動追記 |
+| Gemini CLI | `GEMINI.md` | DGE セクション自動追記 |
+| Cursor | `.cursorrules` | DGE セクション自動追記 |
+
+全設定ファイルは `npx dge-install` で自動生成されます。既存の AGENTS.md / GEMINI.md / .cursorrules がある場合は、DGE セクションを末尾に追記します（既存の内容は変更しません）。
+
 ## 使い方
 
 | コマンド | 説明 |

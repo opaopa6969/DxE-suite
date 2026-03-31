@@ -120,13 +120,37 @@ for SKILL in dge-session.md dge-update.md dge-character-create.md; do
   fi
 done
 
+# Multi-tool support: AGENTS.md (Codex), GEMINI.md (Gemini CLI), .cursorrules (Cursor)
+DGE_SECTION_FILE="${SRC}/agents-dge-section.md"
+if [ "${LANG_OPT}" = "en" ]; then
+  DGE_SECTION_FILE="${SRC}/agents-dge-section.en.md"
+fi
+
+for CONFIG_FILE in AGENTS.md GEMINI.md .cursorrules; do
+  TARGET_CONFIG="${TARGET_DIR}/${CONFIG_FILE}"
+  if [ -f "${TARGET_CONFIG}" ]; then
+    if grep -q "DGE — Dialogue-driven Gap Extraction" "${TARGET_CONFIG}" 2>/dev/null; then
+      echo "  ${CONFIG_FILE} already contains DGE section — skipping"
+    else
+      echo "" >> "${TARGET_CONFIG}"
+      cat "${DGE_SECTION_FILE}" >> "${TARGET_CONFIG}"
+      echo "  ${CONFIG_FILE} — DGE section appended"
+    fi
+  else
+    cat "${DGE_SECTION_FILE}" > "${TARGET_CONFIG}"
+    echo "  ${CONFIG_FILE} created"
+  fi
+done
+
 echo ""
 echo "Done! DGE toolkit is ready."
 echo ""
 if [ "${LANG_OPT}" = "en" ]; then
   echo '  In Claude Code, say "run DGE" to start.'
+  echo '  Also works with Codex (AGENTS.md), Gemini CLI (GEMINI.md), and Cursor (.cursorrules).'
 else
   echo '  Claude Code で「DGE して」と言えば起動します。'
+  echo '  Codex (AGENTS.md), Gemini CLI (GEMINI.md), Cursor (.cursorrules) にも対応。'
 fi
 echo ""
 echo "MIT License. See dge/LICENSE for details."

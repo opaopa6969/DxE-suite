@@ -193,6 +193,7 @@ UX の直感      → 🎨 深澤   「それ、必然ですか？」
 - **自動反復**: 「実装できるまで回して」で Gap が出なくなるまでパターンを変えて繰り返す
 - **Gap → Spec 変換**: Use Case / Tech Spec / ADR を自動生成
 - **カスタムキャラ**: 好きなキャラを追加。wizard でオリジナルも作れる
+- **マルチツール対応**: Claude Code、Codex、Gemini CLI、Cursor で動作
 - **フローカスタマイズ**: YAML でフロー定義を変更可能
 
 詳しくは [INTERNALS.md](https://github.com/opaopa6969/DGE-toolkit/blob/main/kit/INTERNALS.md)（mermaid フロー図あり）
