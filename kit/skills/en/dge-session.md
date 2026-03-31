@@ -66,7 +66,22 @@ If clear, proceed. If vague, dig deeper.
 Skip for quick / brainstorm.
 
 ### Step 4: Character selection
-Show recommended set plus any custom characters loaded in Step 1. quick: display only. design-review / brainstorm: wait for confirmation.
+**Fixed + Variable slot structure:**
+- **Fixed slots** (always included): Holmes (simplification) + Columbo (question assumptions) — universally effective regardless of theme
+- **Variable slots** (theme-dependent): template-recommended characters + theme-specific specialists
+
+**Specialist auto-suggestion:**
+When the theme involves a specialist domain, auto-suggest an ad-hoc specialist:
+- auth / authentication → "Add an Auth specialist?"
+- SaaS / multi-tenant → "Add a SaaS specialist?"
+- infra / k8s / deploy → "Add an Infra specialist?"
+Specialists are not built-in characters but roles with domain expertise. Ask whether to save after session.
+
+**Coverage gap warning:**
+Analyze selected characters' axes and warn about uncovered areas:
+"Your characters are heavy on security/backend but missing UX perspective. Add Jony Ive?"
+
+Show recommended set + custom characters. quick: display only. design-review / brainstorm: wait for confirmation.
 **After confirmation, read selected characters' individual files.** Built-in: use `dge/characters/{name}.md` for both locales; if `dge/` is unavailable, fall back to `kit/characters/{name}.md` for ja or `kit/characters/en/{name}.md` for en. Custom: `dge/custom/characters/{name}.md`
 
 ### Step 5: Dialogue generation
@@ -86,16 +101,47 @@ Show Gap/Idea list. If auto-merge results available, show DGE-only / plain-only 
 If subagent failed, show DGE-only ("plain LLM fetch failed" in 1 line).
 **Choices come from flow YAML post_actions.** Use dge-tool prompt if available.
 
+### Step 8.5: Gap Triage (on architecture changes)
+If the architecture changed significantly since the last session (components added/removed, tech stack changed):
+- Scan existing Gap list and mark invalidated Gaps as **[VOID]**
+- Recount only Active Gaps
+- Notify: "N gaps from previous sessions were voided by architecture changes"
+Gap lifecycle: **Active** → **Void** (invalidated) → **Archived** (resolved)
+
 ### Step 9: Branch
 Follow selection:
 - **Run DGE again** → Show previous summary + TreeView (if project exists), go to Step 2
-- **Auto-iterate** → Pattern rotation, max 5 rounds, converge when C/H Gaps = 0 → Step 10
+- **Auto-iterate** → Pattern rotation, max 5 rounds, convergence criteria below → Step 10
 - **Implement** → Step 10
 - **Merge** → Only when auto_merge OFF. Launch isolated subagent
 - **Later** → End
 
+**Auto-iterate convergence (readiness check):**
+C/H Gaps = 0 PLUS deliverable checklist:
+```
+□ DB schema (table definitions or data model)
+□ API list (endpoints + input/output)
+□ Error code list
+□ Environment variables / config list
+□ Screen list (if UI exists)
+□ Auth / authorization flow (if applicable)
+```
+Not all items apply to every project. Check only relevant items based on theme.
+If items are missing: "C/H Gaps are 0, but the following are undefined: [list]. Run another round?"
+
 ### Step 10: Spec generation (design-review only)
-Consolidate C/H Gaps from all sessions on same theme → Generate UC/TECH/ADR/DQ/ACT to `dge/specs/`.
+Consolidate C/H Gaps (Active only, exclude Void) from all sessions on same theme → Generate UC/TECH/ADR/DQ/ACT to `dge/specs/`.
+
+### Step 11: Feedback collection (on session end)
+After session completes ("Later" selected, or Spec generation done), ask briefly:
+```
+📝 Session feedback (optional, 30 sec):
+1. Was the character mix right? → Yes / Change (who to add/remove?)
+2. Did any Gap surprise you ("I didn't think of that")? → Yes / No
+3. Anything else:
+```
+Append response to the session file footer.
+If user says "skip", don't ask. Never force.
 
 ## First-time Onboarding
 When the user says just "DGE" or "what is DGE" without a theme, show:
