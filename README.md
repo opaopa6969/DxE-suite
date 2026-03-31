@@ -162,15 +162,15 @@ See [server/README.md](server/README.md) for details.
 | File | Contents |
 |------|----------|
 | [method.md](kit/method.md) | Full methodology (3-min TL;DR + details + quick start) |
-| [patterns.md](kit/patterns.md) | 20 patterns + 5 presets |
-| [characters/catalog.md](kit/characters/catalog.md) | 12 characters + prompts |
-| [characters/atlas.md](characters/atlas.md) | Cross-cultural mapping (EN/CN) |
-| [integration-guide.md](kit/integration-guide.md) | Existing workflow integration guide |
-| [INTERNALS.md](kit/INTERNALS.md) | Internal architecture (flow, dataflow, state diagrams + hooks) |
-| [CUSTOMIZING.md](kit/CUSTOMIZING.md) | Customization guide (Level 1/2/3 + fork howto) |
+| [patterns.md](kit/patterns.en.md) | 20 patterns + 9 presets |
+| [characters/index.en.md](kit/characters/index.en.md) | 19 English characters + recommended combos |
+| [characters/atlas.md](characters/atlas.md) | Cross-cultural mapping (EN/JP/CN) |
+| [integration-guide.md](kit/integration-guide.en.md) | Existing workflow integration guide |
+| [INTERNALS.md](kit/INTERNALS.en.md) | Internal architecture (flow, dataflow, state diagrams + hooks) |
+| [CUSTOMIZING.md](kit/CUSTOMIZING.en.md) | Customization guide (Level 1/2/3 + fork howto) |
 | [flows/design-review.yaml](kit/flows/design-review.yaml) | Default flow definition |
 | [templates/](kit/templates/) | Theme templates (5 types) |
-| [DISCLAIMER.md](DISCLAIMER.md) | Disclaimers & IP notes |
+| [DISCLAIMER.md](DISCLAIMER.en.md) | Disclaimers & IP notes |
 | [PUBLISHING.md](PUBLISHING.md) | npm maintainer guide |
 | [paper/](paper/) | Academic papers (includes fictional review dialogues) |
 
