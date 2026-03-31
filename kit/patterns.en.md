@@ -1,4 +1,4 @@
-# DGE Dialogue Patterns — 20 Patterns + 5 Presets
+# DGE Dialogue Patterns — 23 Patterns + 5 Presets
 
 ## Overview
 
@@ -6,8 +6,8 @@ Patterns determine "from what angle to probe design gaps." Conversations are gen
 
 ## Pattern Quick Reference
 
-### Category A: Contrast Patterns (5)
-Place two situations side by side and gain insights from their differences.
+### Category A: Contrast Patterns (5) + Coverage Patterns (1)
+Place two situations side by side and gain insights from their differences / exhaustively probe contract gaps.
 
 | ID | Pattern | What It Reveals |
 |---|---|---|
@@ -16,8 +16,9 @@ Place two situations side by side and gain insights from their differences.
 | A3 | `app-type-variation` App Type Variation | Type-specific constraints, template limitations |
 | A4 | `expertise-contrast` Expertise Level Comparison | Insufficient beginner guidance, power-user optimization |
 | A5 | `platform-contrast` Platform Comparison | Responsive design, touch interaction, API design |
+| A6 | `protocol-design` Protocol Design | Gaps in service-to-service communication contracts |
 
-### Category B: Exploration Patterns (7)
+### Category B: Exploration Patterns (9)
 Set up specific situations to surface problems invisible in normal spec reviews.
 
 | ID | Pattern | What It Reveals |
@@ -29,6 +30,8 @@ Set up specific situations to surface problems invisible in normal spec reviews.
 | B5 | `migration-path` Migration Path | Data conversion, compatibility, rollback |
 | B6 | `multi-tenant` Multi-Tenant Isolation | Data leaks, permission bypass |
 | B7 | `concurrent-operation` Concurrent Operation | Optimistic locking, last-write-wins, conflicts |
+| B8 | `delegation-matrix` Delegation Matrix | Optimal build-vs-buy responsibility split |
+| B9 | `phase-minimization` Phase Minimization | True minimum viable set for each phase |
 
 ### Category C: Boundary Exploration Patterns (8)
 Intentionally probe system limits and workflow weaknesses.

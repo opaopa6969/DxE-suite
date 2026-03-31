@@ -1,4 +1,4 @@
-# DGE Dialogue Patterns — 20 パターン + 5 プリセット
+# DGE Dialogue Patterns — 23 パターン + 5 プリセット
 
 ## 概要
 
@@ -6,8 +6,8 @@
 
 ## パターン早見表
 
-### Category A: 対比パターン（5）
-2 つの状況を並べて差異から発見を得る。
+### Category A: 対比パターン（5）+ 網羅パターン（1）
+2 つの状況を並べて差異から発見を得る / 網羅的に契約の穴を探す。
 
 | ID | パターン | 発見するもの |
 |---|---|---|
@@ -16,8 +16,9 @@
 | A3 | `app-type-variation` アプリ種別変奏 | 種別固有の制約、テンプレの限界 |
 | A4 | `expertise-contrast` 習熟度対比 | 初心者ガイダンス不足、パワーユーザー最適化 |
 | A5 | `platform-contrast` プラットフォーム対比 | レスポンシブ対応、タッチ操作、API 設計 |
+| A6 | `protocol-design` Protocol 設計 | サービス間の通信契約の穴 |
 
-### Category B: 探索パターン（7）
+### Category B: 探索パターン（9）
 特定の状況を設定して、通常の spec 検討では見えない問題を炙り出す。
 
 | ID | パターン | 発見するもの |
@@ -29,6 +30,8 @@
 | B5 | `migration-path` 移行パス | データ変換、互換性、ロールバック |
 | B6 | `multi-tenant` マルチテナント分離 | データリーク、権限バイパス |
 | B7 | `concurrent-operation` 同時操作 | 楽観ロック、last-write-wins、競合 |
+| B8 | `delegation-matrix` 移譲マトリクス | 自前 vs 外部の最適な責務分担 |
+| B9 | `phase-minimization` Phase 最小化 | 各 Phase で本当に必要な最小構成 |
 
 ### Category C: 限界探索パターン（8）
 システムの限界点やワークフロー自体の弱点を意図的に探す。

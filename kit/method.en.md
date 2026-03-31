@@ -224,6 +224,33 @@ Type 5: "Didn't this happen before?" — Reference the past
 The dialogue → review loop is DGE's core.
 Dialogue without review is incomplete.
 
+## DGE and Plain LLM: Complementary Relationship
+
+DGE and plain LLM review are complementary. Neither alone is sufficient.
+
+```
+DGE strengths (decisions):
+  - Architecture decisions (build/don't build, simplification)
+  - Questioning assumptions ("Why JWT?" "Do we need Keycloak?")
+  - Responsibility splitting (DELEGATE / HYBRID / BUILD)
+  - Phase design (what first, what later)
+
+Plain LLM strengths (details):
+  - Security oversights (CSRF, XSS, privilege escalation)
+  - Concrete values (rate limits, token expiration)
+  - Complete DB schema SQL definitions
+  - Code-level implementation examples
+  - Exhaustive environment variable lists
+
+When they disagree:
+  Strategic decisions → prefer DGE
+  Concrete values / oversights → prefer LLM
+  Both contradict → human decides
+```
+
+DGE toolkit's auto_merge feature automates this complementary relationship.
+It runs DGE and plain LLM review in parallel, then merges results for display.
+
 ## Quick Start (Works with Any LLM)
 
 ### Method A: Universal Prompt (ChatGPT / Gemini / Claude / etc.)
