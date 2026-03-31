@@ -13,7 +13,7 @@
 ## 手順
 
 ### Step 0: flow + 構造 判定
-`dge/flows/` の YAML を読んで flow と structure を決定。
+まず `dge/flows/` の YAML、なければ `kit/flows/` の YAML を読んで flow と structure を決定。
 
 **flow 判定:**
 - 「DGE して」のみ → ⚡ quick
@@ -52,11 +52,12 @@
 
 ### Step 1: 読み込み
 - **locale 判定**: 日本語入力 → ja、英語入力 → en。flow YAML に `locale` 指定あればそれ
-- ja → `dge/characters/index.md`、en → `dge/characters/index.en.md`（名前 + 推奨のみ）
-- `dge/patterns.md`
-- `dge/method.md`
+- built-in 一覧（名前 + 推奨のみ）: ja は `dge/characters/index.md` を優先、なければ `kit/characters/index.md`。en は `dge/characters/index.en.md` を優先、なければ `kit/characters/index.en.md`
+- パターン: `dge/patterns.md` を優先。なければ ja は `kit/patterns.md`、en は `kit/patterns.en.md`
+- method: `dge/method.md` を優先。なければ ja は `kit/method.md`、en は `kit/method.en.md`
+- `dge/custom/characters/*.md` があれば各ファイルの Prompt Core セクションだけ読む
 - flow YAML の must_rules, auto_merge を確認
-- `node dge/bin/dge-tool.js version` または `npx dge-tool version` で tool mode 検出（失敗しても続行）
+- `node dge/bin/dge-tool.js version`、なければ `node kit/bin/dge-tool.js version`、または `npx dge-tool version` で tool mode 検出（失敗しても続行）
 
 ### Step 2: テーマ確認
 明確なら次へ。曖昧なら掘り下げ。
@@ -65,8 +66,8 @@
 quick / brainstorm ではスキップ。
 
 ### Step 4: キャラ選択
-推奨セットを提示。quick は表示のみ。design-review / brainstorm は確認待ち。
-**確定後、選択キャラの個別ファイルを読む。** ja → `dge/characters/{name}.md`、en → `dge/characters/en/{name}.md`
+推奨セット + Step 1 で読んだ custom キャラを提示。quick は表示のみ。design-review / brainstorm は確認待ち。
+**確定後、選択キャラの個別ファイルを読む。** built-in は ja/en とも `dge/characters/{name}.md` を優先（`dge/` がなければ ja → `kit/characters/{name}.md`、en → `kit/characters/en/{name}.md`）。custom は `dge/custom/characters/{name}.md`
 
 ### Step 5: 会話劇生成
 先輩ナレーション → キャラ対話 → `→ Gap 発見:` or `→ アイデア:` マーカー。
@@ -120,7 +121,7 @@ DGE toolkit v3.0.0 — Dialogue-driven Gap Extraction
   「認証 API を DGE して」→ テーマに合った構造を自動選択
   「認証 API を査読して」→ 査読劇構造で実行
 
-詳しくは: dge/method.md, dge/flows/*.yaml
+詳しくは: `dge/method.md`（なければ `kit/method.md` / `kit/method.en.md`）, `dge/flows/*.yaml`（なければ `kit/flows/*.yaml`）
 ```
 
 ## 注意

@@ -29,12 +29,20 @@ Display and ask user for confirmation:
 
 ```
 The following toolkit files will be overwritten:
-- dge/method.md (or method.en.md)
-- dge/characters/catalog.md
+- dge/method.md
+- dge/characters/*.md
 - dge/templates/*.md
+- dge/flows/*.yaml
+- dge/patterns.md
+- dge/integration-guide.md
+- dge/INTERNALS.md
+- dge/CUSTOMIZING.md
+- dge/dialogue-techniques.md
+- dge/bin/*
 - dge/README.md, LICENSE, version.txt
 - .claude/skills/dge-session.md
 - .claude/skills/dge-update.md
+- .claude/skills/dge-character-create.md
 
 The following will NOT be touched:
 - dge/sessions/ (your DGE session outputs)

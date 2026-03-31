@@ -13,7 +13,7 @@
 ## Steps
 
 ### Step 0: Flow + Structure detection
-Read YAMLs in `dge/flows/` to determine flow and structure.
+Read YAMLs in `dge/flows/` first; if unavailable, fall back to `kit/flows/` to determine flow and structure.
 
 **Flow detection:**
 - "run DGE" only → quick
@@ -52,11 +52,12 @@ If input is thin, ask: "No design docs found. Can you describe the theme in more
 
 ### Step 1: Load
 - **locale**: English input → en, Japanese input → ja. Flow YAML `locale` overrides if present
-- en → `dge/characters/index.en.md`, ja → `dge/characters/index.md` (names + recommendations only)
-- `dge/patterns.md` or `dge/patterns.en.md`
-- `dge/method.md` or `dge/method.en.md`
+- Built-in index (names + recommendations only): en tries `dge/characters/index.en.md` first, then `kit/characters/index.en.md`; ja tries `dge/characters/index.md` first, then `kit/characters/index.md`
+- Patterns: prefer `dge/patterns.md`; if unavailable, use `kit/patterns.en.md` for en or `kit/patterns.md` for ja
+- Method: prefer `dge/method.md`; if unavailable, use `kit/method.en.md` for en or `kit/method.md` for ja
+- If `dge/custom/characters/*.md` exists, read only the Prompt Core section from each file
 - Check flow YAML must_rules, auto_merge
-- `node dge/bin/dge-tool.js version` or `npx dge-tool version` to detect tool mode (continue on failure)
+- Use `node dge/bin/dge-tool.js version`, or `node kit/bin/dge-tool.js version` if needed, or `npx dge-tool version` to detect tool mode (continue on failure)
 
 ### Step 2: Theme confirmation
 If clear, proceed. If vague, dig deeper.
@@ -65,8 +66,8 @@ If clear, proceed. If vague, dig deeper.
 Skip for quick / brainstorm.
 
 ### Step 4: Character selection
-Show recommended set. quick: display only. design-review / brainstorm: wait for confirmation.
-**After confirmed, read selected characters' individual files.** en → `dge/characters/en/{name}.md`, ja → `dge/characters/{name}.md`
+Show recommended set plus any custom characters loaded in Step 1. quick: display only. design-review / brainstorm: wait for confirmation.
+**After confirmation, read selected characters' individual files.** Built-in: use `dge/characters/{name}.md` for both locales; if `dge/` is unavailable, fall back to `kit/characters/{name}.md` for ja or `kit/characters/en/{name}.md` for en. Custom: `dge/custom/characters/{name}.md`
 
 ### Step 5: Dialogue generation
 Narrator → Character dialogue → `→ Gap found:` or `→ Idea:` markers.
@@ -120,7 +121,7 @@ Usage:
   "run DGE on the auth API" → auto-selects structure based on theme
   "attack the auth API" → runs wargame structure
 
-Details: dge/method.md, dge/flows/*.yaml
+Details: `dge/method.md` (fall back to `kit/method.md` / `kit/method.en.md`), `dge/flows/*.yaml` (fall back to `kit/flows/*.yaml`)
 ```
 
 ## Notes
