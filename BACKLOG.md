@@ -1,89 +1,91 @@
 # DGE-toolkit バックログ
 
-> 最終更新: 2026-03-29
-> 前回セッション: Meta DGE（DGE自身をDGEで検証・改善）
+> 最終更新: 2026-04-01
+> バージョン: v3.2.0
+> 前回セッション: 査読劇（DGE toolkit 自体のシステム査読）+ volta フィードバック分析
 
-## 完了済み
+## v3.0-3.2 で完了したもの
 
-### Meta DGE セッション（3本）
-- `sessions/meta/001-methodology-validation.md` — 方法論の根本検証（今泉,ヤン,ハウス）18 gaps
-- `sessions/meta/002-adoption-ux.md` — 採用・UXの検証（利根川,僕,千石）24 gaps
-- `sessions/meta/003-limits-and-risks.md` — 限界と法的リスク（Red Team,ソウル,鷲津）29 gaps
-- `sessions/meta/summary.md` — 横断まとめ（71 gaps）
+### v3.0.0（メジャーアップデート）
+- ✅ 全 19 キャラに評価軸（axis）追加（ja/en）
+- ✅ Phase 0: プロジェクトコンテキスト自動収集
+- ✅ 応答義務（賛成/反対/保留の表明必須）
+- ✅ 6 セッション構造（座談会, 査読劇, 兵棋演習, VC ピッチ, 症例検討, 事故調査）
+- ✅ 構造の自動選択（テーマキーワードから）
+- ✅ 英語版 i18n 完全対応（--lang en）
+- ✅ install.sh / update.sh の --lang 対応
+- ✅ 英語版キャラ 19 体、テンプレート 5 種、スキル 3 種
+- ✅ 初回オンボーディングメッセージ
 
-### Critical 7件 → 全件対応済み
-| 成果物 | 対応した Gap |
-|--------|-------------|
-| `paper/experiment-design.md` | 比較実験デザイン（単純プロンプト vs DGE） |
-| `personas.md` | 4ペルソナ定義 |
-| `quality-criteria.md` | 出力品質基準 + アンチパターン |
-| `characters/atlas.md`（修正） | Disney/Marvel キャラ → 安全な代替に差し替え |
-| `strategy.md` | プラットフォームリスク + Gap-問題相関フレームワーク |
+### v3.1.0（volta フィードバック反映）
+- ✅ Gap ライフサイクル管理（Active/Void/Archived）— skill 記載
+- ✅ 実装レディネスチェックリスト — skill 記載
+- ✅ 固定枠+可変枠キャラ構造 — skill 記載
+- ✅ 専門家キャラ自動提案 — skill 記載
+- ✅ 不足領域の警告 — skill 記載
+- ✅ セッション終了時のフィードバック収集 — skill 記載
+- ✅ 新パターン 3 件（delegation-matrix, phase-minimization, protocol-design）
+- ✅ protocol-design テンプレート
+- ✅ フィードバックテンプレート
+- ✅ DGE/LLM 補完関係の明文化（method.md）
 
-### High 16件（未着手分）→ 全件対応済み
-| 成果物 | 対応した Gap |
-|--------|-------------|
-| `DISCLAIMER.md` | 免責事項（coverage非保証、専門判断の代替ではない、IP注意） |
-| `method.md`（修正） | Prerequisites追加、3分版TL;DR、LLM非依存クイックスタート |
-| `gap-definition.md` | Severity基準、粒度基準、偽陽性検証、優先度フレームワーク |
-| `limitations.md` | LLM限界、合意バイアス対策、他手法比較、データセキュリティ |
+### v3.2.0（マルチツール対応）
+- ✅ AGENTS.md（Codex）対応
+- ✅ GEMINI.md（Gemini CLI）対応
+- ✅ .cursorrules（Cursor）対応
+- ✅ 全ドキュメント更新（README ja/en, INTERNALS ja/en, dev.to, Zenn）
+
+### 以前の完了分
+- ✅ Meta DGE 3 セッション（71 gaps）
+- ✅ Critical 7 件 + High 16 件 全件対応
+- ✅ DISCLAIMER.md, personas.md, quality-criteria.md, gap-definition.md, limitations.md, strategy.md
+
+---
 
 ## 残タスク
 
-### 優先度: 高（実行系）
-1. **比較実験の実行** — `paper/experiment-design.md` に従い 4条件×3ドキュメント×5回を実際に回す
-2. **README リライト** — ペルソナ（`personas.md`）に基づき、ユーザーの課題から始まる README に書き換える
-3. **retrospective analysis** — unlaxer 108 gaps / AskOS 16 gaps の outcome を `strategy.md` Part 2 のフレームワークで追跡
+### P0: すぐやる（次の作業セッション）
 
-### 優先度: 中（Medium gaps 21件）
-- summary.md のテーマ別集約で Medium のものが残っている
-- 多くは Critical/High 対応の波及で部分解決済み
-- 未確認: 実際にどれだけ残っているか棚卸しが必要
+| # | タスク | 出典 | 種類 |
+|---|--------|------|------|
+| 1 | **サンプル設計ドキュメント追加** — `dge/samples/auth-api.md` を install 時に配置。初回体験の改善 | UX DGE #5 | 実装 |
+| 2 | **30 秒エレベーターピッチ作成** — README, dev.to, Zenn の冒頭に。「普通の AI は書いたものをチェック。DGE は書き忘れを見つける」 | 査読劇 #10 | コンテンツ |
+| 3 | **ターゲットペルソナ更新** — personas.md を v3 に合わせて更新。「Claude Code ユーザーで設計レビュー相手がいない開発者」に絞る | 査読劇 #8 | コンテンツ |
+| 4 | **locale 自動判定** — install.sh で `$LANG` を見て --lang を自動決定 | UX DGE #10 | 実装 |
 
-### 優先度: 低
-- Low gaps 3件（キャラ使用頻度データ収集、テンプレート名改善、推奨組み合わせ理由記載）
-- これらは実運用データが溜まってから対応すべき
+### P1: 設計が要る（v3.3 候補）
 
-### その他検討事項
-- `dge-method/` ディレクトリは削除済み（全コンテンツは DGE-toolkit に含まれていた）
-- テンプレート選択ディシジョンツリー（2-008）は未作成
-- catalog.md の日本キャラの IP リスクは低リスクと判断し未修正
+| # | タスク | 出典 | 種類 |
+|---|--------|------|------|
+| 5 | **Phase 0 強化 — ドキュメントなしでもリッチコンテキスト生成** — README + コード構造から設計を推測する能力 | 査読劇 #9 | 設計+実装 |
+| 6 | **Gap ライフサイクルの dge-tool 実装** — Active/Void/Archived の状態管理を CLI で。skill 記載は済み | volta FB #3 | 実装 |
+| 7 | **実装レディネスの dge-tool 実装** — チェックリスト判定を CLI で。skill 記載は済み | volta FB #4 | 実装 |
+| 8 | **install.sh / update.sh のテスト** — エッジケース（既存ファイルあり、--lang 切替、.lang 消失等） | 査読劇 #6 | テスト |
+| 9 | **limitations.md 更新** — v3 の新機能に合わせて LLM 依存、ドメイン限界、偽陰性の限界を明示 | 査読劇 #2 | コンテンツ |
 
-## ファイル構成（現在）
+### P2: 中期（v4 候補）
 
-```
-DGE-toolkit/
-├── README.md              ← 要リライト
-├── DISCLAIMER.md          ← NEW
-├── BACKLOG.md             ← これ
-├── method.md              ← UPDATED（TL;DR + Prerequisites + QS改善）
-├── personas.md            ← NEW
-├── quality-criteria.md    ← NEW
-├── gap-definition.md      ← NEW
-├── limitations.md         ← NEW
-├── strategy.md            ← NEW
-├── characters/
-│   ├── catalog.md
-│   ├── custom-guide.md
-│   └── atlas.md           ← UPDATED（IP対応）
-├── templates/
-│   ├── api-design.md
-│   ├── feature-planning.md
-│   ├── go-nogo.md
-│   ├── incident-review.md
-│   └── security-review.md
-├── skills/
-│   ├── dge-session.md
-│   └── dge-template-create.md
-├── examples/
-│   └── askos-adversarial.md
-├── paper/
-│   ├── experiment-design.md  ← NEW
-│   ├── v1/ v2/ v3/          ← 論文バージョン
-└── sessions/
-    └── meta/
-        ├── 001-methodology-validation.md
-        ├── 002-adoption-ux.md
-        ├── 003-limits-and-risks.md
-        └── summary.md       ← UPDATED
-```
+| # | タスク | 出典 | 種類 |
+|---|--------|------|------|
+| 10 | **MCP サーバー化** — Claude Code / Codex / Cursor 等から統一的に使える本命の解 | 査読劇 #5 | 設計+実装 |
+| 11 | **マルチフェーズ原理の formalize** — Phase 1/2/3 の共通原理をメソッド文書として記述 | キャラ DGE #22 | コンテンツ |
+| 12 | **偽陰性率ベンチマーク** — 既知 Gap を含む設計に DGE を適用し発見率を測定 | 査読劇 #1 | 実験 |
+| 13 | **比較実験の実行** — experiment-design.md に従い 4 条件 × 3 ドキュメント × 5 回 | BACKLOG 既存 | 実験 |
+| 14 | **retrospective analysis** — unlaxer 108 gaps / AskOS 16 gaps の outcome 追跡 | BACKLOG 既存 | 分析 |
+
+### P3: 長期 / マーケティング
+
+| # | タスク | 出典 | 種類 |
+|---|--------|------|------|
+| 15 | **マーケティング戦略** — 最初の 100 ユーザー獲得計画 | 査読劇 #11 | 戦略 |
+| 16 | **v2→v3 ケーススタディ記事** — 「DGE で DGE を改善した」Zenn / dev.to 記事 | 会話 | コンテンツ |
+| 17 | **volta ケーススタディ記事** — 106 Gap の実例 | 会話 | コンテンツ |
+| 18 | **動画の v3.2 対応** — デモ動画を最新に更新、YouTube 再アップ | 会話 | コンテンツ |
+| 19 | **Zenn 記事公開** — v3 対応版で公開 | 会話 | マーケティング |
+
+### 解決済みだが要確認
+
+- Medium gaps 21 件（旧 BACKLOG）— 多くは v3 対応の波及で解決済みの可能性。棚卸し必要
+- Low gaps 3 件 — 実運用データが溜まってから
+- テンプレート選択ディシジョンツリー（2-008）— 構造の自動選択で部分解決
+- catalog.md の日本キャラ IP リスク — 低リスク判断維持
