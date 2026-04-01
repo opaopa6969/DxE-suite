@@ -7,9 +7,9 @@
 
 ## Demo
 
-![DGE demo](docs/demo/demo-en.gif)
+[![DGE demo](docs/demo/demo-en.gif)](https://youtu.be/0sG0fMbA_Jo)
 
-▶ [Full demo (EN, HQ)](docs/demo/demo-en-hq.mp4) · [Story demo (EN)](docs/demo/demo-v3-story-en.mp4) · [日本語版](docs/demo/demo-ja-hq.mp4)
+▶ [YouTube (EN)](https://youtu.be/0sG0fMbA_Jo) · [YouTube (JA)](https://youtu.be/00de2U0ziKY)
 
 ## What You Can Do
 

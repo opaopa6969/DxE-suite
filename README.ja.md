@@ -7,9 +7,9 @@
 
 ## デモ
 
-![DGE demo](docs/demo/demo.gif)
+[![DGE demo](docs/demo/demo.gif)](https://youtu.be/00de2U0ziKY)
 
-▶ [日本語版（HQ）](docs/demo/demo-ja-hq.mp4) · [ストーリーデモ](docs/demo/demo-v3-story.mp4) · [English](docs/demo/demo-en-hq.mp4)
+▶ [YouTube (JA)](https://youtu.be/00de2U0ziKY) · [YouTube (EN)](https://youtu.be/0sG0fMbA_Jo)
 
 ## できること
 
