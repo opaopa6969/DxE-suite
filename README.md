@@ -188,6 +188,50 @@ See [server/README.md](server/README.md) for details.
 | [PUBLISHING.md](PUBLISHING.md) | npm maintainer guide |
 | [paper/](paper/) | Academic papers (includes fictional review dialogues) |
 
+## File & Folder Lifecycle
+
+What gets created, when, and who owns it.
+
+### After `npx dge-install`
+
+```
+dge/
+├── characters/     ← copied from kit/  (overwritten by dge-update)
+├── flows/          ← copied from kit/  (overwritten by dge-update)
+├── templates/      ← copied from kit/  (overwritten by dge-update)
+├── bin/            ← copied from kit/  (overwritten by dge-update)
+├── method.md       ← copied from kit/  (overwritten by dge-update)
+├── patterns.md     ← copied from kit/  (overwritten by dge-update)
+├── sessions/       ← created empty     (yours — never overwritten)
+├── specs/          ← created empty     (yours — never overwritten)
+├── custom/
+│   └── characters/ ← created empty     (yours — never overwritten)
+├── version.txt     ← installer writes  (read by dge-update)
+└── .lang           ← installer writes  (read by dge-update)
+
+.claude/skills/
+├── dge-session.md          ← copied from kit/  (skipped if exists)
+├── dge-update.md           ← copied from kit/  (skipped if exists)
+└── dge-character-create.md ← copied from kit/  (skipped if exists)
+
+AGENTS.md / GEMINI.md / .cursorrules ← DGE section appended (or created)
+```
+
+### During a DGE session
+
+| Trigger | What gets created |
+|---|---|
+| Session starts | reads `dge/method.md`, `dge/characters/index.md`, `dge/flows/*.yaml` |
+| Session ends | `dge/sessions/YYYY-MM-DD-<theme>.md` |
+| "implement" selected | `dge/specs/UC-*.md`, `dge/specs/TECH-*.md`, `dge/specs/ADR-*.md` |
+| "add a character" | `dge/custom/characters/<name>.md` |
+
+### After `npx dge-update`
+
+Overwrites: `characters/`, `flows/`, `templates/`, `bin/`, `method.md`, `patterns.md`
+
+Never touches: `sessions/`, `specs/`, `custom/`, `version.txt`, `.lang`
+
 ## License
 
 MIT
