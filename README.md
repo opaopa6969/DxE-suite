@@ -1,19 +1,21 @@
 # DRE-toolkit
 
-**Document Rule Engine** — Claude Code をうまく使うための仕組み（rules, skills, agents, commands）を npm パッケージとして配布・管理するツールキット。
+**Document Rule Engine** — Claude Code の rules / skills / agents / commands / profiles を npm パッケージとして配布・管理するツールキット。
 
-DGE-toolkit（Dialogue-driven Gap Extraction）、DDE-toolkit と並ぶ兄弟プロジェクト。
+DGE-toolkit（Dialogue-driven Gap Extraction）、DDE-toolkit と並ぶ兄弟プロジェクト。AskOS はこのツールキットを利用するアプリケーションのひとつ。
 
 ## コンセプト
 
-Claude Code プロジェクトの `.claude/rules`、`.claude/skills`、`.claude/commands` などは今まで手動コピーで広めるしかなかった。DRE-toolkit はこれを npm パッケージ化し、`npx dre-install` 一発で展開できるようにする。
+Claude Code プロジェクトの設定は今まで手動コピーで広めるしかなかった。DRE-toolkit はこれを npm パッケージ化し、`npx dre-install` 一発で展開できるようにする。
 
 ```
 新プロジェクト
   └─ npx @unlaxer/dre-toolkit dre-install
-       ├─ .claude/rules/    ← 展開
-       ├─ .claude/skills/   ← 展開
-       └─ .claude/commands/ ← 展開
+       ├─ .claude/rules/     ← 展開
+       ├─ .claude/skills/    ← 展開
+       ├─ .claude/agents/    ← 展開
+       ├─ .claude/commands/  ← 展開
+       └─ .claude/profiles/  ← 展開
 ```
 
 ## 構造
@@ -21,13 +23,18 @@ Claude Code プロジェクトの `.claude/rules`、`.claude/skills`、`.claude/
 ```
 DRE-toolkit/
 ├── kit/          # npm パッケージ (@unlaxer/dre-toolkit)
-├── askos/        # 作業コピー（開発中の最新版）
-├── design-materials/  # 設計資料 (intake → reviews → finalize)
+│   ├── rules/
+│   ├── skills/
+│   ├── agents/
+│   ├── commands/
+│   ├── profiles/
+│   └── templates/
+├── dre/          # 作業コピー（開発中の最新版）
+├── design-materials/
 ├── docs/
 ├── paper/
 ├── server/
-├── sessions/
-└── templates/
+└── sessions/
 ```
 
 ## インストール

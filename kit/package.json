@@ -1,19 +1,20 @@
 {
   "name": "@unlaxer/dre-toolkit",
   "version": "0.1.0",
-  "description": "DRE toolkit — agents, rules, skills, and document structure for AskOS projects",
+  "description": "DRE (Document Rule Engine) — Claude Code の rules/skills/agents/commands/profiles を配布・管理するツールキット",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/xxx/DRE-toolkit"
   },
   "keywords": [
-    "askos",
-    "agents",
+    "claude-code",
+    "claude-config",
     "rules",
     "skills",
-    "claude-code",
-    "llm"
+    "agents",
+    "llm",
+    "dre"
   ],
   "bin": {
     "dre-install": "./install.sh",
@@ -24,10 +25,12 @@
     "LICENSE",
     "README.md",
     "version.txt",
-    "characters/",
-    "templates/",
+    "rules/",
     "skills/",
-    "flows/",
+    "agents/",
+    "commands/",
+    "profiles/",
+    "templates/",
     "bin/",
     "install.sh",
     "update.sh",
@@ -35,6 +38,6 @@
   ],
   "scripts": {
     "test": "node test/dre-tool.test.js",
-    "postinstall": "node -e \"console.log('\\n  DRE toolkit installed.\\n  Run: npx dre-install\\n  to set up askos/ and .claude/skills/ in your project.\\n')\""
+    "postinstall": "node -e \"console.log('\\n  DRE toolkit installed.\\n  Run: npx dre-install\\n  to set up .claude/ in your project.\\n')\""
   }
 }
