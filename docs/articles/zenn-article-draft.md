@@ -52,16 +52,15 @@ Claude Code で「DGE して」と言えば起動。
 Human: 認証 API の設計を DGE して
 ```
 
-DGE toolkit v1.5.0
+DGE toolkit v3.3.0
 
-テンプレート: api-design（自動選択）
-パターン: 🔧 feature-extension を推奨します。変更しますか？
+Phase 0: コンテキスト収集中...
+構造: ⚙ design-review を自動選択
+固定枠: 今泉 + ヤン / 可変枠: 千石 + 僕 を推奨します。変更しますか？
 
 ```
 Human: それで
 ```
-
-キャラクター: 今泉 + 千石 + 僕 を推奨します。変更しますか？
 
 ```
 Human: Red Team も入れて
