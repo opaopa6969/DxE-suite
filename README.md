@@ -63,7 +63,7 @@ Character management + axes-vector recommendation engine. `dge-tool` CLI enforce
 
 ## Results
 
-- **unlaxer-parser** (SLE 2026 submission planned): 5 sessions, 108 gaps discovered
+- **unlaxer-parser**: 5 sessions, 108 gaps discovered
 - **AskOS**: 11+ sessions, 14,978 lines of design documents, 16 gaps from adversarial review
 
 ## Installation

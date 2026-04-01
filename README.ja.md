@@ -63,7 +63,7 @@ wizard モードなら対話形式でオリジナルキャラも作れる。
 
 ## 実績
 
-- **unlaxer-parser** (SLE 2026 投稿予定): 5 sessions で 108 gaps を発見
+- **unlaxer-parser**: 5 sessions で 108 gaps を発見
 - **AskOS**: 11+ sessions で 14,978 行の設計ドキュメントを生成、16 gaps を adversarial review で発見
 
 ## インストール
