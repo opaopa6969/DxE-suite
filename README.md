@@ -1,12 +1,12 @@
-# AskOS-toolkit
+# DRE-toolkit
 
 AskOS の agents、rules、skills、document 構成を npm パッケージとして配布するためのツールキット。
 
 ## 構造
 
 ```
-AskOS-toolkit/
-├── kit/          # npm パッケージ (@unlaxer/askos-toolkit)
+DRE-toolkit/
+├── kit/          # npm パッケージ (@unlaxer/dre-toolkit)
 ├── askos/        # 作業コピー（開発中の最新版）
 ├── design-materials/  # 設計資料 (intake → reviews → finalize)
 ├── docs/         # ドキュメント
@@ -19,5 +19,5 @@ AskOS-toolkit/
 ## インストール
 
 ```bash
-npx @unlaxer/askos-toolkit askos-install
+npx @unlaxer/dre-toolkit dre-install
 ```

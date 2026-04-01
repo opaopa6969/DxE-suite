@@ -1,11 +1,11 @@
 {
-  "name": "@unlaxer/askos-toolkit",
+  "name": "@unlaxer/dre-toolkit",
   "version": "0.1.0",
-  "description": "AskOS toolkit — agents, rules, skills, and document structure for AskOS projects",
+  "description": "DRE toolkit — agents, rules, skills, and document structure for AskOS projects",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/xxx/AskOS-toolkit"
+    "url": "https://github.com/xxx/DRE-toolkit"
   },
   "keywords": [
     "askos",
@@ -16,9 +16,9 @@
     "llm"
   ],
   "bin": {
-    "askos-install": "./install.sh",
-    "askos-update": "./update.sh",
-    "askos-tool": "./bin/askos-tool.js"
+    "dre-install": "./install.sh",
+    "dre-update": "./update.sh",
+    "dre-tool": "./bin/dre-tool.js"
   },
   "files": [
     "LICENSE",
@@ -34,7 +34,7 @@
     "samples/"
   ],
   "scripts": {
-    "test": "node test/askos-tool.test.js",
-    "postinstall": "node -e \"console.log('\\n  AskOS toolkit installed.\\n  Run: npx askos-install\\n  to set up askos/ and .claude/skills/ in your project.\\n')\""
+    "test": "node test/dre-tool.test.js",
+    "postinstall": "node -e \"console.log('\\n  DRE toolkit installed.\\n  Run: npx dre-install\\n  to set up askos/ and .claude/skills/ in your project.\\n')\""
   }
 }
