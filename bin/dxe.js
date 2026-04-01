@@ -11,9 +11,9 @@ const { execSync } = require('child_process');
 const path = require('path');
 
 const TOOLKITS = {
-  dge: { pkg: '@unlaxer/dge-toolkit', install: 'dge-install', update: 'dge-update' },
-  dde: { pkg: '@unlaxer/dde-toolkit', install: 'dde-install', update: 'dde-update' },
-  dre: { pkg: '@unlaxer/dre-toolkit', install: 'dre-install', update: 'dre-update' },
+  dge: { pkg: '@unlaxer/dge-toolkit', install: 'dge-install', update: 'dge-update', phrase: '「DGE して」' },
+  dde: { pkg: '@unlaxer/dde-toolkit', install: 'dde-install', update: 'dde-update', phrase: '「DDE して」' },
+  dre: { pkg: '@unlaxer/dre-toolkit', install: 'dre-install', update: 'dre-update', phrase: '「DRE して」' },
 };
 
 const [,, command, ...args] = process.argv;
@@ -25,13 +25,20 @@ function run(cmd) {
 }
 
 if (command === 'install') {
+  const installed = [];
   for (const name of targets) {
     const tk = TOOLKITS[name];
     if (!tk) { console.error(`Unknown toolkit: ${name}`); process.exit(1); }
     console.log(`\n[${name.toUpperCase()}] installing...`);
     run(`npm install ${tk.pkg}`);
     run(`npx ${tk.install}`);
+    installed.push(tk);
   }
+  console.log('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  for (const tk of installed) {
+    console.log(`  Claude Code で ${tk.phrase} と言えば起動します。`);
+  }
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
 } else if (command === 'update') {
   for (const name of targets) {
     const tk = TOOLKITS[name];
