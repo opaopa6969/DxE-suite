@@ -29,6 +29,7 @@ if (command === 'install') {
     const tk = TOOLKITS[name];
     if (!tk) { console.error(`Unknown toolkit: ${name}`); process.exit(1); }
     console.log(`\n[${name.toUpperCase()}] installing...`);
+    run(`npm install ${tk.pkg}`);
     run(`npx ${tk.install}`);
   }
 } else if (command === 'update') {
@@ -36,6 +37,7 @@ if (command === 'install') {
     const tk = TOOLKITS[name];
     if (!tk) { console.error(`Unknown toolkit: ${name}`); process.exit(1); }
     console.log(`\n[${name.toUpperCase()}] updating...`);
+    run(`npm install ${tk.pkg}@latest`);
     run(`npx ${tk.update}`);
   }
 } else if (command === 'status') {
