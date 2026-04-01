@@ -184,6 +184,50 @@ curl -X POST localhost:3456/api/characters/recommend \
 | [PUBLISHING.md](PUBLISHING.md) | npm メンテナ向けガイド |
 | [paper/](paper/) | 学術論文・実験設計（会話劇によるフィクション含む） |
 
+## ファイル・フォルダーのライフサイクル
+
+何がいつ作られ、誰が所有するか。
+
+### `npx dge-install` 実行後
+
+```
+dge/
+├── characters/     ← kit/ からコピー  （dge-update で上書きされる）
+├── flows/          ← kit/ からコピー  （dge-update で上書きされる）
+├── templates/      ← kit/ からコピー  （dge-update で上書きされる）
+├── bin/            ← kit/ からコピー  （dge-update で上書きされる）
+├── method.md       ← kit/ からコピー  （dge-update で上書きされる）
+├── patterns.md     ← kit/ からコピー  （dge-update で上書きされる）
+├── sessions/       ← 空で作成         （ユーザー所有 — 上書きされない）
+├── specs/          ← 空で作成         （ユーザー所有 — 上書きされない）
+├── custom/
+│   └── characters/ ← 空で作成         （ユーザー所有 — 上書きされない）
+├── version.txt     ← インストーラーが書く（dge-update が参照）
+└── .lang           ← インストーラーが書く（dge-update が参照）
+
+.claude/skills/
+├── dge-session.md          ← kit/ からコピー（既存の場合はスキップ）
+├── dge-update.md           ← kit/ からコピー（既存の場合はスキップ）
+└── dge-character-create.md ← kit/ からコピー（既存の場合はスキップ）
+
+AGENTS.md / GEMINI.md / .cursorrules ← DGE セクションを追記（なければ新規作成）
+```
+
+### DGE セッション中
+
+| タイミング | 作られるもの |
+|---|---|
+| セッション開始 | `dge/method.md`、`dge/characters/index.md`、`dge/flows/*.yaml` を読み込む |
+| セッション終了 | `dge/sessions/YYYY-MM-DD-<テーマ>.md` |
+| 「実装する」選択時 | `dge/specs/UC-*.md`、`dge/specs/TECH-*.md`、`dge/specs/ADR-*.md` |
+| 「キャラを追加」時 | `dge/custom/characters/<名前>.md` |
+
+### `npx dge-update` 実行後
+
+上書きされる: `characters/`、`flows/`、`templates/`、`bin/`、`method.md`、`patterns.md`
+
+上書きされない: `sessions/`、`specs/`、`custom/`、`version.txt`、`.lang`
+
 ## ライセンス
 
 MIT
