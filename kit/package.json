@@ -5,7 +5,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/xxx/DRE-toolkit"
+    "url": "git+https://github.com/opaopa6969/DRE-toolkit.git"
   },
   "keywords": [
     "claude-code",
@@ -17,9 +17,9 @@
     "dre"
   ],
   "bin": {
-    "dre-install": "./install.sh",
-    "dre-update": "./update.sh",
-    "dre-tool": "./bin/dre-tool.js"
+    "dre-install": "install.sh",
+    "dre-update": "update.sh",
+    "dre-tool": "bin/dre-tool.js"
   },
   "files": [
     "LICENSE",
