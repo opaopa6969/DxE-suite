@@ -5,6 +5,12 @@
 > **Plain AI reviews what you wrote. DGE finds what you forgot to write.**
 > Characters argue about your design — one questions assumptions, another guards quality, a third says "do we even need this?" — and in between their arguments, gaps emerge. 3 gaps in 2 minutes. The kind that change your architecture.
 
+## Demo
+
+![DGE demo](docs/demo/demo-en.gif)
+
+▶ [Full demo (EN, HQ)](docs/demo/demo-en-hq.mp4) · [Story demo (EN)](docs/demo/demo-v3-story-en.mp4) · [日本語版](docs/demo/demo-ja-hq.mp4)
+
 ## What You Can Do
 
 **🎭 Find design gaps through dialogue**
