@@ -25,6 +25,7 @@ Chaos in discussion→ 🤝 Kouhai     "Let's be constructive"
 Too complex        → 🪄 Tyson      "Imagine you're..."
 Small contradiction→ 🕵 Monk       "Something's not right here"
 Fixed thinking     → 🎭 Socrates   "Why do you think so? What if the opposite?"
+Thinking ceiling   → 🧩 Munger     "In [other domain], what would this be called?"
 ```
 
 ## Recommended Combinations
@@ -86,3 +87,4 @@ Brainstorm:        Holmes + Jobs + Socrates + Kouhai
 | 🪄 Tyson | [tyson.md](en/tyson.md) |
 | 🕵 Monk | [monk.md](en/monk.md) |
 | 🎭 Socrates | [socrates.md](en/socrates.md) |
+| 🧩 Munger | [munger.md](en/munger.md) |
