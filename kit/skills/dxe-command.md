@@ -3,8 +3,8 @@
 # Skill: dxe コマンド
 
 ## Trigger
-以下のいずれかを言ったとき:
 - 「dxe update」「dxe install」「dxe status」
+- 「dre update」「DRE を更新して」「DRE をアップデートして」「ルールを更新して」
 - 「DxE を更新して」「DxE をインストールして」「DxE の状態を確認して」
 - 「全部更新して」（DxE インストール済みのプロジェクトで）
 
@@ -13,25 +13,28 @@
 
 ## 手順
 
-### dxe update
+### update（全toolkit）
 ```bash
 npx dxe update
 ```
 
-### dxe install
+### update（個別）
+```bash
+npx dxe update dge   # DGE のみ
+npx dxe update dre   # DRE のみ
+npx dxe update dde   # DDE のみ
+```
+
+### install
 ```bash
 npx dxe install
 ```
 
-### dxe status
+### status（バージョン確認）
 ```bash
 npx dxe status
 ```
-
-### 対象を絞る場合（例: dge だけ更新）
-```bash
-npx dxe update dge
-```
+ローカルの `.dre-version` と npm 最新版を比較して表示する。
 
 ## 注意
 - `npx dxe` が見つからない場合は `npm install @unlaxer/dxe-suite` を案内する。

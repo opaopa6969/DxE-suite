@@ -134,6 +134,21 @@ do_update_dir "${SRC}/agents"   "${CLAUDE_DIR}/agents"
 do_update_dir "${SRC}/commands" "${CLAUDE_DIR}/commands"
 do_update_dir "${SRC}/profiles" "${CLAUDE_DIR}/profiles"
 
+# Also update disabled/ skills so they're up-to-date when re-activated
+if [ -d "${CLAUDE_DIR}/skills/disabled" ]; then
+  for f in "${SRC}/skills/"*; do
+    [ -f "${f}" ] || continue
+    fname="$(basename "${f}")"
+    [ "${fname}" = ".gitkeep" ] && continue
+    if [ -f "${CLAUDE_DIR}/skills/disabled/${fname}" ]; then
+      if ! diff -q "${f}" "${CLAUDE_DIR}/skills/disabled/${fname}" > /dev/null 2>&1; then
+        cp "${f}" "${CLAUDE_DIR}/skills/disabled/${fname}"
+        echo "  更新 (disabled): .claude/skills/disabled/${fname}"
+      fi
+    fi
+  done
+fi
+
 echo "${SRC_VERSION}" > "${CLAUDE_DIR}/.dre-version"
 
 echo ""
