@@ -82,9 +82,10 @@ const cleanArgs = rawArgs.filter(a => !a.startsWith('--lang='));
 const [command, ...targets_] = cleanArgs;
 const targets = targets_.length > 0 ? targets_ : Object.keys(TOOLKITS);
 
-function run(cmd) {
+function run(cmd, extraEnv) {
   console.log(`\n  → ${cmd}`);
-  execSync(cmd, { stdio: 'inherit' });
+  const env = extraEnv ? { ...process.env, ...extraEnv } : undefined;
+  execSync(cmd, { stdio: 'inherit', ...(env && { env }) });
 }
 
 if (command === 'install') {
@@ -94,7 +95,7 @@ if (command === 'install') {
     if (!tk) { console.error(M.unknownToolkit(name)); process.exit(1); }
     console.log(M.installing(name.toUpperCase()));
     run(`npm install ${tk.pkg}@latest`);
-    run(`npx ${tk.install} --lang=${lang}`);
+    run(`npx ${tk.install}`, { DXE_LANG: lang });
     installed.push(tk);
   }
   console.log('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
@@ -108,7 +109,7 @@ if (command === 'install') {
     if (!tk) { console.error(M.unknownToolkit(name)); process.exit(1); }
     console.log(M.updating(name.toUpperCase()));
     run(`npm install ${tk.pkg}@latest`);
-    run(`npx ${tk.update} --lang=${lang}`);
+    run(`npx ${tk.update}`, { DXE_LANG: lang });
   }
 } else if (command === 'status') {
   for (const [name, tk] of Object.entries(TOOLKITS)) {
