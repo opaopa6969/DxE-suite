@@ -114,7 +114,9 @@ Follow selection:
 - **Auto-iterate** → Pattern rotation, max 5 rounds, convergence criteria below → Step 10
 - **Implement** → Step 10
 - **Merge** → Only when auto_merge OFF. Launch isolated subagent
-- **Later** → End
+- **Later / Done** → End
+
+**Loop rule:** After any action other than "Later / Done" completes, always return to Step 8 and re-display the choices. The loop stays open until the user explicitly selects an exit option.
 
 **Auto-iterate convergence (readiness check):**
 C/H Gaps = 0 PLUS deliverable checklist:
