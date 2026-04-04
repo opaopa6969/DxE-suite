@@ -93,7 +93,7 @@ if (command === 'install') {
     const tk = TOOLKITS[name];
     if (!tk) { console.error(M.unknownToolkit(name)); process.exit(1); }
     console.log(M.installing(name.toUpperCase()));
-    run(`npm install ${tk.pkg}`);
+    run(`npm install ${tk.pkg}@latest`);
     run(`npx ${tk.install} --lang=${lang}`);
     installed.push(tk);
   }
