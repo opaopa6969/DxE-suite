@@ -66,9 +66,21 @@ stateDiagram-v2
     OUTDATED --> INSTALLED : npx dre-update
     CUSTOMIZED --> INSTALLED : update 実行（編集済みはスキップ）
     CUSTOMIZED --> OUTDATED : kit バージョン更新
+    CUSTOMIZED --> INSTALLED : 「dre-reset <file>」でファイル単位リセット
+    INSTALLED --> FRESH : 「dre-uninstall」
+    CUSTOMIZED --> FRESH : 「dre-uninstall」
+    OUTDATED --> FRESH : 「dre-uninstall」
 ```
 
+| コマンド | 遷移 | 内容 |
+|---------|------|------|
+| `npx dre-install` | FRESH → INSTALLED | 初回インストール |
+| `npx dre-update` | OUTDATED → INSTALLED | 新規ファイルのみ追加 |
+| `dre-reset <file>` | CUSTOMIZED → INSTALLED（部分） | ファイル単位でkit標準に戻す |
+| `dre-uninstall` | any → FRESH | DRE管理ファイルをすべて削除 |
+
 `update.sh` は `diff -q` で各ファイルを比較し、ユーザーが編集したファイルには触らない。新規ファイルのみ追加。
+`.dre-manifest` にインストール済みファイルのリストとハッシュを記録し、リセット・アンインストール時に利用する。
 
 ---
 

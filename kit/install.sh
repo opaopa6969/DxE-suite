@@ -84,8 +84,26 @@ copy_dir "${SRC}/agents"   "${CLAUDE_DIR}/agents"   "agents"
 copy_dir "${SRC}/commands" "${CLAUDE_DIR}/commands" "commands"
 copy_dir "${SRC}/profiles" "${CLAUDE_DIR}/profiles" "profiles"
 
-# Version tracking
+# Version tracking + manifest
 echo "${SRC_VERSION}" > "${CLAUDE_DIR}/.dre-version"
+
+# Generate manifest: record installed files and their hashes
+MANIFEST="${CLAUDE_DIR}/.dre-manifest"
+echo "# DRE manifest — DO NOT EDIT manually" > "${MANIFEST}"
+echo "version=${SRC_VERSION}" >> "${MANIFEST}"
+echo "installed_at=$(date -u +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || date)" >> "${MANIFEST}"
+
+for dir in rules skills agents commands profiles; do
+  src_sub="${SRC}/${dir}"
+  [ -d "${src_sub}" ] || continue
+  for f in "${src_sub}/"*; do
+    [ -f "${f}" ] || continue
+    fname="$(basename "${f}")"
+    [ "${fname}" = ".gitkeep" ] && continue
+    hash=$(sha256sum "${f}" 2>/dev/null | awk '{print $1}' || shasum -a 256 "${f}" 2>/dev/null | awk '{print $1}' || echo "nohash")
+    echo "${dir}/${fname}=${hash}" >> "${MANIFEST}"
+  done
+done
 
 echo ""
 echo "Done! DRE toolkit v${SRC_VERSION} installed."
