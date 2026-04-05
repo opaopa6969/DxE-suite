@@ -11,7 +11,8 @@
   "workspaces": [
     "dge/kit",
     "dge/server",
-    "dre/kit"
+    "dre/kit",
+    "dve/kit"
   ],
   "keywords": [
     "claude-code",
