@@ -76,6 +76,32 @@ sessions/ と custom/ は変更されていません。
 2. **sessions/ と custom/ には絶対に触らない。**
 3. **更新元が見つからない場合は npm update の手順を案内する。**
 
+## 設計判断 (DD) の管理
+
+セッション外から DD を追加・修正したい場合もこのスキルで対応する。
+
+### DD の追加（セッション外）
+ユーザーが「DD を追加して」「設計判断を記録したい」と言ったとき:
+1. `kit/templates/decision.md` のテンプレートに沿って DD を作成
+2. 紐づくセッションファイルを聞く（任意）
+3. `dge/decisions/` を glob して採番（DD-NNN、最大番号 + 1）
+4. DD ファイルを保存
+5. セッションファイルがあれば `**Decisions:**` リストに逆リンクを追記
+6. `dge/decisions/index.md` を再生成
+
+### DD の Supersede（方針転換）
+ユーザーが「DD-NNN を置き換えて」「方針変更」と言ったとき:
+1. 新しい DD を作成（上記の手順）
+2. 新 DD に `**Supersedes:** DD-NNN` を記入
+3. 旧 DD に `**Superseded by:** DD-NNN` を追記
+4. index を再生成
+
+### DD の index 再生成
+`dge/decisions/index.md` が壊れた・古い場合:
+1. `dge/decisions/DD-*.md` を全件読む
+2. index テーブルを再生成（DD 番号、タイトル、セッションリンク、日付、Superseded 状態）
+
 ## 注意
 - このスキルは DGE session とは独立。session 中に update を提案しない。
 - npm を使っていないユーザーには手動コピーの手順を案内する。
+- DD の追加・修正は `dge/decisions/` と `dge/sessions/` のみに影響する。プロジェクトコードは変更しない。

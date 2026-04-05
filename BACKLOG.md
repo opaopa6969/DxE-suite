@@ -101,9 +101,7 @@
 
 ### P4: DGE プロセス改善
 
-| # | タスク | 出典 | 種類 |
-|---|--------|------|------|
-| 20 | **会話劇 → 設計判断リンク** — DGE セッションの会話劇と、そこから生まれた設計判断 (DD) を相互リンクする仕組み。propstack で DD-001〜DD-008 を作ったが、元の会話劇が保存されていない。セッション保存 → DD ドキュメントへのリンク、DD → セッションへの逆リンクを自動化 | propstack DGE 2026-04-05 | プロセス |
+- ✅ **会話劇 → 設計判断リンク** — `record_decision` post_action + DDテンプレート + 相互リンク自動化。全8 flow YAML、dge-session.md Step 9.5、dge-update.md、method.md、kit/templates/decision.md を更新。DGEセッション: `dge/sessions/2026-04-05-dd-crosslink-design.md`
 
 ### 解決済みだが要確認
 
