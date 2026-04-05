@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "preact/hooks";
 import { GraphContainer } from "./components/GraphContainer";
 import { DetailPanel } from "./views/DetailPanel";
 import { SearchBar } from "./components/SearchBar";
+import { ProjectList } from "./views/ProjectList";
 import { loadGraph, loadChangelog } from "./lib/graph-loader";
 import type { DVEGraph, Changelog, GraphNode } from "./types";
 
@@ -12,13 +13,49 @@ export function App() {
   const [expandedDecisions, setExpandedDecisions] = useState<Set<string>>(new Set());
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [projectIndex, setProjectIndex] = useState<any>(null);
+  const [selectedProject, setSelectedProject] = useState<string | null | undefined>(undefined);
+  // undefined = not determined yet, null = all projects, string = specific project
 
   useEffect(() => {
-    Promise.all([loadGraph(), loadChangelog()])
-      .then(([g, c]) => {
-        setGraph(g);
-        setChangelog(c);
+    // Check if multi-project
+    fetch("./projects.json")
+      .then((res) => res.ok ? res.json() : null)
+      .then((idx) => {
+        if (idx && idx.projects?.length > 1) {
+          setProjectIndex(idx);
+          // Don't auto-load graph yet — show project list
+        } else {
+          // Single project — load directly
+          setSelectedProject("__single__");
+          Promise.all([loadGraph(), loadChangelog()])
+            .then(([g, c]) => { setGraph(g); setChangelog(c); })
+            .catch((e) => setError(e.message));
+        }
       })
+      .catch(() => {
+        // No projects.json — single project
+        setSelectedProject("__single__");
+        Promise.all([loadGraph(), loadChangelog()])
+          .then(([g, c]) => { setGraph(g); setChangelog(c); })
+          .catch((e) => setError(e.message));
+      });
+  }, []);
+
+  const handleSelectProject = useCallback((name: string | null) => {
+    setSelectedProject(name);
+    setSelectedNode(null);
+    setExpandedDecisions(new Set());
+    setSearchQuery("");
+
+    const graphFile = name ? `./graph-${name}.json` : "./graph.json";
+    const clFile = name ? `./changelog-${name}.json` : "./changelog.json";
+
+    Promise.all([
+      fetch(graphFile).then((r) => r.json()),
+      fetch(clFile).then((r) => r.ok ? r.json() : null).catch(() => null),
+    ])
+      .then(([g, c]) => { setGraph(g); setChangelog(c); })
       .catch((e) => setError(e.message));
   }, []);
 
@@ -70,6 +107,11 @@ export function App() {
     );
   }
 
+  // Multi-project: show project list
+  if (projectIndex && selectedProject === undefined) {
+    return <ProjectList index={projectIndex} onSelectProject={handleSelectProject} />;
+  }
+
   if (!graph) {
     return (
       <div style={{ padding: "40px", textAlign: "center", color: "#666" }}>Loading...</div>
@@ -108,7 +150,18 @@ export function App() {
         padding: "0 16px", background: "#fff", borderBottom: "1px solid #e2e8f0",
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-          <strong style={{ fontSize: "14px" }}>DVE</strong>
+          {projectIndex && (
+            <button
+              onClick={() => { setSelectedProject(undefined); setGraph(null); }}
+              style={{ border: "none", background: "none", cursor: "pointer", fontSize: "14px", color: "#4299e1" }}
+            >
+              &larr;
+            </button>
+          )}
+          <strong style={{ fontSize: "14px" }}>
+            DVE{selectedProject && selectedProject !== "__single__" ? ` — ${selectedProject}` : ""}
+            {selectedProject === null ? " — All Projects" : ""}
+          </strong>
           <span style={{ fontSize: "12px", color: "#999" }}>
             S:{graph.stats.sessions} G:{graph.stats.gaps} DD:{graph.stats.decisions}
             {graph.stats.specs ? ` Spec:${graph.stats.specs}` : ""} A:{graph.stats.annotations}

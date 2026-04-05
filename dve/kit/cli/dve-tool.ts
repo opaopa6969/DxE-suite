@@ -6,92 +6,160 @@ import path from "node:path";
 import { buildGraph } from "../graph/builder.js";
 import { traceDecision, impactOf, orphanGaps, search } from "../graph/query.js";
 import { generateBundle } from "../context/bundle.js";
-import type { DVEGraph, Changelog, Gap } from "../graph/schema.js";
+import { loadConfig, singleProjectConfig, resolveProjectDirs } from "../config.js";
+import type { DVEGraph, MultiProjectGraph, Changelog, Gap } from "../graph/schema.js";
 
 const CWD = process.cwd();
-const DIST_DIR = path.join(CWD, "dve", "dist");
-const ANN_DIR = path.join(CWD, "dve", "annotations");
-const CTX_DIR = path.join(CWD, "dve", "contexts");
+const CONFIG_PATH = path.join(CWD, "dve.config.json");
+const config = loadConfig(CONFIG_PATH) ?? singleProjectConfig(CWD);
+const DIST_DIR = path.resolve(config.outputDir.startsWith("/") ? config.outputDir : path.join(CWD, config.outputDir));
 
-function defaultOpts() {
-  return {
-    sessionsDir: path.join(CWD, "dge", "sessions"),
-    decisionsDir: path.join(CWD, "dge", "decisions"),
-    specsDir: path.join(CWD, "dge", "specs"),
-    annotationsDir: ANN_DIR,
-    cwd: CWD,
-    enableGitLinker: true,
-  };
+function annDir(projectPath?: string) {
+  return path.join(projectPath ?? CWD, "dve", "annotations");
+}
+function ctxDir(projectPath?: string) {
+  return path.join(projectPath ?? CWD, "dve", "contexts");
 }
 
-function loadGraph(): DVEGraph {
-  const p = path.join(DIST_DIR, "graph.json");
-  if (!existsSync(p)) {
+function loadGraph(projectName?: string): DVEGraph {
+  const filename = projectName ? `graph-${projectName}.json` : "graph.json";
+  const p = path.join(DIST_DIR, filename);
+  // Fallback to graph.json for single project
+  const fallback = path.join(DIST_DIR, "graph.json");
+  const target = existsSync(p) ? p : fallback;
+  if (!existsSync(target)) {
     console.error("graph.json not found. Run `dve build` first.");
     process.exit(1);
   }
-  return JSON.parse(readFileSync(p, "utf-8"));
+  return JSON.parse(readFileSync(target, "utf-8"));
+}
+
+function buildChangelog(prev: DVEGraph | null, curr: DVEGraph): Changelog | null {
+  if (!prev) return null;
+  const prevIds = new Set(prev.nodes.map((n) => n.id));
+  const currIds = new Set(curr.nodes.map((n) => n.id));
+  const changelog: Changelog = {
+    since: prev.generated_at,
+    new_nodes: curr.nodes.filter((n) => !prevIds.has(n.id)).map((n) => n.id),
+    removed_nodes: prev.nodes.filter((n) => !currIds.has(n.id)).map((n) => n.id),
+    changed_statuses: [],
+  };
+  for (const node of curr.nodes) {
+    if (node.type === "decision") {
+      const prevNode = prev.nodes.find((n) => n.id === node.id);
+      if (prevNode && (prevNode.data as any).status !== (node.data as any).status) {
+        changelog.changed_statuses.push({
+          id: node.id, from: (prevNode.data as any).status, to: (node.data as any).status,
+        });
+      }
+    }
+  }
+  return changelog;
+}
+
+function printBuildReport(name: string, graph: DVEGraph, changelog: Changelog | null, elapsed: string) {
+  const s = graph.stats;
+  const unknownSev = graph.nodes.filter((n) => n.type === "gap" && (n.data as Gap).severity === "Unknown").length;
+  const noMarkers = graph.warnings.filter((w) => w.message.includes("No gap markers")).length;
+
+  console.log(`\n  [${name}] (${elapsed}s):`);
+  console.log(`    Sessions:    ${s.sessions}${noMarkers ? ` (${s.sessions - noMarkers} with gaps, ${noMarkers} no markers)` : ""}`);
+  console.log(`    Gaps:        ${s.gaps}${unknownSev ? ` (${unknownSev} severity unknown)` : ""}`);
+  console.log(`    Decisions:   ${s.decisions}`);
+  if (s.specs) console.log(`    Specs:       ${s.specs}`);
+  console.log(`    Annotations: ${s.annotations}`);
+  if (graph.warnings.length > 0) console.log(`    Warnings:    ${graph.warnings.length}`);
+  if (changelog && changelog.new_nodes.length > 0) {
+    console.log(`    New:         ${changelog.new_nodes.length} nodes`);
+  }
 }
 
 // ─── build ───
 
 function build() {
-  const start = Date.now();
-  const graph = buildGraph(defaultOpts());
-
+  const startAll = Date.now();
   mkdirSync(DIST_DIR, { recursive: true });
 
-  const prevPath = path.join(DIST_DIR, "graph.json");
-  let changelog: Changelog | null = null;
-  if (existsSync(prevPath)) {
-    const prev: DVEGraph = JSON.parse(readFileSync(prevPath, "utf-8"));
-    const prevIds = new Set(prev.nodes.map((n) => n.id));
-    const currIds = new Set(graph.nodes.map((n) => n.id));
-    changelog = {
-      since: prev.generated_at,
-      new_nodes: graph.nodes.filter((n) => !prevIds.has(n.id)).map((n) => n.id),
-      removed_nodes: prev.nodes.filter((n) => !currIds.has(n.id)).map((n) => n.id),
-      changed_statuses: [],
-    };
-    for (const node of graph.nodes) {
-      if (node.type === "decision") {
-        const prevNode = prev.nodes.find((n) => n.id === node.id);
-        if (prevNode && (prevNode.data as any).status !== (node.data as any).status) {
-          changelog.changed_statuses.push({
-            id: node.id,
-            from: (prevNode.data as any).status,
-            to: (node.data as any).status,
-          });
-        }
-      }
+  const isMulti = config.projects.length > 1;
+  const multiGraph: MultiProjectGraph = {
+    version: "1.0.0",
+    generated_at: new Date().toISOString(),
+    projects: [],
+  };
+
+  console.log(`\nDVE build — ${config.projects.length} project(s)`);
+
+  for (const project of config.projects) {
+    const start = Date.now();
+    const dirs = resolveProjectDirs(project);
+    const graph = buildGraph({ ...dirs, enableGitLinker: true });
+
+    const graphFile = isMulti
+      ? path.join(DIST_DIR, `graph-${project.name}.json`)
+      : path.join(DIST_DIR, "graph.json");
+
+    // Changelog
+    const prev = existsSync(graphFile)
+      ? JSON.parse(readFileSync(graphFile, "utf-8")) as DVEGraph
+      : null;
+    const changelog = buildChangelog(prev, graph);
+
+    writeFileSync(graphFile, JSON.stringify(graph, null, 2));
+    if (changelog) {
+      const clFile = isMulti
+        ? path.join(DIST_DIR, `changelog-${project.name}.json`)
+        : path.join(DIST_DIR, "changelog.json");
+      writeFileSync(clFile, JSON.stringify(changelog, null, 2));
     }
+
+    multiGraph.projects.push({ name: project.name, path: project.path, graph });
+    printBuildReport(project.name, graph, changelog, ((Date.now() - start) / 1000).toFixed(1));
   }
 
-  writeFileSync(path.join(DIST_DIR, "graph.json"), JSON.stringify(graph, null, 2));
-  if (changelog) {
-    writeFileSync(path.join(DIST_DIR, "changelog.json"), JSON.stringify(changelog, null, 2));
+  // Write multi-project index
+  if (isMulti) {
+    const index = {
+      version: "1.0.0",
+      generated_at: multiGraph.generated_at,
+      projects: multiGraph.projects.map((p) => ({
+        name: p.name,
+        path: p.path,
+        graphFile: `graph-${p.name}.json`,
+        stats: p.graph.stats,
+      })),
+    };
+    writeFileSync(path.join(DIST_DIR, "projects.json"), JSON.stringify(index, null, 2));
+    // Also write combined graph.json for backwards compat (merge all)
+    const merged: DVEGraph = {
+      version: "1.0.0",
+      generated_at: multiGraph.generated_at,
+      stats: { sessions: 0, gaps: 0, decisions: 0, annotations: 0, specs: 0 },
+      nodes: [],
+      edges: [],
+      warnings: [],
+    };
+    for (const p of multiGraph.projects) {
+      // Prefix node IDs with project name to avoid collisions
+      for (const node of p.graph.nodes) {
+        merged.nodes.push({ ...node, id: `${p.name}/${node.id}` });
+      }
+      for (const edge of p.graph.edges) {
+        merged.edges.push({ ...edge, source: `${p.name}/${edge.source}`, target: `${p.name}/${edge.target}` });
+      }
+      merged.warnings.push(...p.graph.warnings);
+      merged.stats.sessions += p.graph.stats.sessions;
+      merged.stats.gaps += p.graph.stats.gaps;
+      merged.stats.decisions += p.graph.stats.decisions;
+      merged.stats.annotations += p.graph.stats.annotations;
+      merged.stats.specs = (merged.stats.specs ?? 0) + (p.graph.stats.specs ?? 0);
+    }
+    writeFileSync(path.join(DIST_DIR, "graph.json"), JSON.stringify(merged, null, 2));
   }
 
-  const elapsed = ((Date.now() - start) / 1000).toFixed(1);
-  const s = graph.stats;
-  const unknownSev = graph.nodes.filter(
-    (n) => n.type === "gap" && (n.data as Gap).severity === "Unknown"
-  ).length;
-  const noMarkers = graph.warnings.filter((w) => w.message.includes("No gap markers")).length;
+  const totalElapsed = ((Date.now() - startAll) / 1000).toFixed(1);
+  console.log(`\n  Total: ${totalElapsed}s → ${DIST_DIR}`);
 
-  console.log(`\nDVE build complete (${elapsed}s):`);
-  console.log(`  Sessions:    ${s.sessions}${noMarkers ? ` (${s.sessions - noMarkers} with gaps, ${noMarkers} no markers)` : ""}`);
-  console.log(`  Gaps:        ${s.gaps}${unknownSev ? ` (${unknownSev} severity unknown)` : ""}`);
-  console.log(`  Decisions:   ${s.decisions}`);
-  if (s.specs) console.log(`  Specs:       ${s.specs}`);
-  console.log(`  Annotations: ${s.annotations}`);
-  if (graph.warnings.length > 0) console.log(`  Warnings:    ${graph.warnings.length}`);
-  if (changelog && changelog.new_nodes.length > 0) {
-    console.log(`  New:         ${changelog.new_nodes.length} nodes`);
-  }
-  console.log(`\n  → ${path.join(DIST_DIR, "graph.json")}`);
-
-  return graph;
+  return isMulti ? null : multiGraph.projects[0]?.graph ?? null;
 }
 
 // ─── serve ───
@@ -119,11 +187,11 @@ async function serve(watch: boolean) {
   if (watch) {
     console.log("\nWatching for changes...");
     const chokidar = await import("chokidar");
-    const dirs = [
-      path.join(CWD, "dge", "sessions"),
-      path.join(CWD, "dge", "decisions"),
-      ANN_DIR,
-    ];
+    const dirs: string[] = [];
+    for (const project of config.projects) {
+      const d = resolveProjectDirs(project);
+      dirs.push(d.sessionsDir, d.decisionsDir, d.annotationsDir);
+    }
 
     let debounce: ReturnType<typeof setTimeout> | null = null;
     const watcher = chokidar.watch(dirs, {
@@ -239,6 +307,7 @@ function doSearch(keyword: string) {
 // ─── annotate ───
 
 function annotate(targetId: string, action: string, body: string) {
+  const ANN_DIR = annDir();
   mkdirSync(ANN_DIR, { recursive: true });
 
   const existing = existsSync(ANN_DIR)
@@ -270,7 +339,7 @@ function context(originId: string, constraints: string[]) {
     graph,
     originId,
     constraints,
-    outputDir: CTX_DIR,
+    outputDir: ctxDir(),
   });
 
   console.log(`\nContextBundle generated.`);
@@ -329,6 +398,34 @@ switch (cmd) {
     context(origin, constraintArgs);
     break;
   }
+  case "init": {
+    if (existsSync(CONFIG_PATH)) {
+      console.log(`dve.config.json already exists.`);
+      process.exit(0);
+    }
+    const initProjects = args.length > 0
+      ? args.map((p) => ({ name: path.basename(p), path: path.resolve(p) }))
+      : [{ name: path.basename(CWD), path: CWD }];
+    const initConfig = {
+      outputDir: "dve/dist",
+      projects: initProjects.map((p) => ({
+        name: p.name,
+        path: path.relative(CWD, p.path) || ".",
+      })),
+    };
+    writeFileSync(CONFIG_PATH, JSON.stringify(initConfig, null, 2) + "\n");
+    console.log(`\nCreated ${CONFIG_PATH}`);
+    console.log(`  Projects: ${initProjects.map((p) => p.name).join(", ")}`);
+    console.log(`\nEdit to add more projects, then run: dve build`);
+    break;
+  }
+  case "projects": {
+    console.log(`\nDVE projects (${config.projects.length}):\n`);
+    for (const p of config.projects) {
+      console.log(`  ${p.name.padEnd(20)} ${p.path}`);
+    }
+    break;
+  }
   case "version":
     console.log("DVE toolkit v4.0.0");
     break;
@@ -337,15 +434,22 @@ switch (cmd) {
   DVE — Decision Visualization Engine
 
   Commands:
-    build                           Build graph.json from sessions/decisions
+    init [path...]                  Create dve.config.json (multi-project)
+    projects                        List configured projects
+    build                           Build graph.json from all projects
     serve [--watch]                 Start web UI (with optional file watching)
     trace <DD-id>                   Trace decision back to sessions/gaps
     impact <node-id>                Show downstream impact of a node
     orphans                         Show gaps not linked to any decision
     search <keyword>                Search nodes by keyword
     annotate <id> --action <type> --body "text"
-                                    Create annotation (comment/fork/overturn/constrain/drift)
+                                    Create annotation
     context <id> [--constraint=...] Generate ContextBundle for DGE restart
     version                         Show version
+
+  Multi-project:
+    dve init /path/to/project1 /path/to/project2
+    dve build                       → builds all projects
+    dve projects                    → list projects
     `);
 }

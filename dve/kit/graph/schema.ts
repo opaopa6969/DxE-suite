@@ -109,6 +109,18 @@ export interface ParseResult<T> {
   source: { file: string; line?: number };
 }
 
+// ─── Multi-project ───
+
+export interface MultiProjectGraph {
+  version: string;
+  generated_at: string;
+  projects: {
+    name: string;
+    path: string;
+    graph: DVEGraph;
+  }[];
+}
+
 // ─── Changelog ───
 
 export interface Changelog {
