@@ -54,12 +54,12 @@
 | 14 | ✅ Web UI 検索 — SearchBar + ノード dimmed フィルタ | UC | 完了 |
 | 15 | ✅ L3 DialogueView — session 本文表示 + キャラ色分け + アイコン | #28 | 完了 |
 
-## P3: 将来
+## P3: 完了
 
-| # | タスク | Gap | 種類 |
-|---|--------|-----|------|
-| 16 | Web UI から Annotation 直接作成 — local server or filesystem API | UC-2 | 設計+実装 |
-| 17 | ドリフト自動検出 — git diff ベースで DD 関連ファイルの変更を検出 | #23 | 設計+実装 |
-| 18 | クラスタリング — supersedes チェーン or テーマ類似度で DD をグルーピング | UC | 設計 |
-| 19 | 複数プロジェクト横断ビュー | #16 | 設計 |
-| 20 | キャラカバレッジ分析 — どのキャラがどの Gap を発見したかのヒートマップ | UC | 設計+実装 |
+| # | タスク | Gap | Status |
+|---|--------|-----|--------|
+| 16 | ✅ Web UI Annotation 作成 — API server + AnnotationDialog | UC-2 | 完了 |
+| 17 | ✅ ドリフト検出 — git log ベース + API /api/drift + CLI `dve drift` | #23 | 完了 |
+| 18 | ✅ クラスタリング — supersedes chain + theme keyword | UC | 完了 |
+| 19 | ✅ 複数プロジェクト横断 — ProjectList + マージグラフ | #16 | 完了 (Phase 2) |
+| 20 | ✅ キャラカバレッジ — API /api/coverage + CoverageView | UC | 完了 |

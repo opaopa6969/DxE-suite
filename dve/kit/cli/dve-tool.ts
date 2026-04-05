@@ -7,6 +7,9 @@ import { buildGraph } from "../graph/builder.js";
 import { traceDecision, impactOf, orphanGaps, search } from "../graph/query.js";
 import { generateBundle } from "../context/bundle.js";
 import { loadConfig, singleProjectConfig, resolveProjectDirs } from "../config.js";
+import { startAPIServer } from "../server/api.js";
+import { clusterBySupersedes } from "../graph/cluster.js";
+import { detectDrift } from "../parser/drift-detector.js";
 import type { DVEGraph, MultiProjectGraph, Changelog, Gap } from "../graph/schema.js";
 
 const CWD = process.cwd();
@@ -209,8 +212,19 @@ async function serve(watch: boolean) {
     });
   }
 
+  // Start API server (annotations, drift, coverage)
+  startAPIServer({
+    annotationsDir: annDir(),
+    distDir: DIST_DIR,
+    projectDirs: config.projects.map((p) => ({
+      name: p.name,
+      path: p.path,
+      decisionsDir: path.join(p.path, p.decisionsDir),
+    })),
+  }, 4174);
+
   // Serve with vite preview
-  console.log(`\nStarting server...`);
+  console.log(`\nStarting UI server...`);
   const vite = spawn("npx", ["vite", "preview", "--port", "4173"], {
     cwd: appDir,
     stdio: "inherit",
@@ -398,6 +412,38 @@ switch (cmd) {
     context(origin, constraintArgs);
     break;
   }
+  case "clusters": {
+    const graph = loadGraph();
+    const clusters = clusterBySupersedes(graph);
+    if (clusters.length === 0) {
+      console.log("\nNo clusters found.");
+      break;
+    }
+    console.log(`\nDecision clusters (${clusters.length}):\n`);
+    for (const c of clusters) {
+      console.log(`  ${c.label} (${c.ddIds.length} DDs, ${c.gapCount} gaps)`);
+      for (const id of c.ddIds) {
+        const node = graph.nodes.find((n) => n.id === id);
+        console.log(`    ${id}: ${(node?.data as any)?.title ?? ""}`);
+      }
+    }
+    break;
+  }
+  case "drift": {
+    const graph = loadGraph();
+    const ddNodes = graph.nodes.filter((n) => n.type === "decision");
+    const drifted = detectDrift(ddNodes, CWD);
+    if (drifted.length === 0) {
+      console.log("\nNo drift detected.");
+      break;
+    }
+    console.log(`\nPotential drift (${drifted.length} decisions):\n`);
+    for (const d of drifted) {
+      console.log(`  ${d.ddId}: ${d.commitsSince} commits since ${d.ddDate}`);
+      console.log(`    latest: ${d.latestCommit}`);
+    }
+    break;
+  }
   case "init": {
     if (existsSync(CONFIG_PATH)) {
       console.log(`dve.config.json already exists.`);
@@ -445,6 +491,8 @@ switch (cmd) {
     annotate <id> --action <type> --body "text"
                                     Create annotation
     context <id> [--constraint=...] Generate ContextBundle for DGE restart
+    clusters                        Show decision clusters (supersedes chains)
+    drift                           Detect decisions that may have diverged
     version                         Show version
 
   Multi-project:

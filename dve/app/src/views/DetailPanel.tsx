@@ -1,5 +1,7 @@
 // L2 + L3: Detail panel — shows DD/Gap/Session details + dialogue view
 
+import { useState } from "preact/hooks";
+import { AnnotationDialog } from "../components/AnnotationDialog";
 import type { GraphNode, DVEGraph, Edge } from "../types";
 
 interface Props {
@@ -64,6 +66,8 @@ function RelatedSessions({ ddId, graph }: { ddId: string; graph: DVEGraph }) {
 }
 
 export function DetailPanel({ node, graph, onClose, onDGERestart }: Props) {
+  const [showAnnotation, setShowAnnotation] = useState(false);
+
   if (!node) {
     return (
       <div style={panelStyle}>
@@ -107,7 +111,17 @@ export function DetailPanel({ node, graph, onClose, onDGERestart }: Props) {
             <button onClick={() => onDGERestart(node)} style={actionBtnStyle}>
               {"\u{1F504}"} DGE\u3067\u518D\u691C\u8A0E
             </button>
+            <button onClick={() => setShowAnnotation(true)} style={actionBtnStyle}>
+              {"\u{1F4AC}"} \u30B3\u30E1\u30F3\u30C8
+            </button>
           </div>
+          {showAnnotation && (
+            <AnnotationDialog
+              targetId={node.id}
+              onClose={() => setShowAnnotation(false)}
+              onCreated={() => { setShowAnnotation(false); alert("Annotation saved. Run dve build to update graph."); }}
+            />
+          )}
         </>
       )}
 
@@ -133,11 +147,21 @@ export function DetailPanel({ node, graph, onClose, onDGERestart }: Props) {
           <div style={{ fontSize: "12px", color: "#666" }}>
             Status: {d.status}
           </div>
-          <div style={{ marginTop: "16px" }}>
+          <div style={{ marginTop: "16px", display: "flex", gap: "8px", flexWrap: "wrap" }}>
             <button onClick={() => onDGERestart(node)} style={actionBtnStyle}>
               {"\u{1F504}"} \u3053\u306EGap\u3067DGE
             </button>
+            <button onClick={() => setShowAnnotation(true)} style={actionBtnStyle}>
+              {"\u{1F4AC}"} \u30B3\u30E1\u30F3\u30C8
+            </button>
           </div>
+          {showAnnotation && (
+            <AnnotationDialog
+              targetId={node.id}
+              onClose={() => setShowAnnotation(false)}
+              onCreated={() => { setShowAnnotation(false); alert("Annotation saved. Run dve build to update graph."); }}
+            />
+          )}
         </>
       )}
 
