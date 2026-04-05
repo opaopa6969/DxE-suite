@@ -3,6 +3,8 @@ import { GraphContainer } from "./components/GraphContainer";
 import { DetailPanel } from "./views/DetailPanel";
 import { SearchBar } from "./components/SearchBar";
 import { ProjectList } from "./views/ProjectList";
+import { StateChart } from "./views/StateChart";
+import { CoverageView } from "./views/CoverageView";
 import { loadGraph, loadChangelog } from "./lib/graph-loader";
 import type { DVEGraph, Changelog, GraphNode } from "./types";
 
@@ -13,6 +15,7 @@ export function App() {
   const [expandedDecisions, setExpandedDecisions] = useState<Set<string>>(new Set());
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [sideTab, setSideTab] = useState<"detail" | "state" | "coverage">("detail");
   const [projectIndex, setProjectIndex] = useState<any>(null);
   const [selectedProject, setSelectedProject] = useState<string | null | undefined>(undefined);
   // undefined = not determined yet, null = all projects, string = specific project
@@ -167,8 +170,22 @@ export function App() {
             {graph.stats.specs ? ` Spec:${graph.stats.specs}` : ""} A:{graph.stats.annotations}
           </span>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
           <SearchBar onSearch={handleSearch} />
+          {["detail", "state", "coverage"].map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setSideTab(tab as any)}
+              style={{
+                padding: "2px 8px", fontSize: "11px", borderRadius: "4px", cursor: "pointer",
+                border: sideTab === tab ? "1px solid #4299e1" : "1px solid #e2e8f0",
+                background: sideTab === tab ? "#ebf8ff" : "#fff",
+                color: sideTab === tab ? "#2b6cb0" : "#666",
+              }}
+            >
+              {tab === "detail" ? "Detail" : tab === "state" ? "State" : "Coverage"}
+            </button>
+          ))}
           <span style={{ fontSize: "11px", color: "#999" }}>
             {new Date(graph.generated_at).toLocaleString()}
           </span>
@@ -186,15 +203,19 @@ export function App() {
         />
       </div>
 
-      {/* Detail Panel (L2/L3) */}
-      {selectedNode && (
+      {/* Side Panel */}
+      {(selectedNode || sideTab !== "detail") && (
         <div style={{ flex: "0 0 360px", marginTop: "40px", borderLeft: "1px solid #e2e8f0", overflow: "hidden" }}>
-          <DetailPanel
-            node={selectedNode}
-            graph={graph}
-            onClose={() => setSelectedNode(null)}
-            onDGERestart={handleDGERestart}
-          />
+          {sideTab === "detail" && (
+            <DetailPanel
+              node={selectedNode}
+              graph={graph}
+              onClose={() => setSelectedNode(null)}
+              onDGERestart={handleDGERestart}
+            />
+          )}
+          {sideTab === "state" && <StateChart />}
+          {sideTab === "coverage" && <CoverageView />}
         </div>
       )}
     </div>

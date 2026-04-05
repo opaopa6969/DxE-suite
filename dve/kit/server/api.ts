@@ -6,6 +6,7 @@ import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync, statSy
 import { execSync } from "node:child_process";
 import path from "node:path";
 import type { DVEGraph } from "../graph/schema.js";
+import { detectProjectState } from "../parser/state-detector.js";
 
 interface APIConfig {
   annotationsDir: string;
@@ -143,6 +144,20 @@ ${text}
       }
 
       return json(res, { coverage: charGaps });
+    }
+
+    // GET /api/status — project states (DRE + phase)
+    if (req.method === "GET" && url.pathname === "/api/status") {
+      const states = config.projectDirs.map((p) =>
+        detectProjectState(p.name, p.path)
+      );
+      return json(res, {
+        projects: states,
+        stateChart: {
+          phases: ["spec", "implementation", "stabilization", "maintenance"],
+          dreStates: ["FRESH", "INSTALLED", "CUSTOMIZED", "OUTDATED"],
+        },
+      });
     }
 
     // 404
