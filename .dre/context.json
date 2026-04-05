@@ -7,28 +7,87 @@
   "history": [
     {
       "phase": "backlog",
-      "timestamp": "2026-04-05T12:49:21.980Z",
+      "timestamp": "2026-04-05T12:54:14.665Z",
       "action": "init"
     },
     {
-      "phase": "spec",
-      "timestamp": "2026-04-05T12:50:05.398Z",
+      "phase": "gap_extraction",
+      "timestamp": "2026-04-05T12:54:14.721Z",
       "action": "transition from backlog"
     },
     {
-      "phase": "gap_extraction",
-      "timestamp": "2026-04-05T12:50:05.418Z",
-      "action": "transition from spec"
+      "phase": "gap_extraction/flow_detection",
+      "timestamp": "2026-04-05T12:54:14.738Z",
+      "action": "sub-transition (enter)"
     },
     {
-      "phase": "impl",
-      "timestamp": "2026-04-05T12:50:05.436Z",
-      "action": "push (drill down)"
-    },
-    {
-      "phase": "gap_extraction",
-      "timestamp": "2026-04-05T12:50:05.455Z",
-      "action": "pop (returned from impl)"
+      "phase": "gap_extraction/dialogue_generation",
+      "timestamp": "2026-04-05T12:54:14.756Z",
+      "action": "sub-transition from flow_detection"
     }
-  ]
+  ],
+  "plugins_sm": {
+    "gap_extraction": {
+      "plugin": "dge",
+      "states": [
+        {
+          "id": "flow_detection",
+          "next": "context_collection",
+          "description": "Flow + structure auto-detect (quick/design-review/brainstorm/tribunal/...)"
+        },
+        {
+          "id": "context_collection",
+          "next": "theme_clarification",
+          "description": "Phase 0 — auto-read README, docs/, tree, git log, DVE ContextBundle"
+        },
+        {
+          "id": "theme_clarification",
+          "next": "character_selection",
+          "description": "Clarify or refine theme"
+        },
+        {
+          "id": "character_selection",
+          "next": "dialogue_generation",
+          "description": "Fixed frame (Yang+Imaizumi) + variable frame (theme-specific)"
+        },
+        {
+          "id": "dialogue_generation",
+          "next": "gap_structuring",
+          "description": "Character dialogue → Gap markers"
+        },
+        {
+          "id": "gap_structuring",
+          "next": "session_save",
+          "description": "Category + Severity classification"
+        },
+        {
+          "id": "session_save",
+          "next": "summary",
+          "description": "Write to dge/sessions/"
+        },
+        {
+          "id": "summary",
+          "next": "user_choice",
+          "description": "Gap/idea list + auto-merge results"
+        },
+        {
+          "id": "user_choice",
+          "next": null,
+          "description": "Branch: re-run / auto-iterate / spec / record DD / end"
+        },
+        {
+          "id": "spec_generation",
+          "next": null,
+          "description": "UC/TECH/DD/DQ/ACT spec generation"
+        },
+        {
+          "id": "record_decision",
+          "next": "user_choice",
+          "description": "DD-NNN recording + index update"
+        }
+      ],
+      "current": "dialogue_generation"
+    }
+  },
+  "sub_state": "dialogue_generation"
 }

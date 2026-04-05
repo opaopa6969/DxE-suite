@@ -1,10 +1,33 @@
-# DVE Plugin Manifest — visualization (no phase, cross-cutting)
+# DVE Plugin Manifest — visualization (cross-cutting, no phase insertion)
 plugin:
   id: dve
   name: "Decision Visualization Engine"
   version: "4.0.0"
-  type: tool  # not a phase, but a cross-cutting tool
+  type: tool
   description: "Visualize decision process across all phases"
   triggers:
     - "DVE で見せて"
     - "決定マップを見せて"
+  # DVE has internal states but doesn't insert a phase into the main SM
+  # These states describe DVE's own workflow when invoked
+  states:
+    - id: build_graph
+      next: render
+      description: "Parse sessions/decisions/specs → graph.json"
+    - id: render
+      next: interact
+      description: "Cytoscape.js graph rendering"
+    - id: interact
+      next: null
+      description: "User interaction (click, search, annotate)"
+      branches:
+        annotate: create_annotation
+        context: generate_context
+        dge_restart: null
+    - id: create_annotation
+      next: build_graph
+      description: "Create annotation → rebuild graph"
+    - id: generate_context
+      next: null
+      description: "Generate ContextBundle → copy to clipboard → DGE"
+

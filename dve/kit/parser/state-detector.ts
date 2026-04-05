@@ -162,12 +162,27 @@ export interface SMPhase {
   active: boolean;
 }
 
+export interface SubState {
+  id: string;
+  description: string;
+  active: boolean;
+}
+
+export interface PluginSM {
+  plugin: string;
+  phaseId: string;
+  states: SubState[];
+  current: string | null;
+}
+
 export interface WorkflowState {
   phases: SMPhase[];
   currentPhase: string;
-  currentSource: string;  // where was current phase detected
-  stack: string[];         // from .dre/context.json
+  currentSource: string;
+  subState: string | null;
+  stack: string[];
   plugins: { id: string; version: string | null; phase: string; insertAfter: string }[];
+  pluginSMs: PluginSM[];
 }
 
 const BASE_PHASES = ["backlog", "spec", "impl", "review", "release"];
@@ -197,12 +212,24 @@ function readYamlSM(projectPath: string): { phases: string[]; pluginPhases: Reco
   return phases.length > 0 ? { phases, pluginPhases } : null;
 }
 
-function readContextJson(projectPath: string): { stack: string[] } | null {
+interface ContextData {
+  stack: string[];
+  current_phase: string | null;
+  sub_state: string | null;
+  plugins_sm: Record<string, { plugin: string; states: { id: string; next: string | null; description: string }[]; current: string | null }>;
+}
+
+function readContextJson(projectPath: string): ContextData | null {
   const ctxPath = path.join(projectPath, ".dre", "context.json");
   if (!existsSync(ctxPath)) return null;
   try {
     const data = JSON.parse(readFileSync(ctxPath, "utf-8"));
-    return { stack: data.stack ?? [] };
+    return {
+      stack: data.stack ?? [],
+      current_phase: data.current_phase ?? null,
+      sub_state: data.sub_state ?? null,
+      plugins_sm: data.plugins_sm ?? {},
+    };
   } catch { return null; }
 }
 
@@ -261,22 +288,38 @@ export function detectWorkflowState(projectPath: string): WorkflowState {
     phases = phaseList;
   }
 
-  // 4. Determine current phase
+  // 4. Determine current phase + sub-state
   let currentPhase = "unknown";
   let currentSource = "not detected";
+  let subState: string | null = null;
   let stack: string[] = [];
+  const pluginSMs: PluginSM[] = [];
 
   // Priority 1: .dre/context.json (runtime state)
   const ctx = readContextJson(projectPath);
   if (ctx && ctx.stack.length > 0) {
-    currentPhase = ctx.stack[ctx.stack.length - 1].toLowerCase();
-    currentSource = ".dre/context.json (stack top)";
+    currentPhase = ctx.current_phase ?? ctx.stack[ctx.stack.length - 1].toLowerCase();
+    currentSource = ".dre/context.json";
     stack = ctx.stack;
+    subState = ctx.sub_state;
+
+    // Extract plugin sub-state machines
+    for (const [phaseId, psm] of Object.entries(ctx.plugins_sm ?? {})) {
+      pluginSMs.push({
+        plugin: psm.plugin,
+        phaseId,
+        states: (psm.states ?? []).map((s: any) => ({
+          id: s.id,
+          description: s.description ?? "",
+          active: s.id === psm.current,
+        })),
+        current: psm.current,
+      });
+    }
   } else {
     // Priority 2: CLAUDE.md active_phase
     const phaseResult = detectPhase(projectPath);
     if (phaseResult.phase !== "unknown") {
-      // Map active_phase to SM phase id
       const phaseMap: Record<string, string> = {
         spec: "spec", implementation: "impl",
         stabilization: "review", maintenance: "release",
@@ -291,7 +334,7 @@ export function detectWorkflowState(projectPath: string): WorkflowState {
     phase.active = phase.id === currentPhase;
   }
 
-  return { phases, currentPhase, currentSource, stack, plugins: detectedPlugins };
+  return { phases, currentPhase, currentSource, subState, stack, plugins: detectedPlugins, pluginSMs };
 }
 
 // ─── Combined Project State ───

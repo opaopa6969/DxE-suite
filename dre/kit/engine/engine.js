@@ -75,9 +75,10 @@ function serializeYaml(sm) {
 }
 
 function parsePluginManifest(text) {
-  const manifest = { id: '', name: '', version: '', type: 'phase', phases: [] };
-  let inPhases = false;
+  const manifest = { id: '', name: '', version: '', type: 'phase', phases: [], states: [] };
+  let section = null;  // 'phases' | 'states' | 'phase-states'
   let currentPluginPhase = null;
+  let currentState = null;
 
   for (const line of text.split('\n')) {
     // Top-level plugin fields (2-space indent)
@@ -90,25 +91,48 @@ function parsePluginManifest(text) {
     const topType = line.match(/^  type:\s*(\S+)/);
     if (topType) { manifest.type = topType[1]; continue; }
 
-    // phases: section
-    if (/^  phases:/.test(line)) { inPhases = true; continue; }
+    // Section detection
+    if (/^  phases:/.test(line)) { section = 'phases'; continue; }
+    if (/^  states:/.test(line)) { section = 'top-states'; continue; }
 
-    if (inPhases) {
-      // Phase entry (4-space indent + -)
+    // Sub-states within a phase
+    if (/^\s{6}states:/.test(line)) { section = 'phase-states'; continue; }
+
+    if (section === 'phases') {
       const phaseId = line.match(/^\s{4}-\s+id:\s*(\S+)/);
       if (phaseId) {
-        currentPluginPhase = { id: phaseId[1], insert_after: '', ordering: 999, description: '' };
+        currentPluginPhase = { id: phaseId[1], insert_after: '', ordering: 999, description: '', states: [] };
         manifest.phases.push(currentPluginPhase);
+        currentState = null;
         continue;
       }
-
       if (currentPluginPhase) {
         const ia = line.match(/insert_after:\s*(\S+)/);
         if (ia) { currentPluginPhase.insert_after = ia[1]; continue; }
         const ord = line.match(/ordering:\s*(\d+)/);
         if (ord) { currentPluginPhase.ordering = parseInt(ord[1]); continue; }
         const desc = line.match(/description:\s*"(.+)"/);
-        if (desc) { currentPluginPhase.description = desc[1]; continue; }
+        if (desc && !currentState) { currentPluginPhase.description = desc[1]; continue; }
+      }
+    }
+
+    // Parse state entries (either phase sub-states or top-level states)
+    if (section === 'phase-states' || section === 'top-states') {
+      const stateId = line.match(/^\s+-\s+id:\s*(\S+)/);
+      if (stateId) {
+        currentState = { id: stateId[1], next: null, description: '' };
+        if (section === 'phase-states' && currentPluginPhase) {
+          currentPluginPhase.states.push(currentState);
+        } else {
+          manifest.states.push(currentState);
+        }
+        continue;
+      }
+      if (currentState) {
+        const next = line.match(/next:\s*(\S+)/);
+        if (next) { currentState.next = next[1] === 'null' ? null : next[1]; continue; }
+        const desc = line.match(/description:\s*"(.+)"/);
+        if (desc) { currentState.description = desc[1]; continue; }
       }
     }
   }
@@ -119,9 +143,12 @@ function parsePluginManifest(text) {
 
 function loadContext() {
   if (!fs.existsSync(CTX_FILE)) {
-    return { current_phase: null, stack: [], frames: {}, history: [] };
+    return { current_phase: null, sub_state: null, stack: [], frames: {}, plugins_sm: {}, history: [] };
   }
-  return JSON.parse(fs.readFileSync(CTX_FILE, 'utf-8'));
+  const ctx = JSON.parse(fs.readFileSync(CTX_FILE, 'utf-8'));
+  if (!ctx.plugins_sm) ctx.plugins_sm = {};
+  if (!ctx.sub_state) ctx.sub_state = null;
+  return ctx;
 }
 
 function saveContext(ctx) {
@@ -224,6 +251,29 @@ function installPlugin(manifestPath, quiet = false) {
   }
 
   fs.writeFileSync(SM_FILE, serializeYaml(sm));
+
+  // Save plugin sub-states to context
+  const ctx = loadContext();
+  for (const phase of manifest.phases) {
+    if (phase.states && phase.states.length > 0) {
+      ctx.plugins_sm[phase.id] = {
+        plugin: manifest.id,
+        states: phase.states,
+        current: null,
+      };
+    }
+  }
+  // Also save top-level tool states
+  if (manifest.states && manifest.states.length > 0) {
+    ctx.plugins_sm[manifest.id] = {
+      plugin: manifest.id,
+      type: manifest.type,
+      states: manifest.states,
+      current: null,
+    };
+  }
+  saveContext(ctx);
+
   if (!quiet) console.log(`\nState machine updated: ${SM_FILE}`);
 }
 
@@ -237,9 +287,10 @@ function status() {
   }
 
   const current = ctx.current_phase || 'unknown';
+  const BASE = ['backlog', 'spec', 'impl', 'review', 'release'];
   const flow = sm.phases.map(p => {
     const isActive = p.id === current;
-    const isPlugin = !['backlog', 'spec', 'impl', 'review', 'release'].includes(p.id);
+    const isPlugin = !BASE.includes(p.id);
     const label = p.id;
     if (isActive) return `[\u25B6 ${label}]`;
     return isPlugin ? `{${label}}` : label;
@@ -247,8 +298,31 @@ function status() {
 
   console.log(`\n  Workflow: ${flow.join(' \u2192 ')}`);
   console.log(`  Current:  ${current}`);
+
+  // Sub-state display
+  const pluginSM = ctx.plugins_sm?.[current];
+  if (pluginSM && pluginSM.states?.length > 0) {
+    const subCurrent = pluginSM.current || pluginSM.states[0]?.id;
+    const subFlow = pluginSM.states.map(s => {
+      if (s.id === subCurrent) return `[\u25B6 ${s.id}]`;
+      return s.id;
+    });
+    console.log(`  Sub-state: ${subFlow.join(' \u2192 ')}`);
+  }
+
   if (ctx.stack.length > 1) {
     console.log(`  Stack:    ${ctx.stack.join(' > ')}`);
+  }
+
+  // Plugins with sub-states
+  const plugins = Object.entries(ctx.plugins_sm || {});
+  if (plugins.length > 0) {
+    console.log(`  Plugins:`);
+    for (const [phaseId, psm] of plugins) {
+      const stateCount = psm.states?.length ?? 0;
+      const subLabel = psm.current ? ` → ${psm.current}` : '';
+      console.log(`    ${psm.plugin}: ${phaseId} (${stateCount} sub-states${subLabel})`);
+    }
   }
 
   // Recent history
@@ -285,6 +359,38 @@ function transition(targetPhase) {
 
   saveContext(ctx);
   console.log(`\n  ${prev} \u2192 ${targetPhase}`);
+  status();
+}
+
+function subTransition(subState) {
+  const ctx = loadContext();
+  const current = ctx.current_phase;
+  const pluginSM = ctx.plugins_sm?.[current];
+
+  if (!pluginSM || !pluginSM.states?.length) {
+    console.error(`No sub-states defined for phase "${current}".`);
+    process.exit(1);
+  }
+
+  const stateExists = pluginSM.states.some(s => s.id === subState);
+  if (!stateExists) {
+    console.error(`Sub-state "${subState}" not found in ${current}.`);
+    console.error(`Available: ${pluginSM.states.map(s => s.id).join(', ')}`);
+    process.exit(1);
+  }
+
+  const prev = pluginSM.current;
+  pluginSM.current = subState;
+  ctx.sub_state = subState;
+  ctx.history = ctx.history || [];
+  ctx.history.push({
+    phase: `${current}/${subState}`,
+    timestamp: new Date().toISOString(),
+    action: prev ? `sub-transition from ${prev}` : 'sub-transition (enter)',
+  });
+
+  saveContext(ctx);
+  console.log(`\n  ${current}: ${prev || '(start)'} \u2192 ${subState}`);
   status();
 }
 
@@ -334,6 +440,10 @@ switch (cmd) {
   case 'transition':
     if (!args[0]) { console.error('Usage: dre-engine transition <phase>'); process.exit(1); }
     transition(args[0]); break;
+  case 'sub-transition': {
+    if (!args[0]) { console.error('Usage: dre-engine sub-transition <sub-state>'); process.exit(1); }
+    subTransition(args[0]); break;
+  }
   case 'push':
     if (!args[0]) { console.error('Usage: dre-engine push <phase>'); process.exit(1); }
     push(args[0]); break;
@@ -345,8 +455,9 @@ switch (cmd) {
   Commands:
     init                          Initialize .dre/ with state machine
     install-plugin <manifest>     Merge plugin phases into SM
-    status                        Show current workflow state
-    transition <phase>            Move to phase
+    status                        Show current workflow state + sub-state
+    transition <phase>            Move to top-level phase
+    sub-transition <sub-state>    Move to sub-state within current phase
     push <phase>                  Push phase onto stack (drill down)
     pop                           Pop stack (return to previous)
     `);

@@ -440,10 +440,21 @@ switch (cmd) {
       });
       console.log(`\u{2502}  ${flow.join(" → ")}`);
 
-      // Current state info
-      console.log(`\u{2502}  Current: ${wf.currentPhase} (${wf.currentSource})`);
-      if (wf.stack.length > 0) {
+      // Current state + sub-state
+      const subLabel = wf.subState ? ` > ${wf.subState}` : "";
+      console.log(`\u{2502}  Current: ${wf.currentPhase}${subLabel} (${wf.currentSource})`);
+      if (wf.stack.length > 1) {
         console.log(`\u{2502}  Stack: ${wf.stack.join(" > ")}`);
+      }
+
+      // Plugin sub-states for current phase
+      for (const psm of wf.pluginSMs) {
+        if (psm.states.length > 0 && psm.phaseId === wf.currentPhase) {
+          const subFlow = psm.states.map((s) =>
+            s.active ? `[\u{25B6} ${s.id}]` : s.id
+          );
+          console.log(`\u{2502}  Sub (${psm.plugin}): ${subFlow.join(" \u{2192} ")}`);
+        }
       }
 
       // Plugins

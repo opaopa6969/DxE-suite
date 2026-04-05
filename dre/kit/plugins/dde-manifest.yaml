@@ -1,0 +1,48 @@
+# DDE Plugin Manifest — adds doc_deficit_check phase to DRE workflow
+plugin:
+  id: dde
+  name: "Document-Deficit Extraction"
+  version: "4.0.0"
+  phases:
+    - id: doc_deficit_check
+      insert_after: review
+      ordering: 100
+      description: "Detect documentation gaps with LLM+CLI"
+      inputs:
+        - docs_dir
+        - source_code
+      outputs:
+        - deficit_report
+        - fix_suggestions
+      side_effects:
+        - writes: dde/reports/
+      triggers:
+        - "DDE して"
+        - "ドキュメントの穴を探して"
+      # Sub-state machine (DDE internal steps)
+      states:
+        - id: scan_docs
+          next: scan_code
+          description: "Scan docs/ for existing documentation"
+        - id: scan_code
+          next: cross_reference
+          description: "Scan source code for public APIs, types, exports"
+        - id: cross_reference
+          next: deficit_detection
+          description: "Cross-reference code ↔ docs to find gaps"
+        - id: deficit_detection
+          next: report_generation
+          description: "LLM analysis of undocumented features"
+        - id: report_generation
+          next: user_review
+          description: "Generate deficit report with fix suggestions"
+        - id: user_review
+          next: null
+          description: "User reviews and acts on deficits"
+          branches:
+            fix: fix_docs
+            skip: null
+            re_scan: scan_docs
+        - id: fix_docs
+          next: user_review
+          description: "Auto-fix or suggest doc patches"
