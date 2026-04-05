@@ -34,6 +34,7 @@ npm の場合は `node_modules/@unlaxer/dge-toolkit/version.txt` と `dge/versio
 - dge/characters/*.md
 - dge/templates/*.md
 - dge/flows/*.yaml
+- kit/templates/*.md
 - dge/patterns.md
 - dge/integration-guide.md
 - dge/INTERNALS.md
@@ -47,6 +48,7 @@ npm の場合は `node_modules/@unlaxer/dge-toolkit/version.txt` と `dge/versio
 
 以下は触りません:
 - dge/sessions/（あなたの DGE session 出力）
+- dge/decisions/（あなたの設計判断 DD 出力）
 - dge/custom/（あなたのカスタムファイル）
 
 更新しますか？
