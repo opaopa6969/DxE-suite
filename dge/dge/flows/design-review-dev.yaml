@@ -1,0 +1,54 @@
+name: design-review-dev
+display_name: "🔍 設計レビュー（DGE-toolkit 開発用）"
+
+# design-review.yaml と同じだが出力先が intake/、レビューOK あり
+# DGE-toolkit リポジトリ自体で使う
+
+trigger_keywords: ["DGE して", "詳しく", "設計レビュー"]
+
+workflow:
+  steps:
+    - id: init
+    - id: theme
+    - id: template
+    - id: pattern
+    - id: characters
+      mode: confirm
+    - id: dialogue
+    - id: extract_gaps
+    - id: save
+    - id: summary
+    - id: spec
+
+must_rules:
+  - id: save
+    text: "会話劇は保存（無条件）"
+  - id: output_table
+    text: "Gap 一覧テーブルを出力"
+  - id: choices
+    text: "一覧の後に番号付き選択肢を提示（省略しない）"
+  - id: character_confirm
+    text: "キャラ選択はユーザー確認"
+  - id: spec_before_impl
+    text: "実装前に Critical/High の Spec を生成"
+  - id: spec_header
+    text: "Spec に DGE 生成警告ヘッダ + status: draft"
+  - id: write_scope
+    text: "dge/ および design-materials/ 内にのみ書き込む"
+
+output_dir: design-materials/intake/
+spec_dir: dge/specs/
+
+post_actions:
+  - id: dge_again
+    display_name: "DGE を回す"
+  - id: auto_iterate
+    display_name: "実装できるまで回す"
+  - id: implement
+    display_name: "実装する → Spec 化"
+  - id: merge_plain
+    display_name: "素の LLM でも回してマージ"
+  - id: review_ok
+    display_name: "レビューOK → intake/ から completed/ に移動"
+  - id: later
+    display_name: "後で"

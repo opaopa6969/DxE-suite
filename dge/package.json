@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "@unlaxer/dge-toolkit": "^3.3.1"
+  }
+}
