@@ -414,42 +414,45 @@ switch (cmd) {
     break;
   }
   case "status": {
-    const PHASE_ICONS: Record<string, string> = {
-      spec: "\u{1F4DD}", implementation: "\u{1F528}", stabilization: "\u{1F6E1}\uFE0F",
-      maintenance: "\u{1F527}", unknown: "\u{2753}",
-    };
     const DRE_ICONS: Record<string, string> = {
       FRESH: "\u{26AA}", INSTALLED: "\u{1F7E2}", CUSTOMIZED: "\u{1F7E1}",
       OUTDATED: "\u{1F534}", UNKNOWN: "\u{2753}",
     };
 
     console.log(`\nDVE Project Status\n`);
-    console.log(`${"Project".padEnd(20)} ${"Phase".padEnd(22)} ${"DRE".padEnd(16)} ${"Sessions".padEnd(10)} DDs`);
-    console.log("─".repeat(80));
 
     for (const project of config.projects) {
       const state = detectProjectState(project.name, project.path);
-      const phaseIcon = PHASE_ICONS[state.phase.phase] ?? "";
       const dreIcon = DRE_ICONS[state.dre.installState] ?? "";
+      const wf = state.workflow;
 
-      console.log(
-        `${state.projectName.padEnd(20)} ` +
-        `${phaseIcon} ${state.phase.phase.padEnd(18)} ` +
-        `${dreIcon} ${state.dre.installState.padEnd(12)} ` +
-        `${String(state.dgeSessionCount).padEnd(10)} ` +
-        `${state.ddCount}`
-      );
-      if (state.dre.customizedFiles.length > 0) {
-        console.log(`${"".padEnd(20)} customized: ${state.dre.customizedFiles.length} files`);
+      console.log(`\u{250C}${"─".repeat(70)}`);
+      console.log(`\u{2502} ${state.projectName}  ${dreIcon} DRE ${state.dre.installState}${state.dre.localVersion ? ` v${state.dre.localVersion}` : ""}  Sessions:${state.dgeSessionCount} DDs:${state.ddCount}`);
+      console.log(`\u{2502}`);
+
+      // Workflow state machine
+      const flow = wf.phases.map((p) => {
+        const isActive = p.active;
+        const isPlugin = p.source === "plugin";
+        const label = isPlugin ? `${p.id} (${p.plugin})` : p.id;
+        if (isActive) return `[\u{25B6} ${label}]`;
+        return isPlugin ? `{${label}}` : label;
+      });
+      console.log(`\u{2502}  ${flow.join(" → ")}`);
+
+      // Current state info
+      console.log(`\u{2502}  Current: ${wf.currentPhase} (${wf.currentSource})`);
+      if (wf.stack.length > 0) {
+        console.log(`\u{2502}  Stack: ${wf.stack.join(" > ")}`);
       }
-      if (state.dre.installState === "OUTDATED") {
-        console.log(`${"".padEnd(20)} ${state.dre.localVersion} → ${state.dre.kitVersion}`);
+
+      // Plugins
+      if (wf.plugins.length > 0) {
+        console.log(`\u{2502}  Plugins: ${wf.plugins.map((p) => `${p.id}${p.version ? ` v${p.version}` : ""}`).join(", ")}`);
       }
+
+      console.log(`\u{2514}${"─".repeat(70)}`);
     }
-
-    console.log(`\n${"State Chart:".padEnd(20)}`);
-    console.log(`  Phase:   \u{1F4DD} spec → \u{1F528} implementation → \u{1F6E1}\uFE0F stabilization → \u{1F527} maintenance`);
-    console.log(`  DRE:     \u{26AA} FRESH → \u{1F7E2} INSTALLED → \u{1F7E1} CUSTOMIZED → \u{1F534} OUTDATED`);
     break;
   }
   case "clusters": {
