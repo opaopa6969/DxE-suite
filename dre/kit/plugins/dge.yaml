@@ -1,0 +1,16 @@
+plugin:
+  id: dge
+  description: DGE-toolkit — Dialogue-driven Gap Extraction
+  version: ">=3.0.0"
+  phases:
+    - id: gap_extraction
+      insert_after: spec
+      ordering: 100
+      loop_until: remaining_gaps == 0
+      inputs:
+        - spec_file
+      outputs:
+        - gap_list
+      side_effects:
+        - writes: dge/sessions/
+        - writes: dge/specs/

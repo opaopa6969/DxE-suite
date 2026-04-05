@@ -1,0 +1,45 @@
+{
+  "name": "@unlaxer/dre-toolkit",
+  "version": "0.5.0",
+  "description": "DRE (Document Rule Engine) — Claude Code の rules/skills/agents/commands/profiles を配布・管理するツールキット",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/opaopa6969/DRE-toolkit.git"
+  },
+  "keywords": [
+    "claude-code",
+    "claude-config",
+    "rules",
+    "skills",
+    "agents",
+    "llm",
+    "dre"
+  ],
+  "bin": {
+    "dre-install": "install.sh",
+    "dre-update": "update.sh",
+    "dre-tool": "bin/dre-tool.js"
+  },
+  "files": [
+    "LICENSE",
+    "README.md",
+    "version.txt",
+    "rules/",
+    "skills/",
+    "agents/",
+    "commands/",
+    "profiles/",
+    "templates/",
+    "bin/",
+    "install.sh",
+    "update.sh",
+    "samples/",
+    "plugins/",
+    "test/"
+  ],
+  "scripts": {
+    "test": "node test/dre-tool.test.js",
+    "postinstall": "node -e \"console.log('\\n  DRE toolkit installed.\\n  Run: npx dre-install\\n  to set up .claude/ in your project.\\n')\""
+  }
+}

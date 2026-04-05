@@ -1,0 +1,6 @@
+*:Zone.Identifier
+
+# Demo GIFs (generated from .cast via docs/demo/generate.sh)
+docs/demo/*.gif
+
+node_modules/

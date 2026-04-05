@@ -1,0 +1,29 @@
+version: 1
+# DRE base state machine
+# plugin install 時に plugins_before / plugins_after が自動追加される
+
+phases:
+  - id: backlog
+    next: spec
+    plugins_before: []
+    plugins_after: []
+
+  - id: spec
+    next: impl
+    plugins_before: []
+    plugins_after: [dge]
+
+  - id: impl
+    next: review
+    plugins_before: []
+    plugins_after: []
+
+  - id: review
+    next: release
+    plugins_before: []
+    plugins_after: [dde]
+
+  - id: release
+    next: null
+    plugins_before: []
+    plugins_after: []

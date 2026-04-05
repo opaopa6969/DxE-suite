@@ -1,0 +1,17 @@
+plugin:
+  id: dde
+  description: DDE-toolkit — Document-Deficit Extraction
+  version: ">=1.0.0"
+  phases:
+    - id: doc_audit
+      insert_after: review
+      ordering: 200
+      loop_until: doc_gaps == 0
+      inputs:
+        - implementation_files
+        - existing_docs
+      outputs:
+        - doc_gap_list
+      side_effects:
+        - reads: docs/
+        - writes: docs/

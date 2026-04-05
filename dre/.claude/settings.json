@@ -1,0 +1,25 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .dre/hooks/post-tool-use.sh"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "Read .dre/context.json if it exists. If the stack array is non-empty and any frame has a non-empty 'remaining' array, return {\"ok\": false, \"reason\": \"Stack has pending items. Remaining options: <list remaining>. Please present these options to the user and continue the workflow.\"}. Otherwise return {\"ok\": true}."
+          }
+        ]
+      }
+    ]
+  }
+}
