@@ -1,0 +1,23 @@
+# DGE Plugin Manifest — adds gap_extraction phase to DRE workflow
+plugin:
+  id: dge
+  name: "Design-Gap Extraction"
+  version: "4.0.0"
+  phases:
+    - id: gap_extraction
+      insert_after: spec
+      ordering: 100
+      description: "Run DGE sessions to discover design gaps"
+      loop_until: "critical_gaps == 0 && high_gaps == 0"
+      inputs:
+        - spec_file
+        - design_docs
+      outputs:
+        - gap_list
+        - decisions
+      side_effects:
+        - writes: dge/sessions/
+        - writes: dge/decisions/
+      triggers:
+        - "DGE して"
+        - "gap を探して"

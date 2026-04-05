@@ -1,0 +1,10 @@
+# DVE Plugin Manifest — visualization (no phase, cross-cutting)
+plugin:
+  id: dve
+  name: "Decision Visualization Engine"
+  version: "4.0.0"
+  type: tool  # not a phase, but a cross-cutting tool
+  description: "Visualize decision process across all phases"
+  triggers:
+    - "DVE で見せて"
+    - "決定マップを見せて"

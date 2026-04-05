@@ -1,0 +1,353 @@
+#!/usr/bin/env node
+// DRE Workflow Engine — state machine management
+// Usage:
+//   dre-engine init              Initialize .dre/ with base state machine
+//   dre-engine install-plugin <manifest.yaml>  Merge plugin into SM
+//   dre-engine status            Show current state
+//   dre-engine transition <phase>  Move to phase
+//   dre-engine push <phase>      Push phase onto stack (drill down)
+//   dre-engine pop               Pop stack (return to previous)
+
+const fs = require('fs');
+const path = require('path');
+
+const CWD = process.cwd();
+const DRE_DIR = path.join(CWD, '.dre');
+const SM_FILE = path.join(DRE_DIR, 'state-machine.yaml');
+const CTX_FILE = path.join(DRE_DIR, 'context.json');
+
+// ─── Simple YAML parser (no deps) ───
+
+function parseYaml(text) {
+  const result = { version: 1, phases: [] };
+  let currentPhase = null;
+  let inPlugins = null; // 'before' | 'after'
+
+  for (const line of text.split('\n')) {
+    const vMatch = line.match(/^version:\s*(\d+)/);
+    if (vMatch) { result.version = parseInt(vMatch[1]); continue; }
+
+    const phaseMatch = line.match(/^\s+-\s+id:\s*(\S+)/);
+    if (phaseMatch) {
+      currentPhase = { id: phaseMatch[1], next: null, description: '', plugins_before: [], plugins_after: [] };
+      result.phases.push(currentPhase);
+      inPlugins = null;
+      continue;
+    }
+
+    if (currentPhase) {
+      const nextMatch = line.match(/^\s+next:\s*(\S+)/);
+      if (nextMatch) { currentPhase.next = nextMatch[1] === 'null' ? null : nextMatch[1]; continue; }
+
+      const descMatch = line.match(/^\s+description:\s*"(.+)"/);
+      if (descMatch) { currentPhase.description = descMatch[1]; continue; }
+
+      if (/plugins_before:/.test(line)) { inPlugins = 'before'; continue; }
+      if (/plugins_after:/.test(line)) { inPlugins = 'after'; continue; }
+
+      const pluginMatch = line.match(/^\s+-\s+(\S+)/);
+      if (pluginMatch && inPlugins) {
+        const list = inPlugins === 'before' ? currentPhase.plugins_before : currentPhase.plugins_after;
+        list.push(pluginMatch[1].replace(/#.*/, '').trim());
+        continue;
+      }
+    }
+  }
+  return result;
+}
+
+function serializeYaml(sm) {
+  let out = `version: ${sm.version}\nphases:\n`;
+  for (const p of sm.phases) {
+    out += `  - id: ${p.id}\n`;
+    out += `    next: ${p.next ?? 'null'}\n`;
+    if (p.description) out += `    description: "${p.description}"\n`;
+    if (p.plugins_before?.length) {
+      out += `    plugins_before:\n`;
+      for (const pl of p.plugins_before) out += `      - ${pl}\n`;
+    }
+    if (p.plugins_after?.length) {
+      out += `    plugins_after:\n`;
+      for (const pl of p.plugins_after) out += `      - ${pl}\n`;
+    }
+  }
+  return out;
+}
+
+function parsePluginManifest(text) {
+  const manifest = { id: '', name: '', version: '', type: 'phase', phases: [] };
+  let inPhases = false;
+  let currentPluginPhase = null;
+
+  for (const line of text.split('\n')) {
+    // Top-level plugin fields (2-space indent)
+    const topId = line.match(/^  id:\s*(\S+)/);
+    if (topId && !manifest.id) { manifest.id = topId[1]; continue; }
+    const topName = line.match(/^  name:\s*"(.+)"/);
+    if (topName) { manifest.name = topName[1]; continue; }
+    const topVer = line.match(/^  version:\s*"(.+)"/);
+    if (topVer) { manifest.version = topVer[1]; continue; }
+    const topType = line.match(/^  type:\s*(\S+)/);
+    if (topType) { manifest.type = topType[1]; continue; }
+
+    // phases: section
+    if (/^  phases:/.test(line)) { inPhases = true; continue; }
+
+    if (inPhases) {
+      // Phase entry (4-space indent + -)
+      const phaseId = line.match(/^\s{4}-\s+id:\s*(\S+)/);
+      if (phaseId) {
+        currentPluginPhase = { id: phaseId[1], insert_after: '', ordering: 999, description: '' };
+        manifest.phases.push(currentPluginPhase);
+        continue;
+      }
+
+      if (currentPluginPhase) {
+        const ia = line.match(/insert_after:\s*(\S+)/);
+        if (ia) { currentPluginPhase.insert_after = ia[1]; continue; }
+        const ord = line.match(/ordering:\s*(\d+)/);
+        if (ord) { currentPluginPhase.ordering = parseInt(ord[1]); continue; }
+        const desc = line.match(/description:\s*"(.+)"/);
+        if (desc) { currentPluginPhase.description = desc[1]; continue; }
+      }
+    }
+  }
+  return manifest;
+}
+
+// ─── Context management ───
+
+function loadContext() {
+  if (!fs.existsSync(CTX_FILE)) {
+    return { current_phase: null, stack: [], frames: {}, history: [] };
+  }
+  return JSON.parse(fs.readFileSync(CTX_FILE, 'utf-8'));
+}
+
+function saveContext(ctx) {
+  fs.mkdirSync(DRE_DIR, { recursive: true });
+  fs.writeFileSync(CTX_FILE, JSON.stringify(ctx, null, 2) + '\n');
+}
+
+function loadSM() {
+  if (!fs.existsSync(SM_FILE)) return null;
+  return parseYaml(fs.readFileSync(SM_FILE, 'utf-8'));
+}
+
+// ─── Commands ───
+
+function init() {
+  fs.mkdirSync(DRE_DIR, { recursive: true });
+
+  // Copy base state machine
+  const baseSM = path.join(__dirname, 'state-machine.yaml');
+  if (fs.existsSync(baseSM)) {
+    fs.copyFileSync(baseSM, SM_FILE);
+  } else {
+    // Generate default
+    const defaultSM = {
+      version: 1,
+      phases: [
+        { id: 'backlog', next: 'spec', description: 'Requirements gathering' },
+        { id: 'spec', next: 'impl', description: 'Design and architecture' },
+        { id: 'impl', next: 'review', description: 'Build features' },
+        { id: 'review', next: 'release', description: 'Review and stabilization' },
+        { id: 'release', next: null, description: 'Release and maintenance' },
+      ],
+    };
+    fs.writeFileSync(SM_FILE, serializeYaml(defaultSM));
+  }
+
+  // Initialize context
+  const ctx = {
+    current_phase: 'backlog',
+    stack: ['backlog'],
+    frames: {},
+    history: [{ phase: 'backlog', timestamp: new Date().toISOString(), action: 'init' }],
+  };
+  saveContext(ctx);
+
+  // Auto-detect and install plugins
+  const pluginsDir = path.join(__dirname, '..', 'plugins');
+  if (fs.existsSync(pluginsDir)) {
+    for (const file of fs.readdirSync(pluginsDir).filter(f => f.endsWith('.yaml'))) {
+      const manifest = parsePluginManifest(fs.readFileSync(path.join(pluginsDir, file), 'utf-8'));
+      // Check if plugin is installed in project
+      const pluginDir = path.join(CWD, manifest.id);
+      if (fs.existsSync(pluginDir) && manifest.phases.length > 0) {
+        installPlugin(path.join(pluginsDir, file), true);
+      }
+    }
+  }
+
+  console.log(`\nDRE workflow engine initialized.`);
+  console.log(`  ${SM_FILE}`);
+  console.log(`  ${CTX_FILE}`);
+  status();
+}
+
+function installPlugin(manifestPath, quiet = false) {
+  const manifest = parsePluginManifest(fs.readFileSync(manifestPath, 'utf-8'));
+  if (!manifest.id || manifest.phases.length === 0) {
+    if (!quiet) console.error('Invalid plugin manifest or no phases to add.');
+    return;
+  }
+
+  const sm = loadSM();
+  if (!sm) { console.error('.dre/state-machine.yaml not found. Run dre-engine init first.'); return; }
+
+  for (const phase of manifest.phases) {
+    // Check if already inserted
+    if (sm.phases.some(p => p.id === phase.id)) {
+      if (!quiet) console.log(`  Phase "${phase.id}" already exists. Skipping.`);
+      continue;
+    }
+
+    const insertIdx = sm.phases.findIndex(p => p.id === phase.insert_after);
+    if (insertIdx < 0) {
+      if (!quiet) console.error(`  Phase "${phase.insert_after}" not found. Cannot insert "${phase.id}".`);
+      continue;
+    }
+
+    // Insert after
+    const newPhase = {
+      id: phase.id,
+      next: sm.phases[insertIdx].next,
+      description: phase.description || `${manifest.name} phase`,
+      plugins_before: [],
+      plugins_after: [],
+    };
+    sm.phases[insertIdx].next = phase.id;
+    sm.phases.splice(insertIdx + 1, 0, newPhase);
+
+    if (!quiet) console.log(`  Inserted phase "${phase.id}" after "${phase.insert_after}"`);
+  }
+
+  fs.writeFileSync(SM_FILE, serializeYaml(sm));
+  if (!quiet) console.log(`\nState machine updated: ${SM_FILE}`);
+}
+
+function status() {
+  const sm = loadSM();
+  const ctx = loadContext();
+
+  if (!sm) {
+    console.log('\n  .dre/ not initialized. Run: dre-engine init');
+    return;
+  }
+
+  const current = ctx.current_phase || 'unknown';
+  const flow = sm.phases.map(p => {
+    const isActive = p.id === current;
+    const isPlugin = !['backlog', 'spec', 'impl', 'review', 'release'].includes(p.id);
+    const label = p.id;
+    if (isActive) return `[\u25B6 ${label}]`;
+    return isPlugin ? `{${label}}` : label;
+  });
+
+  console.log(`\n  Workflow: ${flow.join(' \u2192 ')}`);
+  console.log(`  Current:  ${current}`);
+  if (ctx.stack.length > 1) {
+    console.log(`  Stack:    ${ctx.stack.join(' > ')}`);
+  }
+
+  // Recent history
+  if (ctx.history?.length > 0) {
+    console.log(`  History:`);
+    for (const h of ctx.history.slice(-5)) {
+      console.log(`    ${h.timestamp.split('T')[0]} ${h.action}: ${h.phase}`);
+    }
+  }
+}
+
+function transition(targetPhase) {
+  const sm = loadSM();
+  const ctx = loadContext();
+
+  if (!sm) { console.error('.dre/ not initialized.'); process.exit(1); }
+
+  const phaseExists = sm.phases.some(p => p.id === targetPhase);
+  if (!phaseExists) {
+    console.error(`Phase "${targetPhase}" not in state machine.`);
+    console.error(`Available: ${sm.phases.map(p => p.id).join(', ')}`);
+    process.exit(1);
+  }
+
+  const prev = ctx.current_phase;
+  ctx.current_phase = targetPhase;
+  ctx.stack = [targetPhase];
+  ctx.history = ctx.history || [];
+  ctx.history.push({
+    phase: targetPhase,
+    timestamp: new Date().toISOString(),
+    action: `transition from ${prev}`,
+  });
+
+  saveContext(ctx);
+  console.log(`\n  ${prev} \u2192 ${targetPhase}`);
+  status();
+}
+
+function push(phase) {
+  const ctx = loadContext();
+  ctx.stack.push(phase);
+  ctx.current_phase = phase;
+  ctx.history = ctx.history || [];
+  ctx.history.push({
+    phase,
+    timestamp: new Date().toISOString(),
+    action: 'push (drill down)',
+  });
+  saveContext(ctx);
+  console.log(`\n  Pushed: ${phase} (stack: ${ctx.stack.join(' > ')})`);
+}
+
+function pop() {
+  const ctx = loadContext();
+  if (ctx.stack.length <= 1) {
+    console.log('  Stack is at root. Nothing to pop.');
+    return;
+  }
+  const popped = ctx.stack.pop();
+  ctx.current_phase = ctx.stack[ctx.stack.length - 1];
+  ctx.history = ctx.history || [];
+  ctx.history.push({
+    phase: ctx.current_phase,
+    timestamp: new Date().toISOString(),
+    action: `pop (returned from ${popped})`,
+  });
+  saveContext(ctx);
+  console.log(`\n  Popped: ${popped} \u2192 back to ${ctx.current_phase}`);
+  status();
+}
+
+// ─── Main ───
+
+const [cmd, ...args] = process.argv.slice(2);
+
+switch (cmd) {
+  case 'init': init(); break;
+  case 'install-plugin':
+    if (!args[0]) { console.error('Usage: dre-engine install-plugin <manifest.yaml>'); process.exit(1); }
+    installPlugin(args[0]); break;
+  case 'status': status(); break;
+  case 'transition':
+    if (!args[0]) { console.error('Usage: dre-engine transition <phase>'); process.exit(1); }
+    transition(args[0]); break;
+  case 'push':
+    if (!args[0]) { console.error('Usage: dre-engine push <phase>'); process.exit(1); }
+    push(args[0]); break;
+  case 'pop': pop(); break;
+  default:
+    console.log(`
+  DRE Workflow Engine
+
+  Commands:
+    init                          Initialize .dre/ with state machine
+    install-plugin <manifest>     Merge plugin phases into SM
+    status                        Show current workflow state
+    transition <phase>            Move to phase
+    push <phase>                  Push phase onto stack (drill down)
+    pop                           Pop stack (return to previous)
+    `);
+}
