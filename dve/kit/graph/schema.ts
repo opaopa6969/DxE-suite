@@ -93,6 +93,7 @@ export interface DVEGraph {
     gaps: number;
     decisions: number;
     annotations: number;
+    specs?: number;
   };
   nodes: GraphNode[];
   edges: Edge[];

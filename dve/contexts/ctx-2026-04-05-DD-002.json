@@ -1,0 +1,182 @@
+{
+  "type": "dve-context-bundle",
+  "version": "1.0.0",
+  "origin": {
+    "node_type": "decision",
+    "node_id": "DD-002",
+    "file": "/home/opa/work/AskOS-workspace/DxE-suite/dge/decisions/DD-002-dve-data-model-v2.md"
+  },
+  "summary": {
+    "theme": "dve-design",
+    "date_range": "2026-04-05",
+    "prior_decisions": [
+      "DD-001: DVE は server を持たない（Vite SSG）",
+      "DD-002: DVE データモデル v2（Node 5 + Edge 6 + Query 4）",
+      "DD-003: DVE 技術スタック（Preact + Cytoscape.js + Vite）",
+      "DD-004: DVE は read-only viewer ではなく DGE のハブ",
+      "DD-005: DVE の model / view 完全分離"
+    ],
+    "prior_gaps": [
+      {
+        "id": "2026-04-05-dve-design#G-001",
+        "summary": "session の Gap に一意 ID がない。因果リンクが機械的に辿れない",
+        "status": "Archived"
+      },
+      {
+        "id": "2026-04-05-dve-design#G-002",
+        "summary": "パーサーによるリンク推定の信頼度表現",
+        "status": "Archived"
+      },
+      {
+        "id": "2026-04-05-dve-design#G-003",
+        "summary": "L1 表示方針（全体マップ vs 検索+因果チェーン）",
+        "status": "Archived"
+      },
+      {
+        "id": "2026-04-05-dve-design#G-004",
+        "summary": "server の必要性",
+        "status": "Archived"
+      },
+      {
+        "id": "2026-04-05-dve-design#G-005",
+        "summary": "Phase 分離（Phase 1 = 因果チェーン + Annotation）",
+        "status": "Archived"
+      },
+      {
+        "id": "2026-04-05-dve-design#G-006",
+        "summary": "Mermaid のスケール限界",
+        "status": "Archived"
+      },
+      {
+        "id": "2026-04-05-dve-design#G-007",
+        "summary": "Phase 1 でもインタラクティブ UI は必須",
+        "status": "Archived"
+      },
+      {
+        "id": "2026-04-05-dve-design#G-008",
+        "summary": "session フォーマットのバージョン間不統一",
+        "status": "Archived"
+      },
+      {
+        "id": "2026-04-05-dve-design#G-009",
+        "summary": "不完全データの graceful degradation",
+        "status": "Archived"
+      },
+      {
+        "id": "2026-04-05-dve-design#G-010",
+        "summary": "「未決定の可視化」が DVE のコアバリュー",
+        "status": "Archived"
+      },
+      {
+        "id": "2026-04-05-dve-design#G-011",
+        "summary": "kit 出力 JSON スキーマが API contract",
+        "status": "Archived"
+      },
+      {
+        "id": "2026-04-05-dve-design#G-012",
+        "summary": "DVE は viewer ではなく DGE のハブ (6 UC)",
+        "status": "Archived"
+      },
+      {
+        "id": "2026-04-05-dve-design#G-013",
+        "summary": "Annotation レイヤー (session immutable との両立)",
+        "status": "Archived"
+      },
+      {
+        "id": "2026-04-05-dve-design#G-014",
+        "summary": "DVE → DGE 接続方式",
+        "status": "Archived"
+      },
+      {
+        "id": "2026-04-05-dve-design#G-015",
+        "summary": "overturn 時の影響範囲可視���",
+        "status": "Archived"
+      },
+      {
+        "id": "2026-04-05-dve-design#G-016",
+        "summary": "データモデル v2 統合",
+        "status": "Active"
+      },
+      {
+        "id": "2026-04-05-dve-design#G-017",
+        "summary": "デフォルト表示の折りたたみ戦略",
+        "status": "Active"
+      },
+      {
+        "id": "2026-04-05-dve-design#G-018",
+        "summary": "移行時パーサーレポート",
+        "status": "Active"
+      },
+      {
+        "id": "2026-04-05-dve-design#G-019",
+        "summary": "DxE-suite への DVE 統合 (dxe.js, workspaces)",
+        "status": "Active"
+      },
+      {
+        "id": "2026-04-05-dve-design#G-020",
+        "summary": "CLI クエリ (npx dve trace) + Claude Code skill",
+        "status": "Active"
+      },
+      {
+        "id": "2026-04-05-dve-design#G-021",
+        "summary": "DVE → DGE プロトコル 2 方式 (inline / file ref)",
+        "status": "Active"
+      },
+      {
+        "id": "2026-04-05-dve-design#G-022",
+        "summary": "`npx dve serve --watch` による自動更新",
+        "status": "Active"
+      },
+      {
+        "id": "2026-04-05-dve-design#G-023",
+        "summary": "ドリフト検出 (Phase 1: annotation(drift), Phase 2: git diff)",
+        "status": "Active"
+      },
+      {
+        "id": "2026-04-05-dve-design#G-024",
+        "summary": "DVE 自身のセッションをドッグフーディングデータに",
+        "status": "Active"
+      },
+      {
+        "id": "2026-04-05-dve-design#G-025",
+        "summary": "annotation 重みづけ + DD ノードビジュアルステート",
+        "status": "Active"
+      },
+      {
+        "id": "2026-04-05-dve-design#G-026",
+        "summary": "DD ノードサイズを関連 Gap 数に比例（新メンバー導線）",
+        "status": "Active"
+      },
+      {
+        "id": "2026-04-05-dve-design#G-027",
+        "summary": "ビルド差分 changelog.json + \"NEW\" バッジ",
+        "status": "Active"
+      },
+      {
+        "id": "2026-04-05-dve-design#G-028",
+        "summary": "L3 DialogueView: line_ref 中心ハイライト + キャラ色分け",
+        "status": "Active"
+      },
+      {
+        "id": "2026-04-05-dve-design#G-029",
+        "summary": "CLI 検索 `npx dve search`",
+        "status": "Active"
+      }
+    ],
+    "characters_used": [
+      "今泉",
+      "ヤン",
+      "深澤",
+      "ビーン",
+      "リヴァイ",
+      "僕"
+    ],
+    "session_count": 1
+  },
+  "new_constraints": [
+    "Annotation機能が追加された"
+  ],
+  "annotations": [],
+  "suggested_action": "new_angle",
+  "prompt_template": "DD-002 (DVE データモデル v2（Node 5 + Edge 6 + Query 4）) を再検討。\n前回の決定: DD-001: DVE は server を持たない（Vite SSG）, DD-002: DVE データモデル v2（Node 5 + Edge 6 + Query 4）, DD-003: DVE 技術スタック（Preact + Cytoscape.js + Vite）, DD-004: DVE は read-only viewer ではなく DGE のハブ, DD-005: DVE の model / view 完全分離。\n前回の Gap: G-001: session の Gap に一意 ID がない。因果リンクが機械的に辿れない; G-002: パーサーによるリンク推定の信頼度表現; G-003: L1 表示方針（全体マップ vs 検索+因果チェーン）; G-004: server の必要性; G-005: Phase 分離（Phase 1 = 因果チェーン + Annotation）。\n前回のキャラ: 今泉, ヤン, 深澤, ビーン, リヴァイ, 僕。\n追加制約: Annotation機能が追加された。\nこの文脈を踏まえて DGE して。"
+}

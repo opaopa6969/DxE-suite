@@ -5,12 +5,17 @@ import path from "node:path";
 import { parseSession } from "../parser/session-parser.js";
 import { parseDecision } from "../parser/decision-parser.js";
 import { parseAnnotation } from "../parser/annotation-parser.js";
+import { parseSpec } from "../parser/spec-parser.js";
+import { gitLinkerEdges } from "../parser/git-linker.js";
 import type { DVEGraph, GraphNode, Edge } from "./schema.js";
 
 export interface BuildOptions {
   sessionsDir: string;
   decisionsDir: string;
+  specsDir: string;
   annotationsDir: string;
+  cwd: string;
+  enableGitLinker?: boolean;
 }
 
 function scanMd(dir: string): string[] {
@@ -153,12 +158,59 @@ export function buildGraph(opts: BuildOptions): DVEGraph {
     }
   }
 
+  // 4. Parse specs
+  const specFiles = scanMd(opts.specsDir);
+  for (const file of specFiles) {
+    const spec = parseSpec(file);
+    if (spec.node.id) {
+      nodes.push({
+        type: "spec",
+        id: spec.node.id!,
+        data: spec.node as any,
+        confidence: spec.confidence,
+        warnings: spec.warnings,
+      });
+      // produces edges: Decision → Spec
+      for (const ddRef of spec.node.decision_refs ?? []) {
+        if (nodes.some((n) => n.id === ddRef)) {
+          edges.push({
+            source: ddRef,
+            target: spec.node.id!,
+            type: "produces",
+            confidence: "inferred",
+            evidence: `Spec references ${ddRef}`,
+          });
+        }
+      }
+    }
+  }
+
+  // 5. Git linker
+  if (opts.enableGitLinker !== false) {
+    const ddIds = new Set(nodes.filter((n) => n.type === "decision").map((n) => n.id));
+    const gitEdges = gitLinkerEdges(opts.cwd, ddIds);
+    for (const edge of gitEdges) {
+      // Add commit as external ref node if not exists
+      if (!nodes.some((n) => n.id === edge.target)) {
+        nodes.push({
+          type: "annotation" as any, // reuse for external refs
+          id: edge.target,
+          data: { type: "commit", ref: edge.target, evidence: edge.evidence } as any,
+          confidence: 0.8,
+          warnings: [],
+        });
+      }
+      edges.push(edge);
+    }
+  }
+
   // Stats
   const stats = {
     sessions: nodes.filter((n) => n.type === "session").length,
     gaps: nodes.filter((n) => n.type === "gap").length,
     decisions: nodes.filter((n) => n.type === "decision").length,
     annotations: nodes.filter((n) => n.type === "annotation").length,
+    specs: nodes.filter((n) => n.type === "spec").length,
   };
 
   return {

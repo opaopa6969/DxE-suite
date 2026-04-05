@@ -1,7 +1,7 @@
 // Shared types matching dve/kit/graph/schema.ts (view-layer subset)
 
 export interface GraphNode {
-  type: "session" | "gap" | "decision" | "annotation";
+  type: "session" | "gap" | "decision" | "annotation" | "spec";
   id: string;
   data: Record<string, any>;
   confidence: number;
@@ -19,7 +19,7 @@ export interface Edge {
 export interface DVEGraph {
   version: string;
   generated_at: string;
-  stats: { sessions: number; gaps: number; decisions: number; annotations: number };
+  stats: { sessions: number; gaps: number; decisions: number; annotations: number; specs?: number };
   nodes: GraphNode[];
   edges: Edge[];
   warnings: { file: string; message: string }[];

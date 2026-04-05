@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "preact/hooks";
 import { GraphContainer } from "./components/GraphContainer";
 import { DetailPanel } from "./views/DetailPanel";
+import { SearchBar } from "./components/SearchBar";
 import { loadGraph, loadChangelog } from "./lib/graph-loader";
 import type { DVEGraph, Changelog, GraphNode } from "./types";
 
@@ -10,6 +11,7 @@ export function App() {
   const [selectedNode, setSelectedNode] = useState<GraphNode | null>(null);
   const [expandedDecisions, setExpandedDecisions] = useState<Set<string>>(new Set());
   const [error, setError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     Promise.all([loadGraph(), loadChangelog()])
@@ -35,6 +37,10 @@ export function App() {
     },
     []
   );
+
+  const handleSearch = useCallback((query: string) => {
+    setSearchQuery(query);
+  }, []);
 
   const handleDGERestart = useCallback(
     (node: GraphNode) => {
@@ -104,12 +110,16 @@ export function App() {
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
           <strong style={{ fontSize: "14px" }}>DVE</strong>
           <span style={{ fontSize: "12px", color: "#999" }}>
-            S:{graph.stats.sessions} G:{graph.stats.gaps} DD:{graph.stats.decisions} A:{graph.stats.annotations}
+            S:{graph.stats.sessions} G:{graph.stats.gaps} DD:{graph.stats.decisions}
+            {graph.stats.specs ? ` Spec:${graph.stats.specs}` : ""} A:{graph.stats.annotations}
           </span>
         </div>
-        <span style={{ fontSize: "11px", color: "#999" }}>
-          {new Date(graph.generated_at).toLocaleString()}
-        </span>
+        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          <SearchBar onSearch={handleSearch} />
+          <span style={{ fontSize: "11px", color: "#999" }}>
+            {new Date(graph.generated_at).toLocaleString()}
+          </span>
+        </div>
       </div>
 
       {/* Graph (L1) */}
@@ -119,6 +129,7 @@ export function App() {
           changelog={changelog}
           onNodeClick={handleNodeClick}
           expandedDecisions={expandedDecisions}
+          searchQuery={searchQuery}
         />
       </div>
 

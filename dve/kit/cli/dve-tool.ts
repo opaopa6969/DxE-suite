@@ -17,7 +17,10 @@ function defaultOpts() {
   return {
     sessionsDir: path.join(CWD, "dge", "sessions"),
     decisionsDir: path.join(CWD, "dge", "decisions"),
+    specsDir: path.join(CWD, "dge", "specs"),
     annotationsDir: ANN_DIR,
+    cwd: CWD,
+    enableGitLinker: true,
   };
 }
 
@@ -80,6 +83,7 @@ function build() {
   console.log(`  Sessions:    ${s.sessions}${noMarkers ? ` (${s.sessions - noMarkers} with gaps, ${noMarkers} no markers)` : ""}`);
   console.log(`  Gaps:        ${s.gaps}${unknownSev ? ` (${unknownSev} severity unknown)` : ""}`);
   console.log(`  Decisions:   ${s.decisions}`);
+  if (s.specs) console.log(`  Specs:       ${s.specs}`);
   console.log(`  Annotations: ${s.annotations}`);
   if (graph.warnings.length > 0) console.log(`  Warnings:    ${graph.warnings.length}`);
   if (changelog && changelog.new_nodes.length > 0) {

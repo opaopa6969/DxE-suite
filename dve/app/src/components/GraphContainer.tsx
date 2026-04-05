@@ -13,13 +13,14 @@ interface Props {
   changelog: Changelog | null;
   onNodeClick: (node: GraphNode) => void;
   expandedDecisions: Set<string>;
+  searchQuery?: string;
 }
 
 function gapCount(graph: DVEGraph, ddId: string): number {
   return graph.edges.filter((e) => e.target === ddId && e.type === "resolves").length;
 }
 
-export function GraphContainer({ graph, changelog, onNodeClick, expandedDecisions }: Props) {
+export function GraphContainer({ graph, changelog, onNodeClick, expandedDecisions, searchQuery }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const cyRef = useRef<cytoscape.Core | null>(null);
 
@@ -28,6 +29,7 @@ export function GraphContainer({ graph, changelog, onNodeClick, expandedDecision
 
     const newIds = new Set(changelog?.new_nodes ?? []);
     const elements: cytoscape.ElementDefinition[] = [];
+    const sq = (searchQuery ?? "").toLowerCase();
 
     // Nodes
     for (const node of graph.nodes) {
@@ -67,6 +69,12 @@ export function GraphContainer({ graph, changelog, onNodeClick, expandedDecision
       else if (isSession) label = d.theme ?? node.id;
       else label = d.action ?? node.id;
 
+      // Search match
+      const searchFields = [d.title, d.theme, d.summary, d.body, d.rationale, node.id]
+        .filter(Boolean)
+        .map((f: string) => f.toLowerCase());
+      const matchesSearch = !sq || searchFields.some((f) => f.includes(sq));
+
       const width = isDD ? Math.max(100, 100 + gapCount(graph, node.id) * 15) : undefined;
 
       elements.push({
@@ -81,7 +89,7 @@ export function GraphContainer({ graph, changelog, onNodeClick, expandedDecision
           width,
           _raw: node,
         },
-        classes: hidden ? "hidden" : undefined,
+        classes: hidden ? "hidden" : (sq && !matchesSearch) ? "dimmed" : undefined,
       });
     }
 
@@ -129,7 +137,7 @@ export function GraphContainer({ graph, changelog, onNodeClick, expandedDecision
     return () => {
       cy.destroy();
     };
-  }, [graph, changelog, expandedDecisions]);
+  }, [graph, changelog, expandedDecisions, searchQuery]);
 
   return (
     <div

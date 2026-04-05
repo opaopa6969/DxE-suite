@@ -111,6 +111,11 @@ export const cytoscapeStyles = [
     selector: "node.hidden",
     style: { "display": "none" as const },
   },
+  // ─── Dimmed (search non-match) ───
+  {
+    selector: "node.dimmed",
+    style: { "opacity": 0.25 },
+  },
   // ─── Edges ───
   {
     selector: "edge",

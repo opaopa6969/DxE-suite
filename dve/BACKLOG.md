@@ -44,16 +44,22 @@
 | 9 | ✅ DxE-suite 統合 — bin/dxe.js に DVE 追加、DEFAULT_TOOLKITS 更新 | #19 | 完了 |
 | 10 | L3 DialogueView — Gap line_ref 中心ハイライト + キャラ色分け + アイコン | #28 | Phase 2 に移動（session 本文読み込みが必要） |
 
-## P2: Phase 2
+## P2: 完了
+
+| # | タスク | Gap | Status |
+|---|--------|-----|--------|
+| 11 | ✅ Spec ノード + produces エッジ — dge/specs/*.md パーサー追加 | spec | 完了 |
+| 12 | ✅ git-linker — `Ref: DD-*` を git log からスキャン → implements エッジ | #10 | 完了 |
+| 13 | ✅ DVE → DGE ファイル参照方式 — DGE Phase 0 に context: 対応追加 | #21 | 完了 |
+| 14 | ✅ Web UI 検索 — SearchBar + ノード dimmed フィルタ | UC | 完了 |
+| 15 | ✅ L3 DialogueView — session 本文表示 + キャラ色分け + アイコン | #28 | 完了 |
+
+## P3: 将来
 
 | # | タスク | Gap | 種類 |
 |---|--------|-----|------|
-| 10 | **Spec ノード + produces/implements エッジ** — dge/specs/*.md パーサー追加 | spec | 設計+実装 |
-| 11 | **git-linker** — `Ref: DD-*` を git log からスキャン → implements エッジ生成 | #10 | 設計+実装 |
-| 12 | **DVE → DGE ファイル参照方式** — `context: dve/contexts/ctx-xxx.json` を DGE Phase 0 で読み込み | #21 | DGE 側改修 |
-| 13 | **Web UI 検索/フィルタ** — ブラウザ内テキスト検索 + severity/date フィルタ | UC | 実装 |
-| 14 | **Web UI から Annotation 直接作成** — local server or filesystem API | UC-2 | 設計+実装 |
-| 15 | **ドリフト自動検出** — git diff ベースで DD 関連ファイルの変更を検出 | #23 | 設計+実装 |
-| 16 | **クラスタリング** — supersedes チェーン or テーマ類似度で DD をグルーピング | UC | 設計 |
-| 17 | **複数プロジェクト横断ビュー** | #16 | 設計 |
-| 18 | **キャラカバレッジ分析** — どのキャラがどの Gap を発見したかのヒートマップ | UC | 設計+実装 |
+| 16 | Web UI から Annotation 直接作成 — local server or filesystem API | UC-2 | 設計+実装 |
+| 17 | ドリフト自動検出 — git diff ベースで DD 関連ファイルの変更を検出 | #23 | 設計+実装 |
+| 18 | クラスタリング — supersedes チェーン or テーマ類似度で DD をグルーピング | UC | 設計 |
+| 19 | 複数プロジェクト横断ビュー | #16 | 設計 |
+| 20 | キャラカバレッジ分析 — どのキャラがどの Gap を発見したかのヒートマップ | UC | 設計+実装 |
