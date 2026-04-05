@@ -1,11 +1,11 @@
 {
   "name": "@unlaxer/dge-toolkit",
-  "version": "3.4.2",
+  "version": "4.0.0",
   "description": "DGE (Dialogue-driven Gap Extraction) — 会話劇で設計の穴を発見するメソッドkit",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/opaopa6969/DGE-toolkit"
+    "url": "https://github.com/opaopa6969/DxE-suite"
   },
   "keywords": [
     "design-review",

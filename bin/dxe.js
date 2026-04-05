@@ -26,12 +26,13 @@ const MESSAGES = {
     unknownToolkit:    name => `Unknown toolkit: ${name}`,
     agentHint:   (desc, phrase) => `  ${desc} → コーディングエージェントで ${phrase}`,
     help: `
-  DxE Suite — DGE / DDE / DRE toolkit manager
+  DxE Suite — DGE / DRE toolkit manager (monorepo)
 
   Usage:
-    npx dxe install           全toolkit をインストール
+    npx dxe install           DGE + DRE をインストール
     npx dxe install dge       DGE のみ
-    npx dxe install dde dre   DDE + DRE
+    npx dxe install dre       DRE のみ
+    npx dxe install dde       DDE (別リポジトリ)
     npx dxe update            全toolkit をアップデート
     npx dxe status            インストール済みバージョンを表示
     `,
@@ -43,12 +44,13 @@ const MESSAGES = {
     unknownToolkit:    name => `Unknown toolkit: ${name}`,
     agentHint:   (desc, phrase) => `  ${desc} → tell your coding agent ${phrase}`,
     help: `
-  DxE Suite — DGE / DDE / DRE toolkit manager
+  DxE Suite — DGE / DRE toolkit manager (monorepo)
 
   Usage:
-    npx dxe install           install all toolkits
+    npx dxe install           install DGE + DRE
     npx dxe install dge       DGE only
-    npx dxe install dde dre   DDE + DRE
+    npx dxe install dre       DRE only
+    npx dxe install dde       DDE (separate repo)
     npx dxe update            update all toolkits
     npx dxe status            show installed versions
     `,
@@ -80,7 +82,8 @@ const M = MESSAGES[lang] || MESSAGES.ja;
 // Strip --lang=* from args before parsing command/targets
 const cleanArgs = rawArgs.filter(a => !a.startsWith('--lang='));
 const [command, ...targets_] = cleanArgs;
-const targets = targets_.length > 0 ? targets_ : Object.keys(TOOLKITS);
+const DEFAULT_TOOLKITS = ['dge', 'dre'];  // DDE is separate repo — opt-in only
+const targets = targets_.length > 0 ? targets_ : DEFAULT_TOOLKITS;
 
 function run(cmd, extraEnv) {
   console.log(`\n  → ${cmd}`);
