@@ -24,24 +24,25 @@
 
 ---
 
-## P0: すぐやる
+## P0: 完了
 
-| # | タスク | Gap | 種類 |
-|---|--------|-----|------|
-| 1 | **`npx dve serve --watch`** — chokidar で sessions/decisions/annotations を監視、変更時に自動リビルド | #22 | 実装 |
-| 2 | **ContextBundle 生成** (`dve/kit/context/bundle.ts`) — graph.json から DVE → DGE 用 JSON + prompt_template 生成 | #12, #14 | 実装 |
-| 3 | **`npx dve annotate` CLI** — `dve annotate DD-005 --action drift --body "..."` でファイル生成 | #29 | 実装 |
-| 4 | **DD ノードサイズ比例** — 関連 Gap 数に応じたノードサイズ (現在は実装済みだが検証要) | #26 | 検証 |
-| 5 | **パーサーレポート改善** — severity unknown 件数、no markers 件数の詳細表示 | #18 | 実装 |
+| # | タスク | Gap | Status |
+|---|--------|-----|--------|
+| 1 | ✅ `npx dve serve --watch` — chokidar ファイル監視 + 自動リビルド | #22 | 完了 |
+| 2 | ✅ ContextBundle 生成 (`dve/kit/context/bundle.ts`) + `dve context` CLI | #12, #14 | 完了 |
+| 3 | ✅ `npx dve annotate` CLI — annotation ファイル生成 | #29 | 完了 |
+| 4 | ✅ DD ノードサイズ比例 — 関連 Gap 数に応じたノードサイズ | #26 | 完了 |
+| 5 | ✅ パーサーレポート — severity unknown, no markers 件数表示 | #18 | 完了 |
+| 6 | ✅ `dve impact` CLI — 影響範囲表示 | #15 | 完了 |
 
-## P1: 設計が要る
+## P1: 完了
 
-| # | タスク | Gap | 種類 |
-|---|--------|-----|------|
-| 6 | **L3 DialogueView** — Gap の line_ref 中心ハイライト + キャラ色分け + アイコン表示 | #28 | 設計+実装 |
-| 7 | **annotation 重みづけ + DD ノードスタイル切り替え** — overturn > drift > constrain の優先度で DD の枠色変更 | #25 | 設計+実装 |
-| 8 | **"NEW" バッジ** — changelog.json ベースで新規ノードにバッジ表示 | #27 | 実装 |
-| 9 | **DxE-suite 統合** — bin/dxe.js に DVE 追加、DEFAULT_TOOLKITS 更新 | #19 | 実装 |
+| # | タスク | Gap | Status |
+|---|--------|-----|--------|
+| 7 | ✅ annotation 重みづけ + DD ノードスタイル (overturn/drift/constrain) | #25 | 完了 (NodeStyles.ts) |
+| 8 | ✅ "NEW" バッジ — changelog.json ベースでノードにバッジ | #27 | 完了 (GraphContainer.tsx) |
+| 9 | ✅ DxE-suite 統合 — bin/dxe.js に DVE 追加、DEFAULT_TOOLKITS 更新 | #19 | 完了 |
+| 10 | L3 DialogueView — Gap line_ref 中心ハイライト + キャラ色分け + アイコン | #28 | Phase 2 に移動（session 本文読み込みが必要） |
 
 ## P2: Phase 2
 

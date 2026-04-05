@@ -93,6 +93,13 @@ const TOOLKITS = {
     desc: { ja: 'rules/skills を配布・管理', en: 'distribute & manage rules/skills' },
     phrase: { ja: '「DRE して」', en: '"run DRE"' },
   },
+  dve: {
+    pkg: '@unlaxer/dve-toolkit',
+    localKit: 'dve/kit',
+    install: null, update: null,  // DVE uses its own CLI
+    desc: { ja: '決定の可視化', en: 'decision visualization' },
+    phrase: { ja: '「DVE で見せて」', en: '"show me in DVE"' },
+  },
 };
 
 const rawArgs = process.argv.slice(2);
@@ -103,7 +110,7 @@ const M = MESSAGES[lang] || MESSAGES.ja;
 const hasYes = rawArgs.includes('--yes') || rawArgs.includes('-y');
 const cleanArgs = rawArgs.filter(a => !a.startsWith('--lang=') && a !== '--yes' && a !== '-y');
 const [command, ...targets_] = cleanArgs;
-const DEFAULT_TOOLKITS = ['dge', 'dre'];
+const DEFAULT_TOOLKITS = ['dge', 'dre', 'dve'];
 const targets = targets_.length > 0 ? targets_ : DEFAULT_TOOLKITS;
 
 function run(cmd, extraEnv) {
