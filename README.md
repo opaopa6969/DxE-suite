@@ -4,8 +4,9 @@ DGE / DRE の 1st-class toolkit を管理するモノレポ。
 
 ```
 D*E シリーズ (1st-class):
-  DGE — Design-Gap Extraction   設計の穴を会話劇で発見
-  DRE — Document Rule Engine    rules/skills/agentsをパッケージ化
+  DGE — Design-Gap Extraction        設計の穴を会話劇で発見
+  DRE — Document Rule Engine         rules/skills/agentsをパッケージ化
+  DVE — Decision Visualization Engine 決定プロセスを可視化・DGEのハブ
 
 関連 (別リポジトリ):
   DDE — Document-Deficit Extraction  ドキュメントの穴をLLM+CLIで発見
@@ -19,16 +20,105 @@ cd DxE-suite
 npm install
 ```
 
+## Build & Run
+
+### DGE / DRE — ツールキット展開
+
+```bash
+# DGE + DRE のスキル・ルールをプロジェクトに展開
+node bin/dxe.js update --yes
+
+# 個別に
+node bin/dxe.js update dge --yes
+node bin/dxe.js update dre --yes
+
+# ステータス確認
+node bin/dxe.js status
+```
+
+### DVE — 決定の可視化
+
+```bash
+# 1. graph.json を生成（dge/sessions/ と dge/decisions/ をパース）
+npx tsc -p dve/kit/tsconfig.json
+node dve/kit/dist/cli/dve-tool.js build
+
+# 2. Web UI をビルド
+cd dve/app
+npm install
+npx vite build        # → dve/dist/ に HTML + JS 出力
+
+# 3. ブラウザで開く
+npx vite preview      # http://localhost:4173
+```
+
+**DVE CLI コマンド:**
+
+```bash
+DVE=node dve/kit/dist/cli/dve-tool.js
+
+# グラフ構築
+$DVE build                     # graph.json + changelog.json 生成
+
+# クエリ
+$DVE trace DD-002              # DD の因果チェーンを表示
+$DVE orphans                   # 未解決 Gap 一覧（DD に紐づかない）
+$DVE search "JWT"              # ノード全文検索
+
+# バージョン
+$DVE version
+```
+
+**出力例:**
+
+```
+$ node dve/kit/dist/cli/dve-tool.js build
+DVE build complete (0.0s):
+  Sessions:    1
+  Gaps:        29
+  Decisions:   5
+  Annotations: 0
+
+$ node dve/kit/dist/cli/dve-tool.js trace DD-002
+Trace: DD-002
+  DD  DD-002: DVE データモデル v2 (2026-04-05) [active]
+    ← Gap 2026-04-05-dve-design#G-001: session の Gap に一意 ID がない (Critical)
+    ← Session: 2026-04-05-dve-design (今泉, ヤン, 深澤, ビーン, リヴァイ, 僕)
+    ...
+
+$ node dve/kit/dist/cli/dve-tool.js orphans
+Orphan gaps (11 — no decision linked):
+  2026-04-05-dve-design#G-003: L1 表示方針 (High)
+  ...
+```
+
+### DGE Server（オプション）
+
+```bash
+cd dge/server
+npm install
+npm run dev              # http://localhost:3456
+```
+
 ## 構成
 
 ```
 DxE-suite/
-├── dge/          DGE toolkit + server
-│   ├── kit/      @unlaxer/dge-toolkit
-│   └── server/   @unlaxer/dge-server
-├── dre/          DRE toolkit
-│   └── kit/      @unlaxer/dre-toolkit
-├── bin/          共通CLI (dxe)
+├── dge/               DGE toolkit + server
+│   ├── kit/           @unlaxer/dge-toolkit
+│   ├── server/        @unlaxer/dge-server
+│   ├── sessions/      DGE セッションログ（immutable）
+│   ├── decisions/     DD-NNN 設計判断記録
+│   └── specs/         生成された spec (draft → reviewed → migrated)
+├── dre/               DRE toolkit
+│   └── kit/           @unlaxer/dre-toolkit
+├── dve/               DVE — Decision Visualization Engine
+│   ├── kit/           @unlaxer/dve-toolkit (parser + graph + CLI)
+│   ├── app/           Web UI (Preact + Cytoscape.js + Vite)
+│   ├── annotations/   ユーザーコメント・異議
+│   ├── contexts/      ContextBundle 出力先（DVE → DGE）
+│   └── dist/          ビルド成果物 (graph.json + HTML)
+├── bin/               共通CLI (dxe)
 └── docs/
 ```
 
@@ -94,32 +184,76 @@ ESLint shareable configs の Claude Code 版。
 
 ---
 
-## DGE + DRE 連携フロー
+## DVE — Decision Visualization Engine
 
-DGE で発見した Gap が DRE を通じてチームに配布されるパイプライン：
+> 決定プロセスを可視化し、過去の文脈から新しい DGE を起動するハブ。
+
+DGE のセッションと DD（設計判断）をグラフ構造で表現し、「なぜこの仕様なのか」を **3 クリックで辿れる** ようにする。grep + 目視で 15 分かかる調査が 30 秒に。
+
+**DVE のコアバリュー = 未決定の可視化。** DD に紐づかない孤立 Gap を検出し、「まだ決定されていないこと」を見せる。
+
+### 主な機能
+
+- **Data Model**: Session / Gap / Decision / Annotation の 4 ノード + 4 エッジ
+- **CLI**: `build` (graph.json 生成), `trace` (因果チェーン), `orphans` (未解決Gap), `search`
+- **Web UI**: Preact + Cytoscape.js — DD 折りたたみグラフ + クリックドリルダウン
+- **DVE → DGE**: ContextBundle 生成 → クリップボードコピー → DGE 再起動（疎結合）
+- **Annotation**: session を汚さずコメント・異議・撤回を記録
+
+### 6 つのユースケース
+
+| UC | 説明 |
+|----|------|
+| Read | DD → Gap → Session の因果チェーンを辿る |
+| Annotate | 過去の会話にコメントを付ける |
+| Fork | 特定の Gap からやり直す |
+| Constrain | 制約を追加して再 DGE |
+| Overturn | 決定を撤回し影響範囲を可視化 |
+| Context | 過去の文脈を復元して DGE に渡す |
+
+### ドキュメント
+
+| | |
+|---|---|
+| Data Model | [dge/specs/dve-data-model.md](./dge/specs/dve-data-model.md) |
+| Use Cases | [dge/specs/dve-uc.md](./dge/specs/dve-uc.md) |
+| Tech Spec | [dge/specs/dve-tech.md](./dge/specs/dve-tech.md) |
+| DGE Session | [dge/sessions/2026-04-05-dve-design.md](./dge/sessions/2026-04-05-dve-design.md) |
+| DD 一覧 | [dge/decisions/index.md](./dge/decisions/index.md) |
+
+---
+
+## DGE + DRE + DVE 連携フロー
+
+DGE → DD → DVE → DGE のフィードバックループ + DRE でチームに配布：
 
 ```
-  DGE (発見)                          DRE (配布)
-  ─────────                          ─────────
-  "DGEして"                           
-    ↓                                 
-  会話劇でGap発見                      
-    ↓                                 
-  dge/sessions/ に記録                 
-    ↓                                 
-  spec生成 → dge/specs/ (draft)        
-    ↓                                 
-  レビュー → (reviewed)                
-    ↓                                 
-  rules/skills化                →    dre/kit/ に追加
-                                       ↓
-                                     npm publish
-                                       ↓
-                                     npx dxe install
-                                       ↓
-                                     .claude/ に展開
-                                       ↓
-                                     チーム全員が同じ環境
+  DGE (発見)              DVE (可視化)           DRE (配布)
+  ─────────              ─────────              ─────────
+  "DGEして"
+    ↓
+  会話劇でGap発見
+    ↓
+  dge/sessions/ に記録 ──→ npx dve build
+    ↓                        ↓
+  DD として記録         →  graph.json 更新
+    ↓                        ↓
+  spec生成              →  ブラウザで可視化
+                              ↓
+                         ユーザーが閲覧
+                              ↓
+                 ┌──── 「ここ違う」「深掘りたい」
+                 ↓
+           DVE → DGE 再起動
+           (ContextBundle)
+                 ↓
+           新しい DGE セッション ──→ 新しい DD ...
+                                        ↓
+                                   rules/skills化 → dre/kit/
+                                        ↓
+                                   npx dxe install
+                                        ↓
+                                   チーム全員が同じ環境
 ```
 
 ## ステートマシン
@@ -169,6 +303,24 @@ INSTALLED (v4.1.0, 新規ファイルのみ同期)
 
 ※ カスタマイズ済みファイルは [skip] — 上書きされない
 ※ dre reset <file> で個別復元可能
+```
+
+### DVE グラフノード
+
+```
+Session (immutable)
+  ↓ discovers
+Gap (session scoped ID)
+  ↓ resolves
+Decision (DD-NNN)
+  ↓ supersedes
+Decision (DD-NNN, 新)
+
+Annotation ──annotates──→ Session | Gap | Decision
+  actions: comment | fork | overturn | constrain | drift
+
+DVE → DGE:
+  ContextBundle (JSON) → prompt_template → クリップボード → DGE 起動
 ```
 
 ### Spec ライフサイクル
