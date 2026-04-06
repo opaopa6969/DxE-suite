@@ -6,6 +6,81 @@ interface Props {
   onDismiss: () => void;
 }
 
+function renderInline(text: string) {
+  // Bold + code
+  const parts = text.split(/(\*\*[^*]+\*\*|`[^`]+`)/g);
+  return parts.map((part, i) => {
+    if (part.startsWith("**") && part.endsWith("**")) {
+      return <strong key={i}>{part.slice(2, -2)}</strong>;
+    }
+    if (part.startsWith("`") && part.endsWith("`")) {
+      return <code key={i} style={{ background: "#edf2f7", padding: "1px 4px", borderRadius: "3px", fontSize: "12px" }}>{part.slice(1, -1)}</code>;
+    }
+    return part;
+  });
+}
+
+function renderMd(body: string) {
+  const lines = body.split("\n");
+  const elements: any[] = [];
+  let inTable = false;
+  let tableRows: string[][] = [];
+
+  const flushTable = () => {
+    if (tableRows.length === 0) return;
+    elements.push(
+      <table key={`t-${elements.length}`} style={{ width: "100%", fontSize: "12px", borderCollapse: "collapse", margin: "8px 0" }}>
+        <tbody>
+          {tableRows.map((cells, ri) => (
+            <tr key={ri} style={{ borderBottom: "1px solid #e2e8f0" }}>
+              {cells.map((cell, ci) => {
+                const Tag = ri === 0 ? "th" : "td";
+                return <Tag key={ci} style={{ padding: "4px 8px", textAlign: "left", fontWeight: ri === 0 ? "bold" : "normal" }}>{renderInline(cell)}</Tag>;
+              })}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    );
+    tableRows = [];
+  };
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+
+    // Table row
+    if (line.startsWith("|")) {
+      // Skip separator row (|---|---|)
+      if (/^\|[\s-|]+\|$/.test(line)) continue;
+      const cells = line.split("|").slice(1, -1).map(c => c.trim());
+      tableRows.push(cells);
+      inTable = true;
+      continue;
+    }
+
+    if (inTable) { flushTable(); inTable = false; }
+
+    // Empty line
+    if (!line.trim()) { continue; }
+
+    // List item
+    if (line.startsWith("- ")) {
+      elements.push(
+        <div key={i} style={{ paddingLeft: "16px", margin: "3px 0" }}>
+          {"• "}{renderInline(line.slice(2))}
+        </div>
+      );
+      continue;
+    }
+
+    // Normal paragraph
+    elements.push(<p key={i} style={{ margin: "6px 0" }}>{renderInline(line)}</p>);
+  }
+
+  if (inTable) flushTable();
+  return elements;
+}
+
 const STEPS = [
   {
     title: "DVE へようこそ",
@@ -65,18 +140,8 @@ export function Onboarding({ onDismiss }: Props) {
       }}>
         <div style={{ fontSize: "32px", textAlign: "center", marginBottom: "8px" }}>{current.icon}</div>
         <h2 style={{ fontSize: "18px", textAlign: "center", marginBottom: "12px" }}>{current.title}</h2>
-        <div style={{
-          fontSize: "14px", lineHeight: 1.8, whiteSpace: "pre-wrap",
-        }}>
-          {current.body.split("\n").map((line, i) => {
-            // Simple markdown bold
-            const parts = line.split(/\*\*(.+?)\*\*/g);
-            return (
-              <p key={i} style={{ margin: line.startsWith("|") ? "2px 0" : "6px 0", fontFamily: line.startsWith("|") ? "monospace" : "inherit", fontSize: line.startsWith("|") ? "12px" : "14px" }}>
-                {parts.map((part, j) => j % 2 === 1 ? <strong key={j}>{part}</strong> : part)}
-              </p>
-            );
-          })}
+        <div style={{ fontSize: "14px", lineHeight: 1.8 }}>
+          {renderMd(current.body)}
         </div>
 
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "20px" }}>

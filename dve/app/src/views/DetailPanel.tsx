@@ -109,10 +109,10 @@ export function DetailPanel({ node, graph, onClose, onDGERestart }: Props) {
           <RelatedSessions ddId={node.id} graph={graph} />
           <div style={{ marginTop: "16px", display: "flex", gap: "8px", flexWrap: "wrap" }}>
             <button onClick={() => onDGERestart(node)} style={actionBtnStyle}>
-              {"\u{1F504}"} DGE\u3067\u518D\u691C\u8A0E
+              {"🔄 DGEで再検討"}
             </button>
             <button onClick={() => setShowAnnotation(true)} style={actionBtnStyle}>
-              {"\u{1F4AC}"} \u30B3\u30E1\u30F3\u30C8
+              {"💬 コメント"}
             </button>
           </div>
           {showAnnotation && (
@@ -149,10 +149,10 @@ export function DetailPanel({ node, graph, onClose, onDGERestart }: Props) {
           </div>
           <div style={{ marginTop: "16px", display: "flex", gap: "8px", flexWrap: "wrap" }}>
             <button onClick={() => onDGERestart(node)} style={actionBtnStyle}>
-              {"\u{1F504}"} \u3053\u306EGap\u3067DGE
+              {"🔄 このGapでDGE"}
             </button>
             <button onClick={() => setShowAnnotation(true)} style={actionBtnStyle}>
-              {"\u{1F4AC}"} \u30B3\u30E1\u30F3\u30C8
+              {"💬 コメント"}
             </button>
           </div>
           {showAnnotation && (
@@ -181,7 +181,7 @@ export function DetailPanel({ node, graph, onClose, onDGERestart }: Props) {
 
       {node.warnings.length > 0 && (
         <div style={{ marginTop: "12px", padding: "8px", background: "#fffff0", borderRadius: "4px", fontSize: "11px", color: "#d69e2e" }}>
-          {"\u26A0\uFE0F"} {node.warnings.join("; ")}
+          {"⚠️"} {node.warnings.join("; ")}
         </div>
       )}
     </div>
