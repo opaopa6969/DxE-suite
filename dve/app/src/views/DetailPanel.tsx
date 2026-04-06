@@ -251,10 +251,12 @@ function SessionDetail({ node, graph, onDGERestart }: { node: GraphNode; graph: 
       )}
 
       {/* Session content */}
-      {content && (
+      {content ? (
         <div style={{ marginBottom: "12px" }}>
           <h4 style={{ fontSize: "13px", color: "#666", marginBottom: "4px" }}>
-            Session Content
+            {content.includes("Scene") || content.includes("先輩") || content.includes("Gap 発見")
+              ? "会話劇"
+              : "Session Content"}
           </h4>
           <div style={{
             maxHeight: expanded ? "none" : "300px",
@@ -279,11 +281,11 @@ function SessionDetail({ node, graph, onDGERestart }: { node: GraphNode; graph: 
             {expanded ? "折りたたむ" : "全文表示"}
           </button>
         </div>
-      )}
-
-      {!content && d.file_path && (
-        <div style={{ fontSize: "12px", color: "#999", marginBottom: "12px" }}>
-          📁 {d.file_path}
+      ) : (
+        <div style={{ padding: "12px", background: "#f7fafc", borderRadius: "6px", fontSize: "12px", color: "#666", marginBottom: "12px" }}>
+          <p>📭 会話劇テキストは保存されていません。</p>
+          <p style={{ marginTop: "4px" }}>DGE session skill の MUST ルール「会話劇は無条件で保存」に従い、次回のセッションから全文が含まれます。</p>
+          {d.file_path && <p style={{ marginTop: "4px", color: "#999" }}>📁 {d.file_path}</p>}
         </div>
       )}
 
