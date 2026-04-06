@@ -2,6 +2,7 @@
 
 import { useState } from "preact/hooks";
 import { AnnotationDialog } from "../components/AnnotationDialog";
+import { Markdown } from "../components/Markdown";
 import type { GraphNode, DVEGraph, Edge } from "../types";
 
 interface Props {
@@ -97,7 +98,7 @@ export function DetailPanel({ node, graph, onClose, onDGERestart }: Props) {
           {d.rationale && (
             <div style={{ marginBottom: "12px" }}>
               <h4 style={{ fontSize: "13px", color: "#666", marginBottom: "4px" }}>Rationale</h4>
-              <p style={{ fontSize: "13px", lineHeight: 1.5 }}>{d.rationale}</p>
+              <Markdown text={d.rationale} fontSize="13px" />
             </div>
           )}
           <div style={{ marginBottom: "12px" }}>
@@ -143,7 +144,9 @@ export function DetailPanel({ node, graph, onClose, onDGERestart }: Props) {
               <span style={{ marginLeft: "8px", fontSize: "12px", color: "#666" }}>{d.category}</span>
             )}
           </div>
-          <p style={{ fontSize: "14px", lineHeight: 1.6, marginBottom: "12px" }}>{d.summary}</p>
+          <div style={{ marginBottom: "12px" }}>
+            <Markdown text={d.summary ?? ""} fontSize="13px" />
+          </div>
           <div style={{ fontSize: "12px", color: "#666" }}>
             Status: {d.status}
           </div>
