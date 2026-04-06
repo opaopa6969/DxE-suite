@@ -159,7 +159,12 @@ if (command === 'install') {
     if (!tk) { console.error(M.unknownToolkit(name)); process.exit(1); }
     console.log(M.installing(name.toUpperCase()));
 
-    if (MONO && tk.localKit) {
+    if (!tk.install) {
+      // No install script (e.g. DVE — uses its own CLI)
+      console.log(`  ${name.toUpperCase()}: no install script (use its own CLI)`);
+      installed.push(tk);
+      continue;
+    } else if (MONO && tk.localKit) {
       // Monorepo: run install.sh directly from local kit
       runScript(tk, tk.install);
     } else {
@@ -181,7 +186,10 @@ if (command === 'install') {
     if (!tk) { console.error(M.unknownToolkit(name)); process.exit(1); }
     console.log(M.updating(name.toUpperCase()));
 
-    if (MONO && tk.localKit) {
+    if (!tk.update) {
+      console.log(`  ${name.toUpperCase()}: no update script (use its own CLI)`);
+      continue;
+    } else if (MONO && tk.localKit) {
       // Monorepo: run update.sh directly from local kit
       runScript(tk, tk.update);
     } else {
