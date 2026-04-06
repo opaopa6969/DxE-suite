@@ -46,6 +46,7 @@ export interface Spec {
   decision_refs: string[];
   migrated_to?: string;
   file_path: string;
+  content?: string;
 }
 
 export type AnnotationAction = "comment" | "fork" | "overturn" | "constrain" | "drift";

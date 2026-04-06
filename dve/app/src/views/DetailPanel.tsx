@@ -179,6 +179,21 @@ export function DetailPanel({ node, graph, onClose, onDGERestart }: Props) {
         <DialogueDetail node={node} graph={graph} />
       )}
 
+      {node.type === "spec" && (
+        <>
+          <h2 style={{ fontSize: "16px", marginBottom: "8px" }}>{d.title}</h2>
+          <div style={{ fontSize: "12px", color: "#666", marginBottom: "8px" }}>
+            Type: {d.type} | Status: {d.status}
+            {d.decision_refs?.length > 0 && ` | DDs: ${d.decision_refs.join(", ")}`}
+          </div>
+          {d.content ? (
+            <Markdown text={d.content} fontSize="12px" glossary={(graph as any).glossary} />
+          ) : (
+            <div style={{ fontSize: "12px", color: "#999" }}>📁 {d.file_path}</div>
+          )}
+        </>
+      )}
+
       {node.warnings.length > 0 && (
         <div style={{ marginTop: "12px", padding: "8px", background: "#fffff0", borderRadius: "4px", fontSize: "11px", color: "#d69e2e" }}>
           {"⚠️"} {node.warnings.join("; ")}

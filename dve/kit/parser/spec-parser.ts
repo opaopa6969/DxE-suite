@@ -56,6 +56,7 @@ export function parseSpec(filePath: string): ParseResult<Spec> {
       decision_refs: decisionRefs,
       migrated_to: migratedTo,
       file_path: filePath,
+      content,
     },
     confidence: title ? 1.0 : 0.5,
     warnings,

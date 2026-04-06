@@ -109,6 +109,24 @@ export const cytoscapeStyles = [
       "height": 40,
     },
   },
+  // ─── Spec nodes ───
+  {
+    selector: 'node[type="spec"]',
+    style: {
+      "label": "data(label)",
+      "text-wrap": "wrap" as const,
+      "text-max-width": "120px",
+      "font-size": "10px",
+      "text-valign": "center" as const,
+      "text-halign": "center" as const,
+      "background-color": "#f0fff4",
+      "border-width": 2,
+      "border-color": "#38a169",
+      "shape": "roundrectangle" as const,
+      "width": 110,
+      "height": 36,
+    },
+  },
   // ─── Annotation nodes ───
   {
     selector: 'node[type="annotation"]',

@@ -71,6 +71,7 @@ export function GraphContainer({ graph, changelog, onNodeClick, onNodeHover, exp
           : `🎭 (未保存)\n${gapCount2} gaps`;
       }
       else if (isGap) label = `G-${node.id.split("#G-")[1] ?? ""}`;
+      else if (node.type === "spec") label = `📋 ${d.type ?? "Spec"}\n${(d.title ?? "").slice(0, 30)}`;
       else if (isSession) label = d.theme ?? node.id;
       else label = d.action ?? node.id;
 
