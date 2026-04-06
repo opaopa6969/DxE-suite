@@ -148,7 +148,7 @@ if [ -n "$FILE_PATH" ] && [ -f "$FILE_PATH" ]; then
   PENDING_FILE=".dre/pending-decisions.json"
 
   # Decision patterns (Japanese + English)
-  DECISION_PATTERNS="にしよう|にする$|に決定|で行く|を採用|を選択|で確定|却下|不要|を使う|に変更|方針:|決定:|確定:|Direction:|Decision:|Decided:|chose|settled on|going with"
+  DECISION_PATTERNS="にしよう|にする$|に決定|で行く|を採用|を選択|で確定|却下|不要|を使う|に変更|で十分|にした$|やめる|使わない|方針:|決定:|確定:|Direction:|Decision:|Decided:|chose|settled on|going with"
 
   DECISION_LINES=$(grep -niE "$DECISION_PATTERNS" "$FILE_PATH" 2>/dev/null | head -5 || true)
 

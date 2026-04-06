@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 # discover-decisions.sh — Scan Claude Code logs for implicit decisions
-# Finds decision-like patterns in regular conversations (not just DGE sessions)
-# Outputs DD draft candidates for review.
+# Detects: 1. Decision patterns in assistant text
+#          2. User approval patterns (よろしく/GO/OK/うん/やろう) after proposals
 #
 # Usage:
 #   bash dve/kit/scripts/discover-decisions.sh [project-dir]
-#   bash dve/kit/scripts/discover-decisions.sh [project-dir] --apply  # create DD drafts
+#   bash dve/kit/scripts/discover-decisions.sh [project-dir] --apply
 
 set -euo pipefail
 
@@ -17,7 +17,6 @@ DRY_RUN=true
 
 for arg in "$@"; do [ "$arg" = "--apply" ] && DRY_RUN=false; done
 
-# Find log directory
 PATH_ENCODED=$(echo "$PROJECT_DIR" | sed 's|/|-|g')
 LOG_DIR=""
 for d in "$CLAUDE_LOGS_DIR"/*/; do
@@ -25,124 +24,106 @@ for d in "$CLAUDE_LOGS_DIR"/*/; do
   [ "$(basename "$d")" = "$PATH_ENCODED" ] && LOG_DIR="$d" && break
 done
 
-if [ -z "$LOG_DIR" ]; then
-  echo "No Claude Code logs found for ${PROJECT_NAME}"
-  exit 0
-fi
+[ -z "$LOG_DIR" ] && echo "No logs for ${PROJECT_NAME}" && exit 0
 
-echo "🔍 Discovering implicit decisions in: ${PROJECT_NAME}"
+echo "🔍 Discovering decisions in: ${PROJECT_NAME}"
 echo "   Mode: $([ "$DRY_RUN" = true ] && echo "DRY RUN" || echo "APPLY")"
 echo ""
 
 TMPDIR=$(mktemp -d)
 trap "rm -rf $TMPDIR" EXIT
 
-# Extract all assistant text from logs
+touch "$TMPDIR/approvals.txt" "$TMPDIR/explicit.txt"
+
 for LOGFILE in "$LOG_DIR"/*.jsonl; do
   [ -f "$LOGFILE" ] || continue
+
+  # Extract explicit decision patterns from assistant text
   grep '"type":"assistant"' "$LOGFILE" 2>/dev/null | \
-    jq -r '.message.content[]? | select(.type=="text") | .text' 2>/dev/null \
-    >> "$TMPDIR/all_text.txt" 2>/dev/null || true
+    jq -r '.message.content[]? | select(.type=="text") | .text' 2>/dev/null | \
+    grep -iE "にしよう|に決定|で行く|を採用|を選択|で確定|却下|方針:|決定:|確定:|Direction:|Decision:|Decided:|settled on" 2>/dev/null | \
+    sed 's/^[[:space:]]*//' | \
+    awk 'length >= 15 && length <= 300 && !/^[{}\[\]<>]/ && !/^import / && !/→ Gap 発見/' \
+    >> "$TMPDIR/explicit.txt" 2>/dev/null || true
+
+  # Extract user approval → assistant proposal pairs
+  # User says: よろしく/GO/OK/うん/やろう etc. → previous assistant text is a decision
+  grep '"type":"user"' "$LOGFILE" 2>/dev/null | \
+    jq -r '.message.content[]? | select(.type=="text") | .text' 2>/dev/null | \
+    grep -iE "^よろしく|^よろ$|^GO$|^OK|^ok$|^うん|^いいね|^やろう|^いこう|^進めて|^頼む|^push|^deploy|^実装して|^やって|^やる$" \
+    >> "$TMPDIR/user_approvals.txt" 2>/dev/null || true
+
 done
 
-[ ! -s "$TMPDIR/all_text.txt" ] && echo "  No assistant text found." && exit 0
+APPROVAL_COUNT=$(wc -l < "$TMPDIR/user_approvals.txt" 2>/dev/null || echo 0)
 
-TOTAL_LINES=$(wc -l < "$TMPDIR/all_text.txt")
-echo "  Scanned ${TOTAL_LINES} lines of conversation"
+# Deduplicate explicit decisions
+sort -u "$TMPDIR/explicit.txt" > "$TMPDIR/explicit_uniq.txt"
+EXPLICIT_COUNT=$(wc -l < "$TMPDIR/explicit_uniq.txt" 2>/dev/null || echo 0)
+
+TOTAL=$((EXPLICIT_COUNT + APPROVAL_COUNT))
+
+echo "  Explicit decision patterns: ${EXPLICIT_COUNT}"
+echo "  User approval patterns: ${APPROVAL_COUNT}"
+echo "  Total: ${TOTAL}"
 echo ""
 
-# Decision patterns — phrases that indicate a decision was made
-# Japanese + English patterns
-grep -niE \
-  "にしよう|にする$|に決定|で行く|を採用|を選択|で確定|却下|不要|やめる|使わない|で十分|にした$|を使う|に変更|方針:|決定:|確定:|採用:|選定:|Direction:|Decision:|Decided:|We.ll (use|go with)|Let.s (use|go with|switch)|chose|picked|settled on|going with" \
-  "$TMPDIR/all_text.txt" 2>/dev/null > "$TMPDIR/candidates_raw.txt" || true
-
-CANDIDATE_COUNT=$(wc -l < "$TMPDIR/candidates_raw.txt" 2>/dev/null || echo 0)
-
-if [ "$CANDIDATE_COUNT" -eq 0 ]; then
-  echo "  No decision patterns found."
+if [ "$TOTAL" -eq 0 ]; then
+  echo "  No decisions found."
   exit 0
 fi
 
-# Deduplicate and extract context (nearby lines)
-echo "  Found ${CANDIDATE_COUNT} potential decision lines"
-echo ""
-
-# Group by topic — extract key phrases
-awk '{
-  # Remove line numbers and whitespace
-  gsub(/^[0-9]+:/, "")
-  gsub(/^[[:space:]]+/, "")
-  # Skip very short lines
-  if (length < 15) next
-  # Skip lines that are clearly code
-  if (/^[{}\[\]<>\/]/ || /^import / || /^const / || /^function /) next
-  # Skip DGE session markers (already captured)
-  if (/→ Gap 発見/ || /^##.*Scene/) next
-  print
-}' "$TMPDIR/candidates_raw.txt" | sort -u > "$TMPDIR/candidates.txt"
-
-UNIQUE_COUNT=$(wc -l < "$TMPDIR/candidates.txt")
-echo "  Unique candidates: ${UNIQUE_COUNT}"
-echo ""
-
-# Display candidates
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "  Implicit Decision Candidates"
+echo "  Discovered Decisions"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
 
 INDEX=0
 while IFS= read -r line; do
   INDEX=$((INDEX + 1))
-  echo "  ${INDEX}. ${line}"
-done < "$TMPDIR/candidates.txt"
+  [ $INDEX -gt 30 ] && echo "  ... (${EXPLICIT_COUNT} total, showing first 30)" && break
+  echo "  📝 ${INDEX}. ${line}"
+done < "$TMPDIR/explicit_uniq.txt"
+
+if [ "$APPROVAL_COUNT" -gt 0 ]; then
+  echo ""
+  echo "  --- User Approvals (${APPROVAL_COUNT} times) ---"
+  sort "$TMPDIR/user_approvals.txt" | uniq -c | sort -rn | head -10 | while read -r count text; do
+    echo "  👍 ${text} (×${count})"
+  done
+fi
 
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
-# Create DD drafts if --apply
 if [ "$DRY_RUN" = false ]; then
   DD_DIR="${PROJECT_DIR}/dge/decisions"
   mkdir -p "$DD_DIR"
-
-  # Find next DD number
-  LAST_DD=$(find "$DD_DIR" -name "DD-*.md" 2>/dev/null | \
-    grep -oP 'DD-\d+' | sort -t- -k2 -n | tail -1 | grep -oP '\d+' || echo 0)
+  LAST_DD=$(find "$DD_DIR" -name "DD-*.md" 2>/dev/null | grep -oP 'DD-\d+' | sort -t- -k2 -n | tail -1 | grep -oP '\d+' || echo 0)
   NEXT_DD=$((LAST_DD + 1))
-
-  # Create a single DD draft with all candidates
   DD_NUM=$(printf "%03d" $NEXT_DD)
-  DD_FILE="${DD_DIR}/DD-${DD_NUM}-implicit-decisions.md"
+  DD_FILE="${DD_DIR}/DD-${DD_NUM}-discovered.md"
 
   {
-    echo "# DD-${DD_NUM}: Implicit Decisions (discovered from conversations)"
+    echo "# DD-${DD_NUM}: Discovered Decisions"
     echo ""
     echo "- **Date**: $(date +%Y-%m-%d)"
     echo "- **Status**: draft"
-    echo "- **Source**: Claude Code conversation logs (discover-decisions.sh)"
+    echo "- **Source**: discover-decisions.sh"
     echo ""
-    echo "## Decisions Found"
-    echo ""
-    echo "Review each candidate. Keep relevant ones, delete the rest."
+    echo "## Review each item: Keep / Merge / Reject"
     echo ""
     INDEX=0
     while IFS= read -r line; do
       INDEX=$((INDEX + 1))
+      [ $INDEX -gt 30 ] && break
       echo "### ${INDEX}. ${line}"
+      echo "- Action: TODO"
       echo ""
-      echo "- **Status**: TODO (keep / reject / merge with existing DD)"
-      echo "- **Rationale**: (fill in)"
-      echo ""
-    done < "$TMPDIR/candidates.txt"
+    done < "$TMPDIR/explicit_uniq.txt"
   } > "$DD_FILE"
-
-  echo ""
   echo "  Created: ${DD_FILE}"
-  echo "  Review and edit the file — keep relevant decisions, delete noise."
 fi
 
 echo ""
-if [ "$DRY_RUN" = true ]; then
-  echo "  Add --apply to create DD draft: dge/decisions/DD-NNN-implicit-decisions.md"
-fi
+[ "$DRY_RUN" = true ] && echo "  Add --apply to create DD draft."
