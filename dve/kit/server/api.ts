@@ -146,6 +146,64 @@ ${text}
       return json(res, { coverage: charGaps });
     }
 
+    // POST /api/scan — scan directory for DxE projects
+    if (req.method === "POST" && url.pathname === "/api/scan") {
+      const body = await parseBody(req);
+      const scanDir = body.dir ?? path.resolve(config.distDir, "..", "..", "..");
+      const maxDepth = body.depth ?? 3;
+      const results: any[] = [];
+
+      function scanRec(dir: string, depth: number) {
+        if (depth > maxDepth) return;
+        let entries: string[];
+        try { entries = readdirSync(dir); } catch { return; }
+
+        const isProject = entries.includes(".git") || entries.includes("package.json");
+        if (isProject) {
+          const hasDGE = existsSync(path.join(dir, "dge")) || existsSync(path.join(dir, ".claude", "skills", "dge-session.md"));
+          const hasDRE = existsSync(path.join(dir, ".claude", ".dre-version")) || existsSync(path.join(dir, "dre"));
+          const hasDVE = existsSync(path.join(dir, "dve")) || existsSync(path.join(dir, ".claude", "skills", "dve-build.md"));
+          const hasDDE = existsSync(path.join(dir, "dde"));
+
+          let sessions = 0, decisions = 0;
+          const sd = path.join(dir, "dge", "sessions");
+          const dd = path.join(dir, "dge", "decisions");
+          if (existsSync(sd)) try { sessions = readdirSync(sd).filter((f: string) => f.endsWith(".md") && f !== "index.md").length; } catch {}
+          if (existsSync(dd)) try { decisions = readdirSync(dd).filter((f: string) => f.endsWith(".md") && f !== "index.md").length; } catch {}
+
+          if (hasDGE || hasDRE || hasDVE || hasDDE || sessions > 0) {
+            results.push({ name: path.basename(dir), path: dir, hasDGE, hasDRE, hasDVE, hasDDE, sessions, decisions });
+          }
+        }
+
+        const skip = new Set(["node_modules", ".git", "dist", "build", ".dre", ".claude", "dve", "dge", "dre", "dde"]);
+        for (const e of entries) {
+          if (skip.has(e) || e.startsWith(".")) continue;
+          const full = path.join(dir, e);
+          try { if (statSync(full).isDirectory()) scanRec(full, depth + 1); } catch {}
+        }
+      }
+
+      scanRec(scanDir, 0);
+      return json(res, { dir: scanDir, projects: results });
+    }
+
+    // POST /api/register — save scanned projects to dve.config.json
+    if (req.method === "POST" && url.pathname === "/api/register") {
+      const body = await parseBody(req);
+      const projects = body.projects ?? [];
+      const configPath = path.join(config.distDir, "..", "..", "dve.config.json");
+      const newConfig = {
+        outputDir: config.distDir,
+        projects: projects.map((p: any) => ({
+          name: p.name,
+          path: p.path,
+        })),
+      };
+      writeFileSync(configPath, JSON.stringify(newConfig, null, 2) + "\n");
+      return json(res, { ok: true, registered: projects.length, configPath });
+    }
+
     // GET /api/status — project states (DRE + phase)
     if (req.method === "GET" && url.pathname === "/api/status") {
       const states = config.projectDirs.map((p) =>

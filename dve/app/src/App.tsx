@@ -7,6 +7,7 @@ import { StateChart } from "./views/StateChart";
 import { CoverageView } from "./views/CoverageView";
 import { Onboarding } from "./components/Onboarding";
 import { Tooltip } from "./components/Tooltip";
+import { ScanView } from "./views/ScanView";
 import { loadGraph, loadChangelog } from "./lib/graph-loader";
 import type { DVEGraph, Changelog, GraphNode } from "./types";
 
@@ -18,6 +19,7 @@ export function App() {
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [sideTab, setSideTab] = useState<"detail" | "state" | "coverage">("detail");
+  const [showScan, setShowScan] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(() => {
     try { return !localStorage.getItem("dve-onboarding-done"); } catch { return true; }
   });
@@ -228,9 +230,29 @@ export function App() {
     );
   }
 
+  // Scan view
+  if (showScan) {
+    return <ScanView onRegistered={() => { setShowScan(false); window.location.reload(); }} />;
+  }
+
   // Multi-project: show project list
   if (projectIndex && selectedProject === undefined) {
-    return <ProjectList index={projectIndex} onSelectProject={handleSelectProject} />;
+    return (
+      <div>
+        <ProjectList index={projectIndex} onSelectProject={handleSelectProject} />
+        <div style={{ textAlign: "center", padding: "0 0 24px" }}>
+          <button
+            onClick={() => setShowScan(true)}
+            style={{
+              padding: "8px 20px", fontSize: "13px", border: "1px solid #e2e8f0",
+              borderRadius: "6px", background: "#fff", cursor: "pointer", color: "#666",
+            }}
+          >
+            🔍 Scan for more projects
+          </button>
+        </div>
+      </div>
+    );
   }
 
   if (!graph) {
@@ -257,6 +279,16 @@ export function App() {
           <p style={{ marginTop: "16px", fontSize: "12px", color: "#999" }}>
             Session: {graph.stats.sessions} | Gap: {graph.stats.gaps} | DD: {graph.stats.decisions}
           </p>
+          <button
+            onClick={() => setShowScan(true)}
+            style={{
+              marginTop: "12px", padding: "8px 16px", fontSize: "13px",
+              border: "1px solid #4299e1", borderRadius: "6px",
+              background: "#ebf8ff", color: "#2b6cb0", cursor: "pointer",
+            }}
+          >
+            🔍 Scan for existing projects
+          </button>
         </div>
       </div>
     );
@@ -304,6 +336,13 @@ export function App() {
               {tab === "detail" ? "Detail" : tab === "state" ? "State" : "Coverage"}
             </button>
           ))}
+          <button
+            onClick={() => setShowScan(true)}
+            style={{
+              padding: "2px 8px", fontSize: "11px", borderRadius: "4px", cursor: "pointer",
+              border: "1px solid #e2e8f0", background: "#fff", color: "#666",
+            }}
+          >🔍 Scan</button>
           <button
             onClick={() => setShowOnboarding(true)}
             style={{
