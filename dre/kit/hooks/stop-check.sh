@@ -5,6 +5,7 @@
 set -euo pipefail
 
 CTX_FILE=".dre/context.json"
+CONFIG_FILE=".dre/dre-config.json"
 
 if [ ! -f "$CTX_FILE" ]; then
   echo '{"ok": true}'
