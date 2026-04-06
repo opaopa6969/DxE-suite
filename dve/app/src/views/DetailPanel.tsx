@@ -95,12 +95,10 @@ export function DetailPanel({ node, graph, onClose, onDGERestart }: Props) {
             {d.date} | {d.status}
             {d.supersedes?.length > 0 && ` | supersedes: ${d.supersedes.join(", ")}`}
           </div>
-          {d.rationale && (
-            <div style={{ marginBottom: "12px" }}>
-              <h4 style={{ fontSize: "13px", color: "#666", marginBottom: "4px" }}>Rationale</h4>
-              <Markdown text={d.rationale} fontSize="13px" />
-            </div>
-          )}
+          {/* DD Content — full markdown rendering */}
+          <div style={{ marginBottom: "12px" }}>
+            <Markdown text={d.content ?? d.rationale ?? ""} fontSize="13px" />
+          </div>
           <div style={{ marginBottom: "12px" }}>
             <h4 style={{ fontSize: "13px", color: "#666", marginBottom: "4px" }}>
               Gaps ({graph.edges.filter((e) => e.target === node.id && e.type === "resolves").length})
@@ -108,14 +106,6 @@ export function DetailPanel({ node, graph, onClose, onDGERestart }: Props) {
             <RelatedGaps ddId={node.id} graph={graph} />
           </div>
           <RelatedSessions ddId={node.id} graph={graph} />
-          {d.content && (
-            <details style={{ marginTop: "12px" }}>
-              <summary style={{ fontSize: "13px", color: "#666", cursor: "pointer" }}>Full Content</summary>
-              <div style={{ marginTop: "8px" }}>
-                <Markdown text={d.content} fontSize="12px" />
-              </div>
-            </details>
-          )}
           <div style={{ marginTop: "16px", display: "flex", gap: "8px", flexWrap: "wrap" }}>
             <button onClick={() => onDGERestart(node)} style={actionBtnStyle}>
               {"🔄 DGEで再検討"}

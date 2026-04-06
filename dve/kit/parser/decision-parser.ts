@@ -88,7 +88,7 @@ export function parseDecision(filePath: string): ParseResult<Decision> {
       id,
       title,
       date,
-      rationale: rationale.slice(0, 500),
+      rationale,
       status,
       supersedes,
       superseded_by: supersededBy,
