@@ -8,4 +8,8 @@ export default defineConfig({
     outDir: "../dist",
     emptyDir: false,
   },
+  preview: {
+    host: "0.0.0.0",
+    allowedHosts: true,
+  },
 });
