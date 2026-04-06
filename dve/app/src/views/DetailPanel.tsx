@@ -170,12 +170,104 @@ export function DetailPanel({ node, graph, onClose, onDGERestart }: Props) {
         <SessionDetail node={node} graph={graph} onDGERestart={onDGERestart} />
       )}
 
+      {node.type === "dialogue" && (
+        <DialogueDetail node={node} graph={graph} />
+      )}
+
       {node.warnings.length > 0 && (
         <div style={{ marginTop: "12px", padding: "8px", background: "#fffff0", borderRadius: "4px", fontSize: "11px", color: "#d69e2e" }}>
           {"⚠️"} {node.warnings.join("; ")}
         </div>
       )}
     </div>
+  );
+}
+
+// ─── Dialogue Detail ───
+
+function DialogueDetail({ node, graph }: { node: GraphNode; graph: DVEGraph }) {
+  const d = node.data as any;
+  const [expanded, setExpanded] = useState(false);
+
+  // Find parent session
+  const containsEdge = graph.edges.find((e) => e.target === node.id && e.type === "contains");
+  const session = containsEdge ? graph.nodes.find((n) => n.id === containsEdge.source) : null;
+  const sessionData = session?.data as any;
+  const content = sessionData?.content;
+
+  // Gaps from this dialogue
+  const gapIds = graph.edges.filter((e) => e.source === node.id && e.type === "discovers").map((e) => e.target);
+  const gaps = graph.nodes.filter((n) => gapIds.includes(n.id));
+
+  return (
+    <>
+      <h2 style={{ fontSize: "16px", marginBottom: "8px" }}>🎭 会話劇</h2>
+      <div style={{ fontSize: "12px", color: "#666", marginBottom: "12px" }}>
+        Session: {d.session_id} | Scenes: {d.scene_count || "N/A"} | Characters: {d.char_count || 0}
+      </div>
+
+      {d.has_content && content ? (
+        <div style={{ marginBottom: "12px" }}>
+          <div style={{
+            maxHeight: expanded ? "none" : "400px",
+            overflow: expanded ? "visible" : "hidden",
+            position: "relative",
+          }}>
+            <Markdown text={content} fontSize="12px" />
+            {!expanded && (
+              <div style={{
+                position: "absolute", bottom: 0, left: 0, right: 0, height: "80px",
+                background: "linear-gradient(transparent, #fff)",
+              }} />
+            )}
+          </div>
+          <button
+            onClick={() => setExpanded(!expanded)}
+            style={{
+              marginTop: "4px", padding: "6px 12px", fontSize: "12px",
+              border: "1px solid #d69e2e", borderRadius: "4px", background: "#fffff0",
+              cursor: "pointer", color: "#975a16",
+            }}
+          >
+            {expanded ? "折りたたむ" : `全文表示 (${(content as string).split("\n").length} lines)`}
+          </button>
+        </div>
+      ) : (
+        <div style={{
+          padding: "16px", background: "#f7fafc", borderRadius: "8px",
+          textAlign: "center", marginBottom: "12px",
+        }}>
+          <p style={{ fontSize: "14px", marginBottom: "8px" }}>📭 会話劇テキスト未保存</p>
+          <p style={{ fontSize: "12px", color: "#666" }}>
+            復元するには:
+          </p>
+          <code style={{ fontSize: "11px", background: "#edf2f7", padding: "4px 8px", borderRadius: "4px" }}>
+            bash dve/kit/scripts/recover-dialogues.sh --apply
+          </code>
+        </div>
+      )}
+
+      {gaps.length > 0 && (
+        <div>
+          <h4 style={{ fontSize: "13px", color: "#666", marginBottom: "4px" }}>
+            発見された Gap ({gaps.length})
+          </h4>
+          <ul style={{ listStyle: "none", padding: 0 }}>
+            {gaps.map((g) => {
+              const gd = g.data as any;
+              return (
+                <li key={g.id} style={{ marginBottom: "4px", fontSize: "12px" }}>
+                  <span style={{ color: severityColor[gd.severity] ?? "#999", fontWeight: "bold" }}>
+                    {gd.severity === "Critical" ? "🔴" : gd.severity === "High" ? "🟠" : "🟡"}{" "}
+                  </span>
+                  <strong>{g.id.split("#")[1]}</strong>: {(gd.summary ?? "").slice(0, 80)}
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      )}
+    </>
   );
 }
 

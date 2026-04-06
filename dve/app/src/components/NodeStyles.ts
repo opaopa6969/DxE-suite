@@ -66,6 +66,31 @@ export const cytoscapeStyles = [
     selector: 'node[type="gap"][severity="Medium"]',
     style: { "border-color": "#d69e2e" },
   },
+  // ─── Dialogue nodes ───
+  {
+    selector: 'node[type="dialogue"]',
+    style: {
+      "label": "data(label)",
+      "text-wrap": "wrap" as const,
+      "text-max-width": "100px",
+      "font-size": "10px",
+      "text-valign": "center" as const,
+      "text-halign": "center" as const,
+      "background-color": "#fefcbf",
+      "border-width": 2,
+      "border-color": "#d69e2e",
+      "shape": "roundrectangle" as const,
+      "width": 90,
+      "height": 36,
+    },
+  },
+  {
+    selector: 'node[type="dialogue"][?noContent]',
+    style: {
+      "border-style": "dashed" as const,
+      "opacity": 0.5,
+    },
+  },
   // ─── Session nodes ───
   {
     selector: 'node[type="session"]',
@@ -126,6 +151,14 @@ export const cytoscapeStyles = [
       "target-arrow-shape": "triangle" as const,
       "curve-style": "bezier" as const,
       "arrow-scale": 0.8,
+    },
+  },
+  {
+    selector: 'edge[type="contains"]',
+    style: {
+      "line-color": "#d69e2e",
+      "target-arrow-color": "#d69e2e",
+      "width": 2,
     },
   },
   {

@@ -64,8 +64,11 @@ export function GraphContainer({ graph, changelog, onNodeClick, onNodeHover, exp
       }
       // Sessions and DDs always visible
 
+      const isDialogue = node.type === "dialogue";
+
       let label = "";
       if (isDD) label = `${node.id}\n${(d.title ?? "").slice(0, 40)}`;
+      else if (isDialogue) label = d.has_content ? `🎭 会話劇\n${d.scene_count || ""}scenes` : "🎭 会話劇\n(未保存)";
       else if (isGap) label = `G-${node.id.split("#G-")[1] ?? ""}`;
       else if (isSession) label = d.theme ?? node.id;
       else label = d.action ?? node.id;
@@ -85,7 +88,8 @@ export function GraphContainer({ graph, changelog, onNodeClick, onNodeHover, exp
           type: node.type,
           severity: d.severity,
           overturned: d.status === "overturned" ? true : undefined,
-          drifted: false, // TODO: check annotations
+          drifted: false,
+          noContent: isDialogue && !d.has_content ? true : undefined,
           isNew: newIds.has(node.id) && (changelog?.since ?? "") !== "" ? true : undefined,
           width,
           _raw: node,

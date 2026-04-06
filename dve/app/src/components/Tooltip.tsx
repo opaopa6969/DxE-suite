@@ -5,8 +5,9 @@ import type { GraphNode } from "../types";
 
 const NODE_HELP: Record<string, string> = {
   decision: "DD (Design Decision) — DGE で発見された Gap を解決する設計判断。クリックで詳細表示。",
+  dialogue: "会話劇 — キャラクターが議論するテキスト。クリックで全文表示。点線 = テキスト未保存。",
   gap: "Gap — 設計の穴。DGE の会話劇で発見。Critical(赤) > High(橙) > Medium(黄) > Low(緑)。",
-  session: "Session — DGE の会話劇。キャラクターが設計について議論し Gap を発見する。",
+  session: "Session — DGE セッション。テーマ、キャラクター構成、日付。",
   annotation: "Annotation — ユーザーが追加したコメント・異議・撤回。",
   spec: "Spec — Gap から生成された仕様書。UC / TECH / DD / DQ / ACT の5タイプ。",
 };

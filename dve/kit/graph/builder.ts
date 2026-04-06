@@ -48,6 +48,30 @@ export function buildGraph(opts: BuildOptions): DVEGraph {
       }
     }
 
+    // Dialogue node — sits between Session and Gaps
+    const dialogueId = `${session.node.id!}#dialogue`;
+    const hasDialogue = !!(session.node as any).content &&
+      /Scene|先輩|ナレーション|☕|👤|🎩|😰|⚔|🎨|📊/.test((session.node as any).content ?? "");
+    nodes.push({
+      type: "dialogue" as any,
+      id: dialogueId,
+      data: {
+        session_id: session.node.id!,
+        has_content: hasDialogue,
+        scene_count: ((session.node as any).content?.match(/##.*Scene/g) ?? []).length,
+        char_count: ((session.node as any).content?.match(/☕|👤|🎩|😰|⚔|🎨|📊|🏥|😈|🧑‍💼/g) ?? []).length,
+      } as any,
+      confidence: hasDialogue ? 1.0 : 0.3,
+      warnings: hasDialogue ? [] : ["会話劇テキスト未保存"],
+    });
+    // Session → Dialogue
+    edges.push({
+      source: session.node.id!,
+      target: dialogueId,
+      type: "contains",
+      confidence: "explicit",
+    });
+
     for (const gap of gaps) {
       if (gap.node.id) {
         nodes.push({
@@ -57,9 +81,9 @@ export function buildGraph(opts: BuildOptions): DVEGraph {
           confidence: gap.confidence,
           warnings: gap.warnings,
         });
-        // discovers edge: Session → Gap
+        // Dialogue → Gap (instead of Session → Gap)
         edges.push({
-          source: session.node.id!,
+          source: dialogueId,
           target: gap.node.id!,
           type: "discovers",
           confidence: "explicit",

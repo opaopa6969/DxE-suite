@@ -226,7 +226,7 @@ async function serve(watch: boolean) {
 
   // Serve with vite preview
   console.log(`\nStarting UI server...`);
-  const vite = spawn("npx", ["vite", "preview", "--port", "4173"], {
+  const vite = spawn("npx", ["vite", "preview", "--host", "0.0.0.0", "--port", "4173"], {
     cwd: appDir,
     stdio: "inherit",
   });

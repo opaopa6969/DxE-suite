@@ -62,7 +62,7 @@ export interface Annotation {
 
 // ─── Edges ───
 
-export type EdgeType = "discovers" | "resolves" | "supersedes" | "annotates" | "produces" | "implements";
+export type EdgeType = "contains" | "discovers" | "resolves" | "supersedes" | "annotates" | "produces" | "implements";
 export type Confidence = "explicit" | "inferred";
 
 export interface Edge {
@@ -75,7 +75,7 @@ export interface Edge {
 
 // ─── Graph Node wrapper ───
 
-export type NodeType = "session" | "gap" | "decision" | "spec" | "annotation";
+export type NodeType = "session" | "dialogue" | "gap" | "decision" | "spec" | "annotation";
 
 export interface GraphNode {
   type: NodeType;

@@ -1,7 +1,7 @@
 // Shared types matching dve/kit/graph/schema.ts (view-layer subset)
 
 export interface GraphNode {
-  type: "session" | "gap" | "decision" | "annotation" | "spec";
+  type: "session" | "dialogue" | "gap" | "decision" | "annotation" | "spec";
   id: string;
   data: Record<string, any>;
   confidence: number;

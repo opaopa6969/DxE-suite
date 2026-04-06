@@ -222,8 +222,8 @@ ${text}
     json(res, { error: "Not found" }, 404);
   });
 
-  server.listen(port, () => {
-    console.log(`  DVE API: http://localhost:${port}`);
+  server.listen(port, "0.0.0.0", () => {
+    console.log(`  DVE API: http://0.0.0.0:${port}`);
   });
 
   return server;
