@@ -1,0 +1,25 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit|write|edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .dre/hooks/post-tool-use.sh"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .dre/hooks/stop-check.sh"
+          }
+        ]
+      }
+    ]
+  }
+}

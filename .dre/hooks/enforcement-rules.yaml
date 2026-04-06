@@ -1,0 +1,90 @@
+# DRE Enforcement Rules — checked by hooks
+# Each rule: when condition is met, validate output
+
+version: 1
+
+rules:
+  # ─── DGE MUST rules ───
+  - id: dge-session-dialogue
+    severity: error    # error = block, warn = log only
+    trigger:
+      tool: Write
+      file_pattern: "dge/sessions/*.md"
+    validate:
+      must_contain_any:
+        - "Scene"
+        - "先輩"
+        - "ナレーション"
+      must_contain_all:
+        - "Gap"
+      message: "Session file must contain full dialogue text (Scene markers + character dialogue), not just summary."
+
+  - id: dge-session-gap-markers
+    severity: warn
+    trigger:
+      tool: Write
+      file_pattern: "dge/sessions/*.md"
+    validate:
+      must_contain_any:
+        - "→ Gap 発見"
+        - "Gap 一覧"
+      message: "Session file should contain Gap markers."
+
+  # ─── DD MUST rules ───
+  - id: dd-session-ref
+    severity: warn
+    trigger:
+      tool: Write
+      file_pattern: "dge/decisions/DD-*.md"
+    validate:
+      must_contain_any:
+        - "Session:"
+        - "sessions/"
+      message: "DD file should reference the originating session."
+
+  - id: dd-rationale
+    severity: warn
+    trigger:
+      tool: Write
+      file_pattern: "dge/decisions/DD-*.md"
+    validate:
+      must_contain_any:
+        - "## Rationale"
+        - "## Decision"
+      message: "DD file should have a Rationale or Decision section."
+
+  # ─── Spec rules ───
+  - id: spec-status
+    severity: warn
+    trigger:
+      tool: Write
+      file_pattern: "dge/specs/*.md"
+    validate:
+      must_contain_any:
+        - "Status:"
+        - "status:"
+      message: "Spec file should declare its status (draft/reviewed/migrated)."
+
+  # ─── Workflow phase rules ───
+  - id: stop-gap-extraction
+    severity: error
+    trigger:
+      event: Stop
+      phase: "gap_extraction"
+    validate:
+      files_must_exist:
+        pattern: "dge/sessions/{today}*.md"
+      file_must_contain:
+        pattern: "dge/sessions/{today}*.md"
+        any_of:
+          - "Scene"
+          - "先輩"
+      message: "Cannot stop during gap_extraction without saving a session with full dialogue."
+
+  - id: stop-pending-stack
+    severity: error
+    trigger:
+      event: Stop
+    validate:
+      context_check: "stack.length <= 1 || no remaining items"
+      message: "Stack has pending items. Complete or pop before stopping."
