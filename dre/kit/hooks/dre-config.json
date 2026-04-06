@@ -14,5 +14,10 @@
   "commit_dd_reference": {
     "enforce": "warn",
     "comment": "warn = show DD list. block = reject commit without Ref: DD-NNN"
+  },
+  "notifications": {
+    "channel": "slack",
+    "min_level": "critical",
+    "comment": "channel: slack/discord/webhook/desktop/none. min_level: critical/daily/all/none. URL via env: DRE_NOTIFY_URL"
   }
 }

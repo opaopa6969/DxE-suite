@@ -5,6 +5,11 @@
 
 set -euo pipefail
 
+# Load notification function
+HOOK_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+[ -f "$HOOK_DIR/notify.sh" ] && . "$HOOK_DIR/notify.sh"
+[ -f ".dre/hooks/notify.sh" ] && . ".dre/hooks/notify.sh"
+
 INPUT=$(cat)
 
 TOOL_NAME=$(echo "$INPUT" | jq -r '.tool_name // empty' 2>/dev/null)
@@ -187,6 +192,8 @@ if [ -n "$VIOLATIONS" ]; then
 
   if [ "$ERRORS" -gt 0 ]; then
     echo -e "  ${ERRORS} error(s). Fix before proceeding.\n" >&2
+    # Notify
+    type dre_notify &>/dev/null && dre_notify "critical" "Enforcement violation" "$VIOLATIONS"
     # Hard enforcement: uncomment to block
     # exit 1
   fi

@@ -4,6 +4,11 @@
 
 set -euo pipefail
 
+# Load notification function
+HOOK_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+[ -f "$HOOK_DIR/notify.sh" ] && . "$HOOK_DIR/notify.sh"
+[ -f ".dre/hooks/notify.sh" ] && . ".dre/hooks/notify.sh"
+
 CTX_FILE=".dre/context.json"
 CONFIG_FILE=".dre/dre-config.json"
 
@@ -74,6 +79,12 @@ fi
 # ─── Return ───
 if [ -n "$REASONS" ]; then
   ESCAPED=$(echo "$REASONS" | sed 's/"/\\"/g' | tr '\n' ' ')
+  # Notify for critical issues
+  if echo "$REASONS" | grep -qE "MUST|gap_extraction|no dialogue"; then
+    type dre_notify &>/dev/null && dre_notify "critical" "Stop blocked" "$REASONS"
+  elif echo "$REASONS" | grep -q "implicit decisions"; then
+    type dre_notify &>/dev/null && dre_notify "daily" "Pending decisions" "$REASONS"
+  fi
   echo "{\"ok\": false, \"reason\": \"${ESCAPED}\"}"
 else
   echo '{"ok": true}'
