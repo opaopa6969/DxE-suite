@@ -74,8 +74,9 @@ export function App() {
   const handleNodeClick = useCallback(
     (node: GraphNode) => {
       setSelectedNode(node);
-      // Toggle expand for DD nodes
-      if (node.type === "decision") {
+      setSideTab("detail");
+      // Toggle expand for DD and dialogue nodes
+      if (node.type === "decision" || node.type === "dialogue") {
         setExpandedDecisions((prev) => {
           const next = new Set(prev);
           if (next.has(node.id)) next.delete(node.id);

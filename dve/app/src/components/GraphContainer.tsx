@@ -40,35 +40,36 @@ export function GraphContainer({ graph, changelog, onNodeClick, onNodeHover, exp
       const isSession = node.type === "session";
 
       // Visibility: Sessions + DDs always visible. Gaps fold under DD/Session.
-      const hasDDs = graph.nodes.some((n) => n.type === "decision");
+      // Visibility: Sessions + DDs + Dialogues always visible
+      // Gaps fold under their parent dialogue node (click dialogue to expand)
       let hidden = false;
 
       if (isGap) {
-        if (!hasDDs) {
-          // No DDs in project — show all gaps
-          hidden = false;
-        } else {
-          // Has DDs — fold gaps under their DD or Session
-          const resolvesEdge = graph.edges.find((e) => e.source === node.id && e.type === "resolves");
-          const parentDD = resolvesEdge?.target;
-          const sessionEdge = graph.edges.find((e) => e.target === node.id && e.type === "discovers");
-          const parentSession = sessionEdge?.source;
-          const hasResolves = graph.edges.some((e) => e.source === node.id && e.type === "resolves");
-          // Orphan gaps (no DD) always visible
-          if (!hasResolves) {
-            hidden = false;
-          } else {
-            hidden = !expandedDecisions.has(parentDD ?? "") && !expandedDecisions.has(parentSession ?? "");
-          }
-        }
+        // Find parent dialogue (Dialogue → Gap via discovers)
+        const discEdge = graph.edges.find((e) => e.target === node.id && e.type === "discovers");
+        const parentDialogue = discEdge?.source;
+        // Find parent DD (Gap → DD via resolves)
+        const resolvesEdge = graph.edges.find((e) => e.source === node.id && e.type === "resolves");
+        const parentDD = resolvesEdge?.target;
+
+        // Show gap if its dialogue OR its DD is expanded
+        const dialogueExpanded = parentDialogue ? expandedDecisions.has(parentDialogue) : false;
+        const ddExpanded = parentDD ? expandedDecisions.has(parentDD) : false;
+
+        hidden = !dialogueExpanded && !ddExpanded;
       }
-      // Sessions and DDs always visible
+      // Sessions, DDs, Dialogues always visible
 
       const isDialogue = node.type === "dialogue";
 
       let label = "";
       if (isDD) label = `${node.id}\n${(d.title ?? "").slice(0, 40)}`;
-      else if (isDialogue) label = d.has_content ? `🎭 会話劇\n${d.scene_count || ""}scenes` : "🎭 会話劇\n(未保存)";
+      else if (isDialogue) {
+        const gapCount2 = graph.edges.filter((e) => e.source === node.id && e.type === "discovers").length;
+        label = d.has_content
+          ? `🎭 会話劇\n${gapCount2} gaps`
+          : `🎭 (未保存)\n${gapCount2} gaps`;
+      }
       else if (isGap) label = `G-${node.id.split("#G-")[1] ?? ""}`;
       else if (isSession) label = d.theme ?? node.id;
       else label = d.action ?? node.id;
