@@ -39,30 +39,30 @@ export function GraphContainer({ graph, changelog, onNodeClick, onNodeHover, exp
       const isGap = node.type === "gap";
       const isSession = node.type === "session";
 
-      // Default: only show DD nodes. Gaps/sessions shown if their DD is expanded
+      // Visibility: Sessions + DDs always visible. Gaps fold under DD/Session.
+      const hasDDs = graph.nodes.some((n) => n.type === "decision");
       let hidden = false;
+
       if (isGap) {
-        // Find the DD this gap resolves to
-        const resolvesEdge = graph.edges.find((e) => e.source === node.id && e.type === "resolves");
-        const parentDD = resolvesEdge?.target;
-        // Also check discovers edge (session → gap)
-        const sessionEdge = graph.edges.find((e) => e.target === node.id && e.type === "discovers");
-        const parentSession = sessionEdge?.source;
-        hidden = !expandedDecisions.has(parentDD ?? "") && !expandedDecisions.has(parentSession ?? "");
-        // If gap is orphan (no DD), always show
-        const hasResolves = graph.edges.some((e) => e.source === node.id && e.type === "resolves");
-        if (!hasResolves) hidden = false;
+        if (!hasDDs) {
+          // No DDs in project — show all gaps
+          hidden = false;
+        } else {
+          // Has DDs — fold gaps under their DD or Session
+          const resolvesEdge = graph.edges.find((e) => e.source === node.id && e.type === "resolves");
+          const parentDD = resolvesEdge?.target;
+          const sessionEdge = graph.edges.find((e) => e.target === node.id && e.type === "discovers");
+          const parentSession = sessionEdge?.source;
+          const hasResolves = graph.edges.some((e) => e.source === node.id && e.type === "resolves");
+          // Orphan gaps (no DD) always visible
+          if (!hasResolves) {
+            hidden = false;
+          } else {
+            hidden = !expandedDecisions.has(parentDD ?? "") && !expandedDecisions.has(parentSession ?? "");
+          }
+        }
       }
-      if (isSession) {
-        hidden = !expandedDecisions.has(node.id);
-        // Show session if any of its gaps are visible through an expanded DD
-        const sessionGaps = graph.edges.filter((e) => e.source === node.id && e.type === "discovers").map((e) => e.target);
-        const anyGapVisible = sessionGaps.some((gid) => {
-          const gapResolves = graph.edges.find((e) => e.source === gid && e.type === "resolves");
-          return gapResolves && expandedDecisions.has(gapResolves.target);
-        });
-        if (anyGapVisible) hidden = false;
-      }
+      // Sessions and DDs always visible
 
       let label = "";
       if (isDD) label = `${node.id}\n${(d.title ?? "").slice(0, 40)}`;
