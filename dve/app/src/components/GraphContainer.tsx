@@ -12,6 +12,7 @@ interface Props {
   graph: DVEGraph;
   changelog: Changelog | null;
   onNodeClick: (node: GraphNode) => void;
+  onNodeHover?: (node: GraphNode | null, pos: { x: number; y: number } | null) => void;
   expandedDecisions: Set<string>;
   searchQuery?: string;
 }
@@ -20,7 +21,7 @@ function gapCount(graph: DVEGraph, ddId: string): number {
   return graph.edges.filter((e) => e.target === ddId && e.type === "resolves").length;
 }
 
-export function GraphContainer({ graph, changelog, onNodeClick, expandedDecisions, searchQuery }: Props) {
+export function GraphContainer({ graph, changelog, onNodeClick, onNodeHover, expandedDecisions, searchQuery }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const cyRef = useRef<cytoscape.Core | null>(null);
 
@@ -130,6 +131,16 @@ export function GraphContainer({ graph, changelog, onNodeClick, expandedDecision
     cy.on("tap", "node", (evt) => {
       const nodeData = evt.target.data("_raw") as GraphNode;
       if (nodeData) onNodeClick(nodeData);
+    });
+
+    cy.on("mouseover", "node", (evt) => {
+      const nodeData = evt.target.data("_raw") as GraphNode;
+      const pos = evt.renderedPosition;
+      if (nodeData && onNodeHover) onNodeHover(nodeData, { x: pos.x, y: pos.y + 40 });
+    });
+
+    cy.on("mouseout", "node", () => {
+      if (onNodeHover) onNodeHover(null, null);
     });
 
     cyRef.current = cy;

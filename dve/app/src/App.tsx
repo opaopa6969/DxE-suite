@@ -5,6 +5,8 @@ import { SearchBar } from "./components/SearchBar";
 import { ProjectList } from "./views/ProjectList";
 import { StateChart } from "./views/StateChart";
 import { CoverageView } from "./views/CoverageView";
+import { Onboarding } from "./components/Onboarding";
+import { Tooltip } from "./components/Tooltip";
 import { loadGraph, loadChangelog } from "./lib/graph-loader";
 import type { DVEGraph, Changelog, GraphNode } from "./types";
 
@@ -16,6 +18,11 @@ export function App() {
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [sideTab, setSideTab] = useState<"detail" | "state" | "coverage">("detail");
+  const [showOnboarding, setShowOnboarding] = useState(() => {
+    try { return !localStorage.getItem("dve-onboarding-done"); } catch { return true; }
+  });
+  const [hoveredNode, setHoveredNode] = useState<GraphNode | null>(null);
+  const [hoverPos, setHoverPos] = useState<{ x: number; y: number } | null>(null);
   const [projectIndex, setProjectIndex] = useState<any>(null);
   const [selectedProject, setSelectedProject] = useState<string | null | undefined>(undefined);
   // undefined = not determined yet, null = all projects, string = specific project
@@ -80,6 +87,11 @@ export function App() {
 
   const handleSearch = useCallback((query: string) => {
     setSearchQuery(query);
+  }, []);
+
+  const dismissOnboarding = useCallback(() => {
+    setShowOnboarding(false);
+    try { localStorage.setItem("dve-onboarding-done", "1"); } catch {}
   }, []);
 
   const handleDGERestart = useCallback(
@@ -186,6 +198,14 @@ export function App() {
               {tab === "detail" ? "Detail" : tab === "state" ? "State" : "Coverage"}
             </button>
           ))}
+          <button
+            onClick={() => setShowOnboarding(true)}
+            style={{
+              border: "1px solid #e2e8f0", background: "#fff", borderRadius: "50%",
+              width: "24px", height: "24px", fontSize: "12px", cursor: "pointer", color: "#666",
+            }}
+            title="Help"
+          >?</button>
           <span style={{ fontSize: "11px", color: "#999" }}>
             {new Date(graph.generated_at).toLocaleString()}
           </span>
@@ -198,6 +218,7 @@ export function App() {
           graph={graph}
           changelog={changelog}
           onNodeClick={handleNodeClick}
+          onNodeHover={(node, pos) => { setHoveredNode(node); setHoverPos(pos); }}
           expandedDecisions={expandedDecisions}
           searchQuery={searchQuery}
         />
@@ -218,6 +239,12 @@ export function App() {
           {sideTab === "coverage" && <CoverageView />}
         </div>
       )}
+
+      {/* Tooltip on hover */}
+      <Tooltip node={hoveredNode} position={hoverPos} />
+
+      {/* Onboarding */}
+      {showOnboarding && <Onboarding onDismiss={dismissOnboarding} />}
     </div>
   );
 }
