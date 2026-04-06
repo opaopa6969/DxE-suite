@@ -1,8 +1,8 @@
 # BACKLOG — DVE (Decision Visualization Engine)
 
-> 最終更新: 2026-04-05
+> 最終更新: 2026-04-07
 > バージョン: v4.0.0
-> DGE Session: [2026-04-05-dve-design](./dge/sessions/2026-04-05-dve-design.md) (7 rounds, 29 gaps)
+> DGE Sessions: dve-design (7 rounds), dve-dre-statechart, dre-notification
 
 ## 完了済み (Phase 1 kit)
 
