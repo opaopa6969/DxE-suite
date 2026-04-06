@@ -23,6 +23,7 @@ export interface DVEGraph {
   nodes: GraphNode[];
   edges: Edge[];
   warnings: { file: string; message: string }[];
+  glossary?: { term: string; definition: string; source: string; aliases?: string[] }[];
 }
 
 export interface Changelog {

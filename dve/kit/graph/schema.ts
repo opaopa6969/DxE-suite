@@ -100,6 +100,7 @@ export interface DVEGraph {
   nodes: GraphNode[];
   edges: Edge[];
   warnings: { file: string; message: string }[];
+  glossary?: GlossaryEntry[];
 }
 
 // ─── Parse result ───
@@ -121,6 +122,15 @@ export interface MultiProjectGraph {
     path: string;
     graph: DVEGraph;
   }[];
+}
+
+// ─── Glossary ───
+
+export interface GlossaryEntry {
+  term: string;
+  definition: string;
+  source: string;
+  aliases?: string[];
 }
 
 // ─── Changelog ───

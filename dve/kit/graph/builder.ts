@@ -7,6 +7,7 @@ import { parseDecision } from "../parser/decision-parser.js";
 import { parseAnnotation } from "../parser/annotation-parser.js";
 import { parseSpec } from "../parser/spec-parser.js";
 import { gitLinkerEdges } from "../parser/git-linker.js";
+import { buildGlossary } from "../parser/glossary-builder.js";
 import type { DVEGraph, GraphNode, Edge } from "./schema.js";
 
 export interface BuildOptions {
@@ -237,6 +238,10 @@ export function buildGraph(opts: BuildOptions): DVEGraph {
     specs: nodes.filter((n) => n.type === "spec").length,
   };
 
+  // Build glossary from completed graph
+  const partialGraph = { version: "1.0.0", generated_at: "", stats, nodes, edges, warnings } as DVEGraph;
+  const glossary = buildGlossary(partialGraph, opts.cwd);
+
   return {
     version: "1.0.0",
     generated_at: new Date().toISOString(),
@@ -244,5 +249,6 @@ export function buildGraph(opts: BuildOptions): DVEGraph {
     nodes,
     edges,
     warnings,
+    glossary: glossary.entries,
   };
 }

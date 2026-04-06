@@ -2,7 +2,7 @@
 
 import { useState } from "preact/hooks";
 import { AnnotationDialog } from "../components/AnnotationDialog";
-import { Markdown } from "../components/Markdown";
+import { Markdown, type GlossaryEntry } from "../components/Markdown";
 import type { GraphNode, DVEGraph, Edge } from "../types";
 
 interface Props {
@@ -97,7 +97,7 @@ export function DetailPanel({ node, graph, onClose, onDGERestart }: Props) {
           </div>
           {/* DD Content — full markdown rendering */}
           <div style={{ marginBottom: "12px" }}>
-            <Markdown text={d.content ?? d.rationale ?? ""} fontSize="13px" />
+            <Markdown text={d.content ?? d.rationale ?? ""} fontSize="13px" glossary={(graph as any).glossary} />
           </div>
           <div style={{ marginBottom: "12px" }}>
             <h4 style={{ fontSize: "13px", color: "#666", marginBottom: "4px" }}>
@@ -143,7 +143,7 @@ export function DetailPanel({ node, graph, onClose, onDGERestart }: Props) {
             )}
           </div>
           <div style={{ marginBottom: "12px" }}>
-            <Markdown text={d.summary ?? ""} fontSize="13px" />
+            <Markdown text={d.summary ?? ""} fontSize="13px" glossary={(graph as any).glossary} />
           </div>
           <div style={{ fontSize: "12px", color: "#666", marginBottom: "8px" }}>
             Status: {d.status}
@@ -298,7 +298,7 @@ function DialogueDetail({ node, graph }: { node: GraphNode; graph: DVEGraph }) {
             overflow: expanded ? "visible" : "hidden",
             position: "relative",
           }}>
-            <Markdown text={content} fontSize="12px" />
+            <Markdown text={content} fontSize="12px" glossary={(graph as any).glossary} />
             {!expanded && (
               <div style={{
                 position: "absolute", bottom: 0, left: 0, right: 0, height: "80px",
@@ -440,7 +440,7 @@ function SessionDetail({ node, graph, onDGERestart }: { node: GraphNode; graph: 
             overflow: expanded ? "visible" : "hidden",
             position: "relative",
           }}>
-            <Markdown text={content} fontSize="12px" />
+            <Markdown text={content} fontSize="12px" glossary={(graph as any).glossary} />
             {!expanded && (
               <div style={{
                 position: "absolute", bottom: 0, left: 0, right: 0, height: "60px",

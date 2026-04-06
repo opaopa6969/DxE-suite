@@ -141,6 +141,7 @@ function build() {
       nodes: [],
       edges: [],
       warnings: [],
+      glossary: [],
     };
     for (const p of multiGraph.projects) {
       // Prefix node IDs with project name to avoid collisions
@@ -156,6 +157,14 @@ function build() {
       merged.stats.decisions += p.graph.stats.decisions;
       merged.stats.annotations += p.graph.stats.annotations;
       merged.stats.specs = (merged.stats.specs ?? 0) + (p.graph.stats.specs ?? 0);
+      // Merge glossary (deduplicate by term)
+      const existingTerms = new Set((merged.glossary ?? []).map((e: any) => e.term.toLowerCase()));
+      for (const entry of p.graph.glossary ?? []) {
+        if (!existingTerms.has(entry.term.toLowerCase())) {
+          (merged.glossary as any[]).push(entry);
+          existingTerms.add(entry.term.toLowerCase());
+        }
+      }
     }
     writeFileSync(path.join(DIST_DIR, "graph.json"), JSON.stringify(merged, null, 2));
   }

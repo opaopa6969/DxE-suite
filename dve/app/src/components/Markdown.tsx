@@ -1,6 +1,60 @@
-// Simple markdown renderer — bold, code, table, list, links
+// Simple markdown renderer — bold, code, table, list, links + glossary hover
 
-function renderInline(text: string) {
+export interface GlossaryEntry {
+  term: string;
+  definition: string;
+  source: string;
+  aliases?: string[];
+}
+
+function GlossaryTerm({ term, definition, source, children }: { term: string; definition: string; source: string; children: any }) {
+  return (
+    <span style={{ position: "relative", display: "inline" }}>
+      <span
+        style={{
+          borderBottom: "1px dotted #d69e2e",
+          cursor: "help",
+        }}
+        title={`${term}: ${definition} (${source})`}
+      >
+        {children}
+      </span>
+    </span>
+  );
+}
+
+function applyGlossary(text: string, glossary: GlossaryEntry[]): any {
+  if (!glossary || glossary.length === 0) return text;
+
+  // Build regex from all terms (longer first to avoid partial matches)
+  const sorted = [...glossary].sort((a, b) => b.term.length - a.term.length);
+  const allTerms = sorted.flatMap((e) => [e.term, ...(e.aliases ?? [])]).filter(Boolean);
+  if (allTerms.length === 0) return text;
+
+  const escaped = allTerms.map((t) => t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+  const regex = new RegExp(`(${escaped.join("|")})`, "g");
+
+  const parts = text.split(regex);
+  if (parts.length <= 1) return text;
+
+  const termMap = new Map<string, GlossaryEntry>();
+  for (const entry of sorted) {
+    termMap.set(entry.term.toLowerCase(), entry);
+    for (const alias of entry.aliases ?? []) {
+      termMap.set(alias.toLowerCase(), entry);
+    }
+  }
+
+  return parts.map((part, i) => {
+    const entry = termMap.get(part.toLowerCase());
+    if (entry) {
+      return <GlossaryTerm key={i} term={entry.term} definition={entry.definition} source={entry.source}>{part}</GlossaryTerm>;
+    }
+    return part;
+  });
+}
+
+function renderInline(text: string, glossary?: GlossaryEntry[]) {
   // Bold, code, links
   const parts = text.split(/(\*\*[^*]+\*\*|`[^`]+`|\[[^\]]+\]\([^)]+\))/g);
   return parts.map((part, i) => {
@@ -18,6 +72,10 @@ function renderInline(text: string) {
     if (linkMatch) {
       return <a key={i} href={linkMatch[2]} style={{ color: "#4299e1" }}>{linkMatch[1]}</a>;
     }
+    // Apply glossary to plain text parts
+    if (glossary && typeof part === "string" && part.length > 1) {
+      return <span key={i}>{applyGlossary(part, glossary)}</span>;
+    }
     return part;
   });
 }
@@ -25,9 +83,10 @@ function renderInline(text: string) {
 interface Props {
   text: string;
   fontSize?: string;
+  glossary?: GlossaryEntry[];
 }
 
-export function Markdown({ text, fontSize = "13px" }: Props) {
+export function Markdown({ text, fontSize = "13px", glossary }: Props) {
   const lines = text.split("\n");
   const elements: any[] = [];
   let tableRows: string[][] = [];
@@ -52,7 +111,7 @@ export function Markdown({ text, fontSize = "13px" }: Props) {
                     fontWeight: ri === 0 ? "bold" : "normal",
                     fontSize: "12px",
                   }}>
-                    {renderInline(cell)}
+                    {renderInline(cell, glossary)}
                   </Tag>
                 );
               })}
@@ -103,11 +162,11 @@ export function Markdown({ text, fontSize = "13px" }: Props) {
 
     // Headers
     if (line.startsWith("### ")) {
-      elements.push(<h4 key={i} style={{ fontSize, fontWeight: "bold", margin: "12px 0 4px", color: "#333" }}>{renderInline(line.slice(4))}</h4>);
+      elements.push(<h4 key={i} style={{ fontSize, fontWeight: "bold", margin: "12px 0 4px", color: "#333" }}>{renderInline(line.slice(4), glossary)}</h4>);
       continue;
     }
     if (line.startsWith("## ")) {
-      elements.push(<h3 key={i} style={{ fontSize, fontWeight: "bold", margin: "14px 0 6px", color: "#333" }}>{renderInline(line.slice(3))}</h3>);
+      elements.push(<h3 key={i} style={{ fontSize, fontWeight: "bold", margin: "14px 0 6px", color: "#333" }}>{renderInline(line.slice(3), glossary)}</h3>);
       continue;
     }
 
@@ -115,7 +174,7 @@ export function Markdown({ text, fontSize = "13px" }: Props) {
     if (line.startsWith("- ")) {
       elements.push(
         <div key={i} style={{ paddingLeft: "16px", margin: "3px 0", fontSize }}>
-          {"• "}{renderInline(line.slice(2))}
+          {"• "}{renderInline(line.slice(2), glossary)}
         </div>
       );
       continue;
@@ -126,14 +185,14 @@ export function Markdown({ text, fontSize = "13px" }: Props) {
     if (numMatch) {
       elements.push(
         <div key={i} style={{ paddingLeft: "16px", margin: "3px 0", fontSize }}>
-          {numMatch[1]}. {renderInline(numMatch[2])}
+          {numMatch[1]}. {renderInline(numMatch[2], glossary)}
         </div>
       );
       continue;
     }
 
     // Normal paragraph
-    elements.push(<p key={i} style={{ margin: "4px 0", fontSize, lineHeight: 1.6 }}>{renderInline(line)}</p>);
+    elements.push(<p key={i} style={{ margin: "4px 0", fontSize, lineHeight: 1.6 }}>{renderInline(line, glossary)}</p>);
   }
 
   if (tableRows.length > 0) flushTable();
