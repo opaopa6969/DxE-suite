@@ -130,13 +130,38 @@ export function parseSession(filePath: string): SessionParseOutput {
     }
   }
 
+  // Collect all inline Gap markers with line numbers for cross-matching
+  const markerLines: { line: number; text: string }[] = [];
+  for (let i = 0; i < lines.length; i++) {
+    if (GAP_MARKER.test(lines[i])) {
+      markerLines.push({ line: i + 1, text: lines[i] });
+    }
+  }
+
   // If no gap markers found but table exists, create gaps from table
+  // Try to match table gaps to inline markers by keyword similarity
   if (gaps.length === 0 && tableGaps.length > 0) {
     for (const tg of tableGaps) {
       const gapId = `${id}#G-${String(tg.index).padStart(3, "0")}`;
       const status = tg.status?.includes("Resolved") ? "Archived" as const
         : tg.status?.includes("Active") ? "Active" as const
         : "Active" as const;
+
+      // Try to find matching inline marker by keyword overlap
+      let bestLine = 0;
+      let bestScore = 0;
+      const keywords = tg.summary.split(/[\s、。,./]+/).filter(w => w.length >= 2);
+      for (const marker of markerLines) {
+        let score = 0;
+        for (const kw of keywords) {
+          if (marker.text.includes(kw)) score++;
+        }
+        if (score > bestScore) {
+          bestScore = score;
+          bestLine = marker.line;
+        }
+      }
+
       gaps.push({
         node: {
           id: gapId,
@@ -145,12 +170,12 @@ export function parseSession(filePath: string): SessionParseOutput {
           category: tg.category,
           severity: tg.severity as Gap["severity"],
           status,
-          line_ref: 0,
+          line_ref: bestLine, // 0 if no match found
           discovered_by: [],
         },
-        confidence: 0.8,
-        warnings: ["Gap extracted from table (no inline marker)"],
-        source: { file: filePath },
+        confidence: bestLine > 0 ? 0.85 : 0.8,
+        warnings: bestLine > 0 ? [] : ["Gap extracted from table (no inline marker found)"],
+        source: { file: filePath, line: bestLine || undefined },
       });
     }
   } else {

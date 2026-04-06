@@ -145,10 +145,15 @@ export function DetailPanel({ node, graph, onClose, onDGERestart }: Props) {
           <div style={{ marginBottom: "12px" }}>
             <Markdown text={d.summary ?? ""} fontSize="13px" />
           </div>
-          <div style={{ fontSize: "12px", color: "#666" }}>
+          <div style={{ fontSize: "12px", color: "#666", marginBottom: "8px" }}>
             Status: {d.status}
+            {d.line_ref > 0 && <span style={{ marginLeft: "8px" }}>Line: {d.line_ref}</span>}
           </div>
-          <div style={{ marginTop: "16px", display: "flex", gap: "8px", flexWrap: "wrap" }}>
+
+          {/* Dialogue excerpt at line_ref */}
+          <GapDialogueExcerpt gapNode={node} graph={graph} />
+
+          <div style={{ marginTop: "12px", display: "flex", gap: "8px", flexWrap: "wrap" }}>
             <button onClick={() => onDGERestart(node)} style={actionBtnStyle}>
               {"🔄 このGapでDGE"}
             </button>
@@ -179,6 +184,86 @@ export function DetailPanel({ node, graph, onClose, onDGERestart }: Props) {
           {"⚠️"} {node.warnings.join("; ")}
         </div>
       )}
+    </div>
+  );
+}
+
+// ─── Gap Dialogue Excerpt ───
+
+function GapDialogueExcerpt({ gapNode, graph }: { gapNode: GraphNode; graph: DVEGraph }) {
+  const d = gapNode.data as any;
+  const lineRef = d.line_ref;
+  const [expanded, setExpanded] = useState(false);
+
+  // Find session content via dialogue → session
+  const discEdge = graph.edges.find((e) => e.target === gapNode.id && e.type === "discovers");
+  const dialogueNode = discEdge ? graph.nodes.find((n) => n.id === discEdge.source) : null;
+  const containsEdge = dialogueNode
+    ? graph.edges.find((e) => e.target === dialogueNode.id && e.type === "contains")
+    : null;
+  const sessionNode = containsEdge ? graph.nodes.find((n) => n.id === containsEdge.source) : null;
+  const content: string | undefined = (sessionNode?.data as any)?.content;
+
+  if (!content || !lineRef || lineRef === 0) {
+    return (
+      <div style={{ fontSize: "12px", color: "#999", padding: "8px", background: "#f7fafc", borderRadius: "4px" }}>
+        📭 会話劇の該当箇所が特定できません
+        {!content && " (会話劇テキスト未保存)"}
+        {content && !lineRef && " (行番号なし)"}
+      </div>
+    );
+  }
+
+  const lines = content.split("\n");
+  const contextBefore = 8;
+  const contextAfter = expanded ? 30 : 12;
+  const start = Math.max(0, lineRef - 1 - contextBefore);
+  const end = Math.min(lines.length, lineRef - 1 + contextAfter);
+  const excerpt = lines.slice(start, end);
+
+  return (
+    <div style={{ marginBottom: "8px" }}>
+      <h4 style={{ fontSize: "13px", color: "#666", marginBottom: "4px" }}>
+        🎭 会話劇の該当箇所 (line {lineRef})
+      </h4>
+      <div style={{
+        background: "#1a202c", color: "#e2e8f0", padding: "10px",
+        borderRadius: "6px", fontSize: "11px", lineHeight: 1.6,
+        maxHeight: expanded ? "none" : "200px", overflow: expanded ? "visible" : "hidden",
+        position: "relative", fontFamily: "monospace",
+      }}>
+        {excerpt.map((line, i) => {
+          const actualLine = start + i + 1;
+          const isTarget = actualLine === lineRef;
+          const isGapMarker = /→.*Gap/.test(line);
+          return (
+            <div key={i} style={{
+              padding: "1px 4px",
+              background: isTarget ? "rgba(214, 158, 46, 0.3)" : isGapMarker ? "rgba(229, 62, 62, 0.2)" : "transparent",
+              borderLeft: isTarget ? "3px solid #d69e2e" : "3px solid transparent",
+            }}>
+              <span style={{ color: "#718096", marginRight: "8px", fontSize: "10px" }}>{actualLine}</span>
+              {line}
+            </div>
+          );
+        })}
+        {!expanded && (
+          <div style={{
+            position: "absolute", bottom: 0, left: 0, right: 0, height: "40px",
+            background: "linear-gradient(transparent, #1a202c)",
+          }} />
+        )}
+      </div>
+      <button
+        onClick={() => setExpanded(!expanded)}
+        style={{
+          marginTop: "4px", padding: "4px 8px", fontSize: "11px",
+          border: "1px solid #4a5568", borderRadius: "4px",
+          background: "#2d3748", color: "#e2e8f0", cursor: "pointer",
+        }}
+      >
+        {expanded ? "折りたたむ" : "もっと見る"}
+      </button>
     </div>
   );
 }
