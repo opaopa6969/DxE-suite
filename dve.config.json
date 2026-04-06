@@ -1,0 +1,29 @@
+{
+  "outputDir": "/home/opa/work/AskOS-workspace/DxE-suite/dve/dist",
+  "projects": [
+    {
+      "name": "kit",
+      "path": "../DDE-toolkit/kit"
+    },
+    {
+      "name": "DxE-suite",
+      "path": "."
+    },
+    {
+      "name": "propstack",
+      "path": "../propstack"
+    },
+    {
+      "name": "syslenz",
+      "path": "../syslenz"
+    },
+    {
+      "name": "volta-auth-proxy",
+      "path": "../volta-auth-proxy"
+    },
+    {
+      "name": "volta-platform",
+      "path": "../volta-platform"
+    }
+  ]
+}

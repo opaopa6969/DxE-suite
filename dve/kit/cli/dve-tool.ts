@@ -498,6 +498,108 @@ switch (cmd) {
     }
     break;
   }
+  case "scan": {
+    const scanDir = args[0] ? path.resolve(args[0]) : path.resolve(CWD, "..");
+    const maxDepth = parseInt(args.find((a) => a.startsWith("--depth="))?.split("=")[1] ?? "3", 10);
+    const autoRegister = args.includes("--register") || args.includes("-r");
+
+    console.log(`\nScanning ${scanDir} (depth=${maxDepth})...\n`);
+
+    // Find git repos with DxE markers
+    const { readdirSync: rds, statSync: ss } = await import("node:fs");
+
+    interface ScanResult {
+      path: string;
+      name: string;
+      hasDGE: boolean;
+      hasDRE: boolean;
+      hasDVE: boolean;
+      hasDDE: boolean;
+      sessions: number;
+      decisions: number;
+    }
+
+    const results: ScanResult[] = [];
+
+    function scanRecursive(dir: string, depth: number) {
+      if (depth > maxDepth) return;
+      let entries: string[];
+      try { entries = rds(dir); } catch { return; }
+
+      // Check if this is a project root (has .git or package.json)
+      const isProject = entries.includes(".git") || entries.includes("package.json");
+      if (isProject) {
+        const hasDGE = existsSync(path.join(dir, "dge")) || existsSync(path.join(dir, ".claude", "skills", "dge-session.md"));
+        const hasDRE = existsSync(path.join(dir, ".claude", ".dre-version")) || existsSync(path.join(dir, "dre"));
+        const hasDVE = existsSync(path.join(dir, "dve")) || existsSync(path.join(dir, ".claude", "skills", "dve-build.md"));
+        const hasDDE = existsSync(path.join(dir, "dde"));
+
+        let sessions = 0;
+        let decisions = 0;
+        const sessDir = path.join(dir, "dge", "sessions");
+        const ddDir = path.join(dir, "dge", "decisions");
+        if (existsSync(sessDir)) {
+          try { sessions = rds(sessDir).filter((f: string) => f.endsWith(".md") && f !== "index.md").length; } catch {}
+        }
+        if (existsSync(ddDir)) {
+          try { decisions = rds(ddDir).filter((f: string) => f.endsWith(".md") && f !== "index.md").length; } catch {}
+        }
+
+        // Only include if has any DxE tooling
+        if (hasDGE || hasDRE || hasDVE || hasDDE || sessions > 0) {
+          results.push({
+            path: dir,
+            name: path.basename(dir),
+            hasDGE, hasDRE, hasDVE, hasDDE,
+            sessions, decisions,
+          });
+        }
+      }
+
+      // Recurse into subdirectories (skip common non-project dirs)
+      const skipDirs = new Set(["node_modules", ".git", "dist", "build", ".dre", ".claude", "dve", "dge", "dre", "dde"]);
+      for (const entry of entries) {
+        if (skipDirs.has(entry) || entry.startsWith(".")) continue;
+        const full = path.join(dir, entry);
+        try { if (ss(full).isDirectory()) scanRecursive(full, depth + 1); } catch {}
+      }
+    }
+
+    scanRecursive(scanDir, 0);
+
+    if (results.length === 0) {
+      console.log("  No DxE projects found.");
+      break;
+    }
+
+    console.log(`${"Project".padEnd(25)} ${"DGE".padEnd(5)} ${"DRE".padEnd(5)} ${"DVE".padEnd(5)} ${"DDE".padEnd(5)} ${"Sess".padEnd(6)} DDs`);
+    console.log("─".repeat(70));
+    for (const r of results) {
+      console.log(
+        `${r.name.padEnd(25)} ${(r.hasDGE ? "✅" : "—").padEnd(5)} ` +
+        `${(r.hasDRE ? "✅" : "—").padEnd(5)} ${(r.hasDVE ? "✅" : "—").padEnd(5)} ` +
+        `${(r.hasDDE ? "✅" : "—").padEnd(5)} ${String(r.sessions).padEnd(6)} ${r.decisions}`
+      );
+    }
+    console.log(`\n  ${results.length} projects found.`);
+
+    // Auto-register
+    if (autoRegister) {
+      const newConfig = {
+        outputDir: config.outputDir.startsWith("/") ? config.outputDir : path.relative(CWD, path.resolve(CWD, config.outputDir)) || "dve/dist",
+        projects: results.map((r) => ({
+          name: r.name,
+          path: path.relative(CWD, r.path) || ".",
+        })),
+      };
+      writeFileSync(CONFIG_PATH, JSON.stringify(newConfig, null, 2) + "\n");
+      console.log(`\n  Registered ${results.length} projects to ${CONFIG_PATH}`);
+      console.log(`  Run: dve build`);
+    } else {
+      console.log(`\n  Add --register (-r) to save to dve.config.json`);
+    }
+    break;
+  }
   case "init": {
     if (existsSync(CONFIG_PATH)) {
       console.log(`dve.config.json already exists.`);
@@ -551,8 +653,9 @@ switch (cmd) {
     version                         Show version
 
   Multi-project:
-    dve init /path/to/project1 /path/to/project2
-    dve build                       → builds all projects
-    dve projects                    → list projects
+    scan [dir] [--depth=N] [-r]     Auto-discover DxE projects in directory
+    init [path...]                  Create dve.config.json manually
+    build                           → builds all projects
+    projects                        → list projects
     `);
 }
