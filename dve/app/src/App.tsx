@@ -94,20 +94,126 @@ export function App() {
     try { localStorage.setItem("dve-onboarding-done", "1"); } catch {}
   }, []);
 
+  const buildContextPrompt = useCallback(
+    (node: GraphNode, g: DVEGraph): string => {
+      const d = node.data as any;
+      const lines: string[] = [];
+
+      if (node.type === "decision") {
+        // Find related gaps
+        const gapIds = g.edges
+          .filter((e) => e.target === node.id && e.type === "resolves")
+          .map((e) => e.source);
+        const gaps = g.nodes.filter((n) => gapIds.includes(n.id));
+
+        // Find sessions
+        const sessionIds = new Set<string>();
+        for (const gap of gaps) {
+          const disc = g.edges.find((e) => e.target === gap.id && e.type === "discovers");
+          if (disc) sessionIds.add(disc.source);
+        }
+        const sessions = g.nodes.filter((n) => sessionIds.has(n.id));
+
+        // Find supersedes chain
+        const supersedes = g.edges
+          .filter((e) => e.source === node.id && e.type === "supersedes")
+          .map((e) => e.target);
+
+        // Find annotations
+        const annIds = g.edges
+          .filter((e) => e.target === node.id && e.type === "annotates")
+          .map((e) => e.source);
+        const annotations = g.nodes.filter((n) => annIds.includes(n.id));
+
+        lines.push(`${node.id} (${d.title}) を再検討。`);
+        lines.push("");
+        lines.push("## 決定の経緯");
+        lines.push(`Rationale: ${d.rationale ?? "N/A"}`);
+        if (supersedes.length > 0) {
+          lines.push(`Supersedes: ${supersedes.join(", ")}`);
+        }
+        lines.push("");
+
+        if (gaps.length > 0) {
+          lines.push(`## 関連 Gap (${gaps.length}件)`);
+          for (const gap of gaps) {
+            const gd = gap.data as any;
+            lines.push(`- ${gap.id.split("#")[1] ?? gap.id} (${gd.severity}): ${gd.summary}`);
+          }
+          lines.push("");
+        }
+
+        if (sessions.length > 0) {
+          const s = sessions[0].data as any;
+          lines.push(`## セッション情報`);
+          lines.push(`テーマ: ${s.theme ?? "N/A"}`);
+          lines.push(`キャラ: ${(s.characters ?? []).join(", ")}`);
+          lines.push(`日付: ${s.date ?? "N/A"}`);
+          lines.push("");
+        }
+
+        if (annotations.length > 0) {
+          lines.push(`## Annotation`);
+          for (const ann of annotations) {
+            const ad = ann.data as any;
+            lines.push(`- [${ad.action}] ${ad.body}`);
+          }
+          lines.push("");
+        }
+
+        lines.push("上記の経緯を踏まえて DGE して。");
+
+      } else if (node.type === "gap") {
+        // Find session
+        const disc = g.edges.find((e) => e.target === node.id && e.type === "discovers");
+        const session = disc ? g.nodes.find((n) => n.id === disc.source) : null;
+        const sd = session?.data as any;
+
+        // Find related DDs
+        const ddIds = g.edges
+          .filter((e) => e.source === node.id && e.type === "resolves")
+          .map((e) => e.target);
+        const dds = g.nodes.filter((n) => ddIds.includes(n.id));
+
+        lines.push(`Gap "${d.summary}" を深掘り。`);
+        lines.push("");
+        lines.push(`Severity: ${d.severity} | Category: ${d.category ?? "N/A"} | Status: ${d.status}`);
+        lines.push("");
+
+        if (session) {
+          lines.push(`## 元のセッション`);
+          lines.push(`テーマ: ${sd.theme ?? "N/A"}`);
+          lines.push(`キャラ: ${(sd.characters ?? []).join(", ")}`);
+          lines.push(`日付: ${sd.date ?? "N/A"}`);
+          lines.push("");
+        }
+
+        if (dds.length > 0) {
+          lines.push(`## 関連 DD`);
+          for (const dd of dds) {
+            const ddd = dd.data as any;
+            lines.push(`- ${dd.id}: ${ddd.title}`);
+          }
+          lines.push("");
+        }
+
+        lines.push("この Gap を中心に DGE して。");
+      }
+
+      return lines.join("\n");
+    },
+    []
+  );
+
   const handleDGERestart = useCallback(
     (node: GraphNode) => {
-      const d = node.data as any;
-      let prompt = "";
-      if (node.type === "decision") {
-        prompt = `${node.id} (${d.title}) を再検討。\ncontext: この決定の経緯を踏まえて DGE して。`;
-      } else if (node.type === "gap") {
-        prompt = `Gap "${d.summary}" を深掘り。\n前回のセッション: ${d.session_id}\nこの Gap を中心に DGE して。`;
-      }
+      if (!graph) return;
+      const prompt = buildContextPrompt(node, graph);
       navigator.clipboard.writeText(prompt).then(() => {
         alert("DGE プロンプトをクリップボードにコピーしました。\nClaude Code に貼り付けて実行してください。");
       });
     },
-    []
+    [graph, buildContextPrompt]
   );
 
   if (error) {
