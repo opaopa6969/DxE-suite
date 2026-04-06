@@ -141,6 +141,45 @@ if [[ "$FILE_PATH" == *".claude/rules/"* ]] || [[ "$FILE_PATH" == *".claude/skil
   fi
 fi
 
+# ─── 3. Decision Detection — capture implicit decisions from any conversation ───
+
+# Scan written content for decision patterns
+if [ -n "$FILE_PATH" ] && [ -f "$FILE_PATH" ]; then
+  PENDING_FILE=".dre/pending-decisions.json"
+
+  # Decision patterns (Japanese + English)
+  DECISION_PATTERNS="にしよう|にする$|に決定|で行く|を採用|を選択|で確定|却下|不要|を使う|に変更|方針:|決定:|確定:|Direction:|Decision:|Decided:|chose|settled on|going with"
+
+  DECISION_LINES=$(grep -niE "$DECISION_PATTERNS" "$FILE_PATH" 2>/dev/null | head -5 || true)
+
+  if [ -n "$DECISION_LINES" ]; then
+    # Append to pending decisions
+    mkdir -p "$(dirname "$PENDING_FILE")"
+    TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+    # Initialize if not exists
+    if [ ! -f "$PENDING_FILE" ]; then
+      echo '{"pending":[]}' > "$PENDING_FILE"
+    fi
+
+    # Add each decision line
+    echo "$DECISION_LINES" | while IFS= read -r line; do
+      [ -z "$line" ] && continue
+      LINE_NUM=$(echo "$line" | grep -oP '^\d+' || echo 0)
+      TEXT=$(echo "$line" | sed 's/^[0-9]*://' | sed 's/^[[:space:]]*//' | head -c 200)
+      # Skip noise (too short, code-like)
+      [ ${#TEXT} -lt 15 ] && continue
+      echo "$TEXT" | grep -qE "^[{}\[\]<>]|^import |^const |^function |^if |^for " && continue
+
+      # Append to JSON
+      TMP=$(mktemp)
+      jq --arg ts "$TIMESTAMP" --arg file "$FILE_PATH" --arg line "$LINE_NUM" --arg text "$TEXT" \
+        '.pending += [{"timestamp": $ts, "file": $file, "line": ($line | tonumber), "text": $text}]' \
+        "$PENDING_FILE" > "$TMP" 2>/dev/null && mv "$TMP" "$PENDING_FILE" || rm -f "$TMP"
+    done
+  fi
+fi
+
 # ─── Output ───
 if [ -n "$VIOLATIONS" ]; then
   echo -e "\n⚠️  DRE Enforcement Violations:" >&2

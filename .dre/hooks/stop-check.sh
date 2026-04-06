@@ -50,6 +50,26 @@ if [ -f "dve/dist/graph.json" ]; then
   fi
 fi
 
+# ─── Pending decisions check ───
+PENDING_FILE=".dre/pending-decisions.json"
+if [ -f "$PENDING_FILE" ]; then
+  PENDING_COUNT=$(jq '.pending | length' "$PENDING_FILE" 2>/dev/null || echo 0)
+  if [ "$PENDING_COUNT" -gt 0 ]; then
+    PENDING_TEXTS=$(jq -r '[.pending[-5:][].text] | join("; ")' "$PENDING_FILE" 2>/dev/null | head -c 300)
+    REASONS="${REASONS}[info] ${PENDING_COUNT} implicit decisions detected. Consider creating DDs: ${PENDING_TEXTS} "
+  fi
+fi
+
+# ─── Commit DD reference check ───
+# Check if recent commits lack DD references
+if command -v git &>/dev/null && [ -d ".git" ]; then
+  RECENT_NO_REF=$(git log --oneline -5 2>/dev/null | grep -cvE "Ref:.*DD-|DD-\d+" || true)
+  DD_COUNT=$(find dge/decisions/ -name "DD-*.md" 2>/dev/null | wc -l || echo 0)
+  if [ "$DD_COUNT" -gt 0 ] && [ "$RECENT_NO_REF" -gt 3 ]; then
+    REASONS="${REASONS}[info] Recent commits lack DD references (Ref: DD-NNN). "
+  fi
+fi
+
 # ─── Return ───
 if [ -n "$REASONS" ]; then
   ESCAPED=$(echo "$REASONS" | sed 's/"/\\"/g' | tr '\n' ' ')
