@@ -11,6 +11,38 @@ import { ScanView } from "./views/ScanView";
 import { loadGraph, loadChangelog } from "./lib/graph-loader";
 import type { DVEGraph, Changelog, GraphNode } from "./types";
 
+function getHashRoute(): { type?: string; id?: string; project?: string } {
+  // Support both hash routes and path-based URLs
+  // /sessions/xxx.md → redirect to /#/session/xxx
+  const path = window.location.pathname;
+  if (path !== "/" && path !== "/index.html") {
+    const match = path.match(/\/(sessions|decisions|specs|annotations)\/(.*?)(?:\.md)?$/);
+    if (match) {
+      const typeMap: Record<string, string> = {
+        sessions: "session", decisions: "decision", specs: "spec", annotations: "annotation",
+      };
+      window.location.replace(`/#/${typeMap[match[1]] ?? match[1]}/${match[2]}`);
+      return { type: typeMap[match[1]], id: match[2] };
+    }
+  }
+
+  const hash = window.location.hash.slice(1);
+  if (!hash) return {};
+  const parts = hash.split("/").filter(Boolean);
+  // /#/session/xxx or /#/dd/DD-001 or /#/spec/dve-data-model or /#/project/name
+  if (parts.length >= 2) {
+    return { type: parts[0], id: parts.slice(1).join("/") };
+  }
+  if (parts.length === 1) {
+    return { id: parts[0] };
+  }
+  return {};
+}
+
+function setHashRoute(type: string, id: string) {
+  window.location.hash = `#/${type}/${id}`;
+}
+
 export function App() {
   const [graph, setGraph] = useState<DVEGraph | null>(null);
   const [changelog, setChangelog] = useState<Changelog | null>(null);
@@ -71,10 +103,33 @@ export function App() {
       .catch((e) => setError(e.message));
   }, []);
 
+  // Resolve hash route on graph load
+  useEffect(() => {
+    if (!graph) return;
+    const route = getHashRoute();
+    if (route.id) {
+      // Find node by id (try various patterns)
+      const node = graph.nodes.find((n) =>
+        n.id === route.id ||
+        n.id.endsWith(`/${route.id}`) ||
+        n.id.includes(route.id!) ||
+        (n.data as any).file_path?.includes(route.id!)
+      );
+      if (node) {
+        setSelectedNode(node);
+        setSideTab("detail");
+        if (node.type === "decision" || node.type === "dialogue") {
+          setExpandedDecisions((prev) => new Set([...prev, node.id]));
+        }
+      }
+    }
+  }, [graph]);
+
   const handleNodeClick = useCallback(
     (node: GraphNode) => {
       setSelectedNode(node);
       setSideTab("detail");
+      setHashRoute(node.type, node.id);
       // Toggle expand for DD and dialogue nodes
       if (node.type === "decision" || node.type === "dialogue") {
         setExpandedDecisions((prev) => {
