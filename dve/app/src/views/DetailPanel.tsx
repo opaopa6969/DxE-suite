@@ -108,6 +108,14 @@ export function DetailPanel({ node, graph, onClose, onDGERestart }: Props) {
             <RelatedGaps ddId={node.id} graph={graph} />
           </div>
           <RelatedSessions ddId={node.id} graph={graph} />
+          {d.content && (
+            <details style={{ marginTop: "12px" }}>
+              <summary style={{ fontSize: "13px", color: "#666", cursor: "pointer" }}>Full Content</summary>
+              <div style={{ marginTop: "8px" }}>
+                <Markdown text={d.content} fontSize="12px" />
+              </div>
+            </details>
+          )}
           <div style={{ marginTop: "16px", display: "flex", gap: "8px", flexWrap: "wrap" }}>
             <button onClick={() => onDGERestart(node)} style={actionBtnStyle}>
               {"🔄 DGEで再検討"}
@@ -169,17 +177,7 @@ export function DetailPanel({ node, graph, onClose, onDGERestart }: Props) {
       )}
 
       {node.type === "session" && (
-        <>
-          <div style={{ fontSize: "13px", marginBottom: "8px" }}>
-            <strong>{d.theme}</strong>
-          </div>
-          <div style={{ fontSize: "12px", color: "#666", marginBottom: "8px" }}>
-            {d.date} | {d.flow} | {d.structure}
-          </div>
-          <div style={{ fontSize: "12px" }}>
-            Characters: {(d.characters ?? []).join(", ")}
-          </div>
-        </>
+        <SessionDetail node={node} graph={graph} onDGERestart={onDGERestart} />
       )}
 
       {node.warnings.length > 0 && (
@@ -188,6 +186,133 @@ export function DetailPanel({ node, graph, onClose, onDGERestart }: Props) {
         </div>
       )}
     </div>
+  );
+}
+
+// ─── Session Detail ───
+
+function SessionDetail({ node, graph, onDGERestart }: { node: GraphNode; graph: DVEGraph; onDGERestart: (n: GraphNode) => void }) {
+  const d = node.data as any;
+  const [expanded, setExpanded] = useState(false);
+  const [showAnnotation, setShowAnnotation] = useState(false);
+  const content: string | null = d.content ?? null;
+
+  // Gaps in this session
+  const gapIds = graph.edges
+    .filter((e) => e.source === node.id && e.type === "discovers")
+    .map((e) => e.target);
+  const gaps = graph.nodes.filter((n) => gapIds.includes(n.id));
+
+  // DDs linked from this session's gaps
+  const ddIds = new Set<string>();
+  for (const gap of gaps) {
+    const resolves = graph.edges.filter((e) => e.source === gap.id && e.type === "resolves");
+    for (const r of resolves) ddIds.add(r.target);
+  }
+  const dds = graph.nodes.filter((n) => ddIds.has(n.id));
+
+  return (
+    <>
+      <h2 style={{ fontSize: "16px", marginBottom: "8px" }}>{d.theme}</h2>
+      <div style={{ fontSize: "12px", color: "#666", marginBottom: "12px" }}>
+        {d.date} | {d.flow} | {d.structure}
+      </div>
+      <div style={{ fontSize: "12px", marginBottom: "12px" }}>
+        🎭 {(d.characters ?? []).join(", ")}
+      </div>
+
+      {/* Gaps */}
+      {gaps.length > 0 && (
+        <div style={{ marginBottom: "12px" }}>
+          <h4 style={{ fontSize: "13px", color: "#666", marginBottom: "4px" }}>
+            Gaps ({gaps.length})
+          </h4>
+          <ul style={{ listStyle: "none", padding: 0 }}>
+            {gaps.map((g) => {
+              const gd = g.data as any;
+              return (
+                <li key={g.id} style={{ marginBottom: "4px", fontSize: "12px" }}>
+                  <span style={{ color: severityColor[gd.severity] ?? "#999", fontWeight: "bold" }}>
+                    {gd.severity === "Critical" ? "🔴" : gd.severity === "High" ? "🟠" : "🟡"}{" "}
+                  </span>
+                  <strong>{g.id.split("#")[1]}</strong>: {(gd.summary ?? "").slice(0, 80)}
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      )}
+
+      {/* Decisions */}
+      {dds.length > 0 && (
+        <div style={{ marginBottom: "12px" }}>
+          <h4 style={{ fontSize: "13px", color: "#666", marginBottom: "4px" }}>
+            Decisions ({dds.length})
+          </h4>
+          {dds.map((dd) => {
+            const ddd = dd.data as any;
+            return (
+              <div key={dd.id} style={{ fontSize: "12px", marginBottom: "2px" }}>
+                📋 {dd.id}: {ddd.title}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Session content */}
+      {content && (
+        <div style={{ marginBottom: "12px" }}>
+          <h4 style={{ fontSize: "13px", color: "#666", marginBottom: "4px" }}>
+            Session Content
+          </h4>
+          <div style={{
+            maxHeight: expanded ? "none" : "300px",
+            overflow: expanded ? "visible" : "hidden",
+            position: "relative",
+          }}>
+            <Markdown text={content} fontSize="12px" />
+            {!expanded && (
+              <div style={{
+                position: "absolute", bottom: 0, left: 0, right: 0, height: "60px",
+                background: "linear-gradient(transparent, #fff)",
+              }} />
+            )}
+          </div>
+          <button
+            onClick={() => setExpanded(!expanded)}
+            style={{
+              marginTop: "4px", padding: "4px 8px", fontSize: "11px",
+              border: "1px solid #ccc", borderRadius: "4px", background: "#fff", cursor: "pointer",
+            }}
+          >
+            {expanded ? "折りたたむ" : "全文表示"}
+          </button>
+        </div>
+      )}
+
+      {!content && d.file_path && (
+        <div style={{ fontSize: "12px", color: "#999", marginBottom: "12px" }}>
+          📁 {d.file_path}
+        </div>
+      )}
+
+      <div style={{ marginTop: "12px", display: "flex", gap: "8px", flexWrap: "wrap" }}>
+        <button onClick={() => onDGERestart(node)} style={actionBtnStyle}>
+          {"🔄 この文脈でDGE"}
+        </button>
+        <button onClick={() => setShowAnnotation(true)} style={actionBtnStyle}>
+          {"💬 コメント"}
+        </button>
+      </div>
+      {showAnnotation && (
+        <AnnotationDialog
+          targetId={node.id}
+          onClose={() => setShowAnnotation(false)}
+          onCreated={() => { setShowAnnotation(false); alert("Annotation saved. Run dve build to update graph."); }}
+        />
+      )}
+    </>
   );
 }
 

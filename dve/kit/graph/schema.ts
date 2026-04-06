@@ -10,6 +10,7 @@ export interface Session {
   structure: "roundtable" | "tribunal" | "wargame" | "pitch" | "consult" | "investigation" | string;
   characters: string[];
   file_path: string;
+  content?: string;  // full markdown content (included in graph.json for static rendering)
 }
 
 export interface Gap {
@@ -34,6 +35,7 @@ export interface Decision {
   gap_refs: string[];
   session_refs: string[];
   file_path: string;
+  content?: string;     // full markdown content
 }
 
 export interface Spec {

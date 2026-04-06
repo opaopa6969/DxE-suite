@@ -70,6 +70,7 @@ export function parseSession(filePath: string): SessionParseOutput {
       structure,
       characters,
       file_path: filePath,
+      content,
     },
     confidence: fileInfo ? 0.9 : 0.5,
     warnings: [...warnings],

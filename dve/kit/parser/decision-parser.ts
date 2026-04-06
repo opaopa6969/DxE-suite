@@ -95,6 +95,7 @@ export function parseDecision(filePath: string): ParseResult<Decision> {
       gap_refs: gapRefs,
       session_refs: sessionRefs,
       file_path: filePath,
+      content,
     },
     confidence: date && title ? 1.0 : 0.7,
     warnings,
