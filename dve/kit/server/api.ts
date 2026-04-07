@@ -265,6 +265,26 @@ ${text}
       return json(res, { ok: true });
     }
 
+    // POST /api/slack/interactive — button clicks from Block Kit
+    if (req.method === "POST" && url.pathname === "/api/slack/interactive") {
+      const rawBody = await new Promise<string>((resolve) => {
+        let b = ""; req.on("data", (c: string) => b += c); req.on("end", () => resolve(b));
+      });
+      const params = new URLSearchParams(rawBody);
+      const payloadStr = params.get("payload") ?? "{}";
+      const payload = JSON.parse(payloadStr);
+
+      if (payload.type === "block_actions" && payload.actions?.[0]) {
+        const action = payload.actions[0];
+        const nodeId = action.value;
+        // Respond with trace/detail for the clicked node
+        const response = handleSlashCommand(`trace ${nodeId}`, config.distDir, config.projectDirs);
+        return json(res, response);
+      }
+
+      return json(res, { ok: true });
+    }
+
     // 404
     json(res, { error: "Not found" }, 404);
   });

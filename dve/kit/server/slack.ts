@@ -100,6 +100,62 @@ export function handleSlashCommand(
       return { response_type: "in_channel", text: `*Overturned Decisions*\n${lines.join("\n")}` };
     }
 
+    case "list": {
+      const filter = args[0]?.toLowerCase() ?? "all"; // dd / gap / session / spec / all
+      const nodes = graph!.nodes.filter((n) => {
+        if (filter === "dd" || filter === "decisions") return n.type === "decision";
+        if (filter === "gap" || filter === "gaps") return n.type === "gap";
+        if (filter === "session" || filter === "sessions") return n.type === "session";
+        if (filter === "spec" || filter === "specs") return n.type === "spec";
+        return n.type === "decision" || n.type === "session" || n.type === "spec";
+      });
+
+      if (nodes.length === 0) return { response_type: "ephemeral", text: `No ${filter} found.` };
+
+      const blocks: any[] = [
+        { type: "section", text: { type: "mrkdwn", text: `*${filter === "all" ? "All Items" : filter.toUpperCase()}* (${nodes.length})` } },
+      ];
+
+      // Group by type
+      const grouped: Record<string, typeof nodes> = {};
+      for (const n of nodes) {
+        if (!grouped[n.type]) grouped[n.type] = [];
+        grouped[n.type].push(n);
+      }
+
+      for (const [type, items] of Object.entries(grouped)) {
+        const icon = type === "decision" ? "📋" : type === "session" ? "📁" : type === "spec" ? "📄" : type === "gap" ? "🔴" : "📎";
+        blocks.push({ type: "divider" });
+        blocks.push({ type: "section", text: { type: "mrkdwn", text: `*${icon} ${type}* (${items.length})` } });
+
+        for (const item of items.slice(0, 10)) {
+          const d = item.data as any;
+          const label = d.title ?? d.theme ?? d.summary?.slice(0, 50) ?? item.id;
+          const meta = type === "decision" ? `${d.date ?? ""} | ${d.status ?? ""}` :
+            type === "session" ? `${d.date ?? ""} | ${(d.characters ?? []).slice(0, 3).join(", ")}` :
+            type === "spec" ? `${d.type ?? ""} | ${d.status ?? ""}` :
+            `${(d as any).severity ?? ""}`;
+
+          blocks.push({
+            type: "section",
+            text: { type: "mrkdwn", text: `*${item.id}*\n${label}\n_${meta}_` },
+            accessory: {
+              type: "button",
+              text: { type: "plain_text", text: type === "decision" ? "Trace" : "Detail" },
+              action_id: `dve_detail_${item.id}`,
+              value: item.id,
+            },
+          });
+        }
+
+        if (items.length > 10) {
+          blocks.push({ type: "section", text: { type: "mrkdwn", text: `_... and ${items.length - 10} more_` } });
+        }
+      }
+
+      return { response_type: "in_channel", text: `List: ${filter}`, blocks };
+    }
+
     case "summary": {
       const s = graph!.stats;
       const orphanCount = orphanGaps(graph!).length;
@@ -114,6 +170,7 @@ export function handleSlashCommand(
       return {
         response_type: "ephemeral",
         text: `*DVE Slack Commands*
+\`/dve list [dd|gap|session|spec]\` — 一覧（ボタン付き）
 \`/dve trace DD-001\` — 因果チェーン
 \`/dve orphans\` — 未解決 Gap
 \`/dve search <keyword>\` — 検索
