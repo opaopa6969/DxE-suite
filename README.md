@@ -140,7 +140,9 @@ LLM が「書いてあること」をレビューするのに対し、DGE は **
 
 - **8つのフロー**: quick / design-review / brainstorm / tribunal / wargame / pitch / consult / investigation
 - **19体のキャラクター**: 今泉（前提を疑う）、ヤン（削る力）、Red Team（攻撃視点）、ハウス（隠れた問題）など
-- **23の対話パターン + 5プリセット**: コントラスト / 探索 / 限界テストの3カテゴリ
+- **29の対話パターン (A-D) + 5プリセット**: コントラスト / 探索 / 限界テスト / **演出** の4カテゴリ
+- **演劇技法**: 場面転換 / バックストーリー開示 / サブテキスト / 劇中劇 / 圧力状況 / 時間跳躍
+- **キャラクター深化**: backstory（過去の経験）+ speech_pattern（口癖・語尾・比喩傾向）
 - **auto_merge**: DGE（判断層）+ 通常LLMレビュー（詳細層）を並行実行し統合
 - **Server**: キャラクター推奨エンジン + セッション管理API（オプション）
 
@@ -155,6 +157,7 @@ LLM が「書いてあること」をレビューするのに対し、DGE は **
 | 内部仕様 | [dge/kit/INTERNALS.md](./dge/kit/INTERNALS.md) | [dge/kit/INTERNALS.en.md](./dge/kit/INTERNALS.en.md) |
 | カスタマイズ | [dge/kit/CUSTOMIZING.md](./dge/kit/CUSTOMIZING.md) | [dge/kit/CUSTOMIZING.en.md](./dge/kit/CUSTOMIZING.en.md) |
 | Server | [dge/server/README.md](./dge/server/README.md) | — |
+| 演劇技法カタログ | [dge/design-materials/theatrical-techniques-catalog.md](./dge/design-materials/theatrical-techniques-catalog.md) | — |
 
 ---
 
