@@ -53,7 +53,7 @@ dve-up() { npx tsc -p "$DXE_HOME/dve/kit/tsconfig.json"; dve build; cd "$DXE_HOM
 dve build                    全プロジェクトの graph.json 生成
 dve serve [--watch]          Web UI + API (4173 + 4174)
 dve status                   全プロジェクトのワークフロー SM 表示
-dve scan [dir] [-r]          DxE プロジェクト自動発見 + 登録
+dve scan [dir] [-r] [-a]     DxE プロジェクト自動発見 + 登録 + audit
 dve trace DD-002             因果チェーン (DD → Gap → Session)
 dve impact DD-002            影響範囲
 dve orphans                  未解決 Gap (DD 未紐づき)
@@ -105,8 +105,8 @@ DxE-suite/
 │   │   ├── parser/    session, decision, spec, annotation, git-linker, glossary, drift, state
 │   │   ├── graph/     schema, builder, query, cluster
 │   │   ├── context/   ContextBundle (DVE → DGE)
-│   │   ├── server/    API (annotations, drift, coverage, scan, status)
-│   │   └── scripts/   recover-all, recover-dialogues, discover-decisions
+│   │   ├── server/    API (annotations, drift, coverage, scan, status, slack)
+│   │   └── scripts/   recover-all, recover-dialogues, discover-decisions, audit-duplicates
 │   ├── app/           Web UI (Preact + Cytoscape.js + Vite)
 │   ├── annotations/   ユーザーコメント・異議
 │   └── contexts/      ContextBundle 出力先
@@ -252,6 +252,43 @@ Session → 🎭会話劇(N gaps) → Gap → DD → Spec
 - **Annotation**: コメント / fork / overturn / constrain / drift を UI から作成
 - **DGE 再起動**: DD/Gap → リッチコンテキスト付きプロンプト → クリップボードコピー
 
+### Slack Bot
+
+Slack から直接 DVE を操作。[セットアップガイド](./docs/slack-setup.md)
+
+```
+/dve list dd              DD 一覧（ボタン付き）
+/dve trace DD-003         因果チェーン
+/dve orphans              未解決 Gap
+/dve search 認証          検索
+/dve status               全プロジェクト状態
+/dve summary              統計
+@DVE DD-003の経緯は？     メンション
+```
+
+### ツール重複検出（scan --audit）
+
+自前実装が DxE toolkit で置き換え可能か全プロジェクト横断で検出。
+
+```bash
+dve scan /home/user/work --audit
+#   volta-auth-proxy:
+#     ⚠️  glossary-auto-linker.md → DDE dde-link
+#     📦 DGE: 3.1.0 → 4.0.0 available
+#   10 finding(s) across 7 projects
+```
+
+### Update Changelog
+
+`dxe update` 時に新機能を表示 + Slack 通知。
+
+```
+📋 New in DGE:
+  - 🆕 DD（設計判断）記録機能
+  - 🆕 DVE ContextBundle 対応
+  - 🆕 会話劇全文保存の enforcement hook
+```
+
 ### リカバリースクリプト
 
 ```bash
@@ -264,6 +301,9 @@ bash dve/kit/scripts/recover-all.sh --scan-all
 
 # 普段の会話から暗黙の決定を検出
 bash dve/kit/scripts/discover-decisions.sh /path/to/project [--apply]
+
+# 自前実装と DxE toolkit の重複を検出
+bash dve/kit/scripts/audit-duplicates.sh /path/to/project
 ```
 
 ### ドキュメント
