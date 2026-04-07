@@ -190,6 +190,35 @@ if (command === 'install') {
       const cmd = hasYes ? `echo y | npx ${tk.update}` : `npx ${tk.update}`;
       run(cmd, { DXE_LANG: lang });
     }
+
+    // Show changelog for new features
+    const dir = kitDir(tk);
+    if (dir) {
+      const clPath = path.join(dir, 'CHANGELOG.md');
+      if (fs.existsSync(clPath)) {
+        const cl = fs.readFileSync(clPath, 'utf8');
+        // Show latest version section (first ## block)
+        const match = cl.match(/## v[\d.]+[^\n]*\n([\s\S]*?)(?=\n## |\n*$)/);
+        if (match) {
+          const features = match[1].trim().split('\n').filter(l => l.startsWith('- 🆕'));
+          if (features.length > 0) {
+            console.log(`\n  📋 New in ${name.toUpperCase()}:`);
+            for (const f of features) {
+              console.log(`    ${f}`);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // Slack notification for updates
+  if (process.env.DRE_NOTIFY_URL) {
+    const names = targets.map(n => n.toUpperCase()).join(', ');
+    try {
+      const { execSync } = require('child_process');
+      execSync(`curl -sf -X POST "${process.env.DRE_NOTIFY_URL}" -H 'Content-Type: application/json' -d '{"text": "[DxE update] ${names} updated in ${path.basename(process.cwd())}"}'`, { timeout: 5000 });
+    } catch {}
   }
 
 } else if (command === 'status') {

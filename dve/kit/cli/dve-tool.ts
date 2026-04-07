@@ -511,8 +511,9 @@ switch (cmd) {
     const scanDir = args[0] ? path.resolve(args[0]) : path.resolve(CWD, "..");
     const maxDepth = parseInt(args.find((a) => a.startsWith("--depth="))?.split("=")[1] ?? "3", 10);
     const autoRegister = args.includes("--register") || args.includes("-r");
+    const doAudit = args.includes("--audit") || args.includes("-a");
 
-    console.log(`\nScanning ${scanDir} (depth=${maxDepth})...\n`);
+    console.log(`\nScanning ${scanDir} (depth=${maxDepth})${doAudit ? " + audit" : ""}...\n`);
 
     // Find git repos with DxE markers
     const { readdirSync: rds, statSync: ss } = await import("node:fs");
@@ -606,6 +607,69 @@ switch (cmd) {
       console.log(`  Run: dve build`);
     } else {
       console.log(`\n  Add --register (-r) to save to dve.config.json`);
+    }
+
+    // Audit: detect self-implementations that overlap with DxE toolkits
+    if (doAudit) {
+      console.log(`\n${"═".repeat(70)}`);
+      console.log("  AUDIT: Self-implementation overlap detection\n");
+
+      const CAPABILITIES: [string[], string][] = [
+        [["glossary-linker", "GlossaryLinker", "auto-link"], "DDE dde-link (npx dde-link --fix)"],
+        [["state-machine.yaml", "state_machine", "workflow-engine"], "DRE workflow engine (dre-engine init)"],
+        [["gap-extract", "gap_extract", "design-review"], "DGE session (dge-session skill)"],
+        [["decision-vis", "decision_vis"], "DVE (dve build + dve serve)"],
+      ];
+
+      let totalFindings = 0;
+      for (const r of results) {
+        let projFindings = 0;
+
+        for (const [patterns, toolkit] of CAPABILITIES) {
+          for (const pat of patterns) {
+            try {
+              const { execSync: ex } = await import("child_process");
+              const found = ex(
+                `find "${r.path}" -path "*/node_modules" -prune -o -path "*/.git" -prune -o -path "*/dge" -prune -o -path "*/dre" -prune -o -path "*/dve" -prune -o -path "*/dde" -prune -o -name "*${pat}*" -print 2>/dev/null | head -3`,
+                { encoding: "utf-8", timeout: 5000 }
+              ).trim();
+              if (found) {
+                if (projFindings === 0) console.log(`  ${r.name}:`);
+                for (const f of found.split("\n")) {
+                  console.log(`    ⚠️  ${f.replace(r.path + "/", "")} → ${toolkit}`);
+                }
+                projFindings++;
+              }
+            } catch {}
+          }
+        }
+
+        // Version check
+        const dxeHome = path.resolve(import.meta.url.replace("file://", "").replace("/dist/cli/dve-tool.js", ""), "..", "..");
+        const versionChecks = [
+          ["DGE", path.join(r.path, "dge", "version.txt"), path.join(dxeHome, "dge", "kit", "version.txt")],
+          ["DRE", path.join(r.path, ".claude", ".dre-version"), path.join(dxeHome, "dre", "kit", "version.txt")],
+        ];
+        for (const [name, localV, kitV] of versionChecks) {
+          if (existsSync(localV) && existsSync(kitV)) {
+            const lv = readFileSync(localV, "utf-8").trim();
+            const kv = readFileSync(kitV, "utf-8").trim();
+            if (lv !== kv && lv && kv) {
+              if (projFindings === 0) console.log(`  ${r.name}:`);
+              console.log(`    📦 ${name}: ${lv} → ${kv} available`);
+              projFindings++;
+            }
+          }
+        }
+
+        totalFindings += projFindings;
+      }
+
+      if (totalFindings === 0) {
+        console.log("  ✅ No duplicates or outdated toolkits found.");
+      } else {
+        console.log(`\n  ${totalFindings} finding(s) across ${results.length} projects`);
+      }
     }
     break;
   }

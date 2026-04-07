@@ -5,6 +5,7 @@ import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync, statSy
 import { execSync } from "node:child_process";
 import path from "node:path";
 import { detectProjectState } from "../parser/state-detector.js";
+import { handleSlashCommand, handleEvent } from "./slack.js";
 function parseBody(req) {
     return new Promise((resolve) => {
         let body = "";
@@ -207,6 +208,68 @@ ${text}
                     dreStates: ["FRESH", "INSTALLED", "CUSTOMIZED", "OUTDATED"],
                 },
             });
+        }
+        // ─── Slack Integration ───
+        // POST /api/slack/command — slash command handler
+        if (req.method === "POST" && url.pathname === "/api/slack/command") {
+            // Slack sends x-www-form-urlencoded, not JSON
+            const rawBody = await new Promise((resolve) => {
+                let b = "";
+                req.on("data", (c) => b += c);
+                req.on("end", () => resolve(b));
+            });
+            const params = new URLSearchParams(rawBody);
+            const text = params.get("text") ?? "";
+            const response = handleSlashCommand(text, config.distDir, config.projectDirs);
+            return json(res, response);
+        }
+        // POST /api/slack/events — Events API handler
+        if (req.method === "POST" && url.pathname === "/api/slack/events") {
+            const body = await parseBody(req);
+            // URL verification challenge
+            if (body.type === "url_verification") {
+                return json(res, { challenge: body.challenge });
+            }
+            // Event callback
+            if (body.type === "event_callback" && body.event) {
+                const reply = handleEvent(body.event, config.distDir);
+                if (reply && body.event.channel) {
+                    // Post reply via Slack API
+                    const token = process.env.SLACK_BOT_TOKEN;
+                    if (token) {
+                        const fetch = globalThis.fetch ?? (await import("node:https")).request;
+                        try {
+                            await globalThis.fetch("https://slack.com/api/chat.postMessage", {
+                                method: "POST",
+                                headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" },
+                                body: JSON.stringify({ channel: body.event.channel, text: reply }),
+                            });
+                        }
+                        catch { /* best effort */ }
+                    }
+                }
+                return json(res, { ok: true });
+            }
+            return json(res, { ok: true });
+        }
+        // POST /api/slack/interactive — button clicks from Block Kit
+        if (req.method === "POST" && url.pathname === "/api/slack/interactive") {
+            const rawBody = await new Promise((resolve) => {
+                let b = "";
+                req.on("data", (c) => b += c);
+                req.on("end", () => resolve(b));
+            });
+            const params = new URLSearchParams(rawBody);
+            const payloadStr = params.get("payload") ?? "{}";
+            const payload = JSON.parse(payloadStr);
+            if (payload.type === "block_actions" && payload.actions?.[0]) {
+                const action = payload.actions[0];
+                const nodeId = action.value;
+                // Respond with trace/detail for the clicked node
+                const response = handleSlashCommand(`trace ${nodeId}`, config.distDir, config.projectDirs);
+                return json(res, response);
+            }
+            return json(res, { ok: true });
         }
         // 404
         json(res, { error: "Not found" }, 404);
