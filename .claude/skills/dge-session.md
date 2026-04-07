@@ -95,6 +95,13 @@ quick / brainstorm ではスキップ。
 **評価軸**: 各キャラの `axis:` に基づいて指摘する。人格だけでなく判断基準を使うこと。キャラファイルに `status:` `gestus:` がある場合はそれを反映し、キャラの存在感・身体性を表現する。
 auto_merge true なら、同時に isolated subagent（Agent ツール, isolation: worktree）で素の LLM レビューをバックグラウンド起動。
 
+**演出の適用（Dramatic Direction）**:
+- Scene ごとにシチュエーション（時間・場所・状況）を変えてよい。Scene 冒頭のナレーションで場面を設定する
+- キャラの `backstory:` があれば、指摘の中で過去の経験を自然に織り込む（明示的に語らせず、対話に滲ませる）
+- キャラの `weakness` は 1 Session に最低 1 回発動させる。weakness が表出した後、別キャラが修正する流れを作る
+- 最低 1 キャラは Session 内で立場（賛成/反対）が変わる。変化の瞬間を Gap 発見のトリガーにする
+- サブテキスト、コールバック（伏線回収）、意味のある沈黙を適宜使い、対話に奥行きを出す
+
 ### Step 6: 構造化
 Gap に Category + Severity。brainstorm はアイデア分類。
 

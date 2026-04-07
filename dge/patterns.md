@@ -76,3 +76,24 @@
 ## 詳細
 
 各パターンの詳細な説明と実績は [docs/dge-v2/dge-dialogue-patterns.md](../docs/dge-v2/dge-dialogue-patterns.md) を参照。
+
+### Category D: 演出パターン（6）
+シーンの構成・対話の質を変えて、通常の議論では出ない Gap を引き出す。
+
+| ID | パターン | 発見するもの |
+|---|---|---|
+| D1 | `backstory-reveal` バックストーリー開示 | 過去の類似判断の失敗、経験則の限界 |
+| D2 | `setting-change` 場面転換 | 環境依存の前提、運用コンテキストの欠如 |
+| D3 | `play-within-play` 劇中劇 | UX ウォークスルーの欠落、ユーザー視点の不在 |
+| D4 | `temporal-shift` 時間跳躍 | 保守性、移行パス、技術的負債の蓄積 |
+| D5 | `subtext-conflict` サブテキスト衝突 | 表面的合意の裏の未解決リスク |
+| D6 | `pressure-cooker` 圧力状況 | 障害時の判断手順、ロールバック、SLO 違反 |
+
+### プリセットへの追加
+
+| プリセット | 追加パターン |
+|---|---|
+| 🆕 `new-project` | + D3 (play-within-play) |
+| 🔧 `feature-extension` | + D1 (backstory-reveal) |
+| 🚀 `pre-release` | + D6 (pressure-cooker) |
+| 🔥 `hotfix` | + D6 (pressure-cooker), D2 (setting-change) |
