@@ -150,7 +150,7 @@ if [ -d "${CLAUDE_DIR}/skills/disabled" ]; then
 fi
 
 # Deploy hooks + settings
-HOOKS_SRC="${SRC}/../hooks"
+HOOKS_SRC="${SRC}/hooks"
 if [ -d "${HOOKS_SRC}" ]; then
   DRE_DIR="${TARGET_DIR}/.dre"
   mkdir -p "${DRE_DIR}/hooks"
