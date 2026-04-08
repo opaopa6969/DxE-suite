@@ -20,8 +20,18 @@ git clone https://github.com/opaopa6969/DxE-suite
 cd DxE-suite
 npm install
 
-# 全ツールキット展開
+# 全ツールキット展開（skills / rules / hooks をプロジェクトに配置）
 node bin/dxe.js install --yes
+
+# ⚠️ スキルの有効化（これをしないとスキルが動かない）
+# DRE はデフォルトで全スキルを disabled/ に配置する。
+# 使いたいスキルを有効化する:
+#   「dre activate dge-session」     — DGE セッション
+#   「dre activate dve-build」       — DVE ビルド
+#   「dre activate phase」           — フェーズ管理
+#   「dre activate all」             — 全スキル有効化
+# Claude Code 内で上記を伝えるか、手動で:
+#   mv .claude/skills/disabled/<skill>.md .claude/skills/
 
 # DVE 起動（決定の可視化）
 npx tsc -p dve/kit/tsconfig.json
