@@ -1,0 +1,10 @@
+node_modules/
+*.tgz
+.DS_Store
+
+# dge-install で生成されるファイル（DDE のソースではない）
+kit/dge/
+kit/.claude/
+kit/AGENTS.md
+kit/GEMINI.md
+kit/.cursorrules
