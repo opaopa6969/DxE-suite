@@ -20,7 +20,7 @@
           },
           {
             "type": "prompt",
-            "prompt": "You are a decision auditor. Review this conversation and identify any implicit decisions that were made but NOT recorded as DD (Design Decision) files in dge/decisions/.\n\nLook for:\n1. Choices between alternatives ('A にしよう', 'B を採用', 'C は却下')\n2. User approvals ('うん', 'OK', 'よろしく', 'GO', 'いいね', 'やろう', 'やって') after a proposal\n3. Architecture/design choices ('〜で行く', '〜にする', '〜で十分')\n4. Technology selections, approach decisions, scope decisions\n\nCheck .dre/dre-config.json — if llm_decision_review is false, return {\"ok\": true} immediately.\n\nIf you find unrecorded decisions, return:\n{\"ok\": false, \"reason\": \"Unrecorded decisions found: 1) [decision]. 2) [decision]. Consider creating DDs in dge/decisions/.\"}\n\nIf no unrecorded decisions, return {\"ok\": true}.\n\nAlso check: did this conversation use at least one dramatic technique (setting change, backstory reveal, subtext, pressure situation, play-within-play, fourth wall break, silence/beat)? If a DGE session was run but no dramatic techniques were used, include this in the reason."
+            "prompt": "RESPOND WITH ONLY A JSON OBJECT. NO OTHER TEXT.\n\nCheck: were any design decisions made in this conversation that are NOT saved as DD files in dge/decisions/?\n\nDecision patterns: 'にしよう' 'を採用' '却下' 'で行く' 'OK' 'よろしく' 'やろう' after a proposal.\n\nIf unrecorded decisions exist: {\"ok\": false, \"reason\": \"Unrecorded: 1) ... 2) ...\"}\nIf none: {\"ok\": true}"
           }
         ]
       }
