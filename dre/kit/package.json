@@ -1,6 +1,6 @@
 {
   "name": "@unlaxer/dre-toolkit",
-  "version": "4.0.0",
+  "version": "4.1.0",
   "description": "DRE (Document Rule Engine) — Claude Code の rules/skills/agents/commands/profiles を配布・管理するツールキット",
   "license": "MIT",
   "repository": {
