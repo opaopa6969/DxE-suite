@@ -15,7 +15,10 @@ const SCRIPT_DIR = path.resolve(__dirname, '..');
 function isMonorepo() {
   try {
     const pkg = JSON.parse(fs.readFileSync(path.join(SCRIPT_DIR, 'package.json'), 'utf8'));
-    return Array.isArray(pkg.workspaces) && pkg.workspaces.length > 0;
+    // Monorepo: workspaces exist AND local kit dirs are present
+    if (!Array.isArray(pkg.workspaces) || pkg.workspaces.length === 0) return false;
+    // Verify at least one workspace dir actually exists
+    return pkg.workspaces.some(w => fs.existsSync(path.join(SCRIPT_DIR, w)));
   } catch { return false; }
 }
 const MONO = isMonorepo();
