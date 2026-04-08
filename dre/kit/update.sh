@@ -178,6 +178,12 @@ fi
 
 echo "${SRC_VERSION}" > "${CLAUDE_DIR}/.dre-version"
 
+# Tag DxE version in project repo
+if command -v git &>/dev/null && [ -d "${TARGET_DIR}/.git" ]; then
+  git -C "${TARGET_DIR}" tag "dxe-v${SRC_VERSION}" 2>/dev/null && \
+    echo "  タグ: dxe-v${SRC_VERSION}" || true
+fi
+
 echo ""
 echo "v${SRC_VERSION} に更新しました。"
 echo "カスタマイズ済みファイルは変更されていません。"
