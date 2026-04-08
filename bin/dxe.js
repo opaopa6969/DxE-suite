@@ -15,7 +15,7 @@ const SCRIPT_DIR = path.resolve(__dirname, '..');
 function isMonorepo() {
   try {
     const pkg = JSON.parse(fs.readFileSync(path.join(SCRIPT_DIR, 'package.json'), 'utf8'));
-    return pkg.private === true && Array.isArray(pkg.workspaces);
+    return Array.isArray(pkg.workspaces) && pkg.workspaces.length > 0;
   } catch { return false; }
 }
 const MONO = isMonorepo();
@@ -85,9 +85,10 @@ const TOOLKITS = {
   },
   dde: {
     pkg: '@unlaxer/dde-toolkit',
-    localKit: null,
-    install: 'dde-install', update: 'dde-update',
+    localKit: 'dde/kit',
+    install: 'bin/dde-install.js', update: null,
     npmInstall: 'dde-install', npmUpdate: 'dde-update',
+    runWith: 'node',  // not bash
     desc: { ja: 'ドキュメントの穴を補完',    en: 'fill documentation deficits' },
     phrase: { ja: '「DDE して」', en: '"run DDE"' },
   },
@@ -137,13 +138,18 @@ function kitDir(tk) {
 }
 
 function runScript(tk, scriptName, extraEnv) {
+  if (!scriptName) {
+    console.log(`  ${tk.pkg}: no ${extraEnv ? 'update' : 'install'} script`);
+    return;
+  }
   const dir = kitDir(tk);
   if (!dir) {
     console.error(`  Error: ${tk.pkg} not found`);
     process.exit(1);
   }
   const script = path.join(dir, scriptName);
-  const cmd = hasYes ? `echo y | bash "${script}"` : `bash "${script}"`;
+  const runner = tk.runWith || 'bash';
+  const cmd = hasYes ? `echo y | ${runner} "${script}"` : `${runner} "${script}"`;
   run(cmd, { ...extraEnv, DXE_LANG: lang });
 }
 
@@ -254,6 +260,7 @@ if (command === 'install') {
   // Skill prefixes per toolkit
   const SKILL_PREFIXES = {
     dge: ['dge-'],
+    dde: ['dde-'],
     dre: ['dre-', 'dxe-', 'architect-', 'backlog-', 'doc-to-', 'phase', 'release', 'spec-', 'story-', 'test'],
     dve: ['dve-'],
     all: null, // all skills
@@ -263,7 +270,7 @@ if (command === 'install') {
   const prefixes = SKILL_PREFIXES[target];
 
   if (target !== 'all' && !SKILL_PREFIXES[target]) {
-    console.error(`Unknown toolkit: ${target}. Use: dge / dre / dve / all`);
+    console.error(`Unknown toolkit: ${target}. Use: dge / dde / dre / dve / all`);
     process.exit(1);
   }
 
@@ -295,13 +302,14 @@ if (command === 'install') {
 
   const SKILL_PREFIXES = {
     dge: ['dge-'],
+    dde: ['dde-'],
     dre: ['dre-', 'architect-', 'backlog-', 'doc-to-', 'phase', 'release', 'spec-', 'story-', 'test'],
     dve: ['dve-'],
   };
 
   const target = (targets_[0] || '').toLowerCase();
   if (!SKILL_PREFIXES[target]) {
-    console.error('Usage: dxe deactivate <dge|dre|dve>');
+    console.error('Usage: dxe deactivate <dge|dde|dre|dve>');
     process.exit(1);
   }
 
