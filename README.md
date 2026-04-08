@@ -1,15 +1,13 @@
 # DxE-suite
 
-DGE / DRE / DVE の 1st-class toolkit を管理するモノレポ。
+DGE / DRE / DVE / DDE の toolkit を管理するモノレポ。
 
 ```
-D*E シリーズ (1st-class):
+D*E シリーズ:
   DGE — Design-Gap Extraction        設計の穴を会話劇で発見
   DRE — Document Rule Engine         rules/skills/hooks で配布・強制
   DVE — Decision Visualization Engine 決定プロセスを可視化・DGEのハブ
-
-関連 (別リポジトリ):
-  DDE — Document-Deficit Extraction  ドキュメントの穴をLLM+CLIで発見
+  DDE — Document-Deficit Extraction  ドキュメントの穴をLLM+CLIで発見・用語リンク
 ```
 
 ## クイックスタート
@@ -110,6 +108,8 @@ DxE-suite/
 │   │   ├── hooks/     PostToolUse + Stop + commit-msg + notify
 │   │   └── plugins/   DGE/DDE/DVE plugin manifest
 │   └── docs/
+├── dde/               DDE — Document-Deficit Extraction
+│   └── kit/           @unlaxer/dde-toolkit (linker + glossary)
 ├── dve/               DVE — Decision Visualization Engine
 │   ├── kit/           @unlaxer/dve-toolkit (6 skills)
 │   │   ├── parser/    session, decision, spec, annotation, git-linker, glossary, drift, state
@@ -368,4 +368,4 @@ bash dve/kit/scripts/audit-duplicates.sh /path/to/project
 
 ## 関連
 
-- [DDE-toolkit](https://github.com/opaopa6969/DDE-toolkit) — ドキュメントの穴をLLM+CLIで補完（別リポジトリ）
+- [DDE](./dde/) — ドキュメントの穴をLLM+CLIで発見 + glossary auto-linker（`dxe activate dde` で有効化）
