@@ -45,6 +45,9 @@ const MESSAGES = {
     npx dxe install dde       DDE (別リポジトリ)
     npx dxe update            全toolkit をアップデート
     npx dxe update --yes      確認なしでアップデート
+    npx dxe activate all      全スキル有効化
+    npx dxe activate dge      DGE スキルのみ有効化
+    npx dxe deactivate dve    DVE スキルを無効化
     npx dxe status            インストール済みバージョンを表示
     `,
   },
@@ -232,6 +235,90 @@ if (command === 'install') {
     }
   }
   console.log('');
+
+} else if (command === 'activate') {
+  const skillsDir = path.join(process.cwd(), '.claude', 'skills');
+  const disabledDir = path.join(skillsDir, 'disabled');
+
+  if (!fs.existsSync(disabledDir)) {
+    console.log('\n  No disabled skills found.');
+    process.exit(0);
+  }
+
+  // Skill prefixes per toolkit
+  const SKILL_PREFIXES = {
+    dge: ['dge-'],
+    dre: ['dre-', 'dxe-', 'architect-', 'backlog-', 'doc-to-', 'phase', 'release', 'spec-', 'story-', 'test'],
+    dve: ['dve-'],
+    all: null, // all skills
+  };
+
+  const target = (targets_[0] || 'all').toLowerCase();
+  const prefixes = SKILL_PREFIXES[target];
+
+  if (target !== 'all' && !SKILL_PREFIXES[target]) {
+    console.error(`Unknown toolkit: ${target}. Use: dge / dre / dve / all`);
+    process.exit(1);
+  }
+
+  const disabled = fs.readdirSync(disabledDir).filter(f => f.endsWith('.md'));
+  let activated = 0;
+
+  for (const file of disabled) {
+    const match = prefixes === null || prefixes.some(p => file.startsWith(p));
+    if (!match) continue;
+
+    const src = path.join(disabledDir, file);
+    const dst = path.join(skillsDir, file);
+    if (!fs.existsSync(dst)) {
+      fs.renameSync(src, dst);
+      console.log(`  ✅ ${file}`);
+      activated++;
+    }
+  }
+
+  if (activated === 0) {
+    console.log(`\n  No disabled ${target === 'all' ? '' : target.toUpperCase() + ' '}skills to activate.`);
+  } else {
+    console.log(`\n  ${activated} skill(s) activated.`);
+  }
+
+} else if (command === 'deactivate') {
+  const skillsDir = path.join(process.cwd(), '.claude', 'skills');
+  const disabledDir = path.join(skillsDir, 'disabled');
+
+  const SKILL_PREFIXES = {
+    dge: ['dge-'],
+    dre: ['dre-', 'architect-', 'backlog-', 'doc-to-', 'phase', 'release', 'spec-', 'story-', 'test'],
+    dve: ['dve-'],
+  };
+
+  const target = (targets_[0] || '').toLowerCase();
+  if (!SKILL_PREFIXES[target]) {
+    console.error('Usage: dxe deactivate <dge|dre|dve>');
+    process.exit(1);
+  }
+
+  const PROTECTED = ['dxe-command.md', 'dre-activate.md'];
+  const prefixes = SKILL_PREFIXES[target];
+  const skills = fs.existsSync(skillsDir) ? fs.readdirSync(skillsDir).filter(f => f.endsWith('.md')) : [];
+  let deactivated = 0;
+
+  fs.mkdirSync(disabledDir, { recursive: true });
+
+  for (const file of skills) {
+    if (PROTECTED.includes(file)) continue;
+    const match = prefixes.some(p => file.startsWith(p));
+    if (!match) continue;
+
+    const src = path.join(skillsDir, file);
+    const dst = path.join(disabledDir, file);
+    fs.renameSync(src, dst);
+    console.log(`  ⏸️  ${file}`);
+    deactivated++;
+  }
+
+  console.log(`\n  ${deactivated} skill(s) deactivated.`);
 
 } else {
   console.log(M.help);
