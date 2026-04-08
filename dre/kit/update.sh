@@ -149,6 +149,33 @@ if [ -d "${CLAUDE_DIR}/skills/disabled" ]; then
   done
 fi
 
+# Deploy hooks + settings
+HOOKS_SRC="${SRC}/../hooks"
+if [ -d "${HOOKS_SRC}" ]; then
+  DRE_DIR="${TARGET_DIR}/.dre"
+  mkdir -p "${DRE_DIR}/hooks"
+  for f in "${HOOKS_SRC}/"*.sh; do
+    [ -f "${f}" ] || continue
+    cp "${f}" "${DRE_DIR}/hooks/"
+    chmod +x "${DRE_DIR}/hooks/$(basename "${f}")"
+  done
+  # Deploy settings.json (only if not customized)
+  if [ -f "${HOOKS_SRC}/settings.json" ]; then
+    if [ ! -f "${CLAUDE_DIR}/settings.json" ] || diff -q "${HOOKS_SRC}/settings.json" "${CLAUDE_DIR}/settings.json" > /dev/null 2>&1; then
+      cp "${HOOKS_SRC}/settings.json" "${CLAUDE_DIR}/settings.json"
+      echo "  更新: .claude/settings.json"
+    else
+      echo "  [skip] .claude/settings.json ← カスタマイズ済み"
+    fi
+  fi
+  # Deploy dre-config.json
+  if [ -f "${HOOKS_SRC}/dre-config.json" ] && [ ! -f "${DRE_DIR}/dre-config.json" ]; then
+    cp "${HOOKS_SRC}/dre-config.json" "${DRE_DIR}/dre-config.json"
+    echo "  追加: .dre/dre-config.json"
+  fi
+  echo "  hooks デプロイ完了"
+fi
+
 echo "${SRC_VERSION}" > "${CLAUDE_DIR}/.dre-version"
 
 echo ""
