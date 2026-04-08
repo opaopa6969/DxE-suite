@@ -1,18 +1,22 @@
 {
   "name": "@unlaxer/dxe-suite",
-  "version": "4.1.0",
+  "version": "4.1.1",
   "description": "DxE Suite — DGE / DRE toolkit を一括インストール・管理するモノレポ",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/opaopa6969/DxE-suite"
   },
-  "private": true,
   "workspaces": [
     "dge/kit",
     "dge/server",
     "dre/kit",
     "dve/kit"
+  ],
+  "files": [
+    "bin/",
+    "README.md",
+    "LICENSE"
   ],
   "keywords": [
     "claude-code",

@@ -1,6 +1,6 @@
 {
   "name": "@unlaxer/dve-toolkit",
-  "version": "4.1.0",
+  "version": "4.1.1",
   "description": "DVE (Decision Visualization Engine) — DGE の決定プロセスを可視化するツールキット",
   "license": "MIT",
   "type": "module",
@@ -9,7 +9,9 @@
     "url": "https://github.com/opaopa6969/DxE-suite"
   },
   "bin": {
-    "dve": "./cli/dve-tool.js"
+    "dve": "./cli/dve-tool.js",
+    "dve-install": "./install.sh",
+    "dve-update": "./update.sh"
   },
   "scripts": {
     "build": "tsc",

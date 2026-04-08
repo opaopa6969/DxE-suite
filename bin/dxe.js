@@ -79,13 +79,15 @@ const TOOLKITS = {
     pkg: '@unlaxer/dge-toolkit',
     localKit: 'dge/kit',
     install: 'install.sh', update: 'update.sh',
+    npmInstall: 'dge-install', npmUpdate: 'dge-update',
     desc: { ja: '会話劇で設計の gap を抽出', en: 'extract design gaps via dialogue' },
     phrase: { ja: '「DGE して」', en: '"run DGE"' },
   },
   dde: {
     pkg: '@unlaxer/dde-toolkit',
-    localKit: null,  // not in monorepo
+    localKit: null,
     install: 'dde-install', update: 'dde-update',
+    npmInstall: 'dde-install', npmUpdate: 'dde-update',
     desc: { ja: 'ドキュメントの穴を補完',    en: 'fill documentation deficits' },
     phrase: { ja: '「DDE して」', en: '"run DDE"' },
   },
@@ -93,6 +95,7 @@ const TOOLKITS = {
     pkg: '@unlaxer/dre-toolkit',
     localKit: 'dre/kit',
     install: 'install.sh', update: 'update.sh',
+    npmInstall: 'dre-install', npmUpdate: 'dre-update',
     desc: { ja: 'rules/skills を配布・管理', en: 'distribute & manage rules/skills' },
     phrase: { ja: '「DRE して」', en: '"run DRE"' },
   },
@@ -100,6 +103,7 @@ const TOOLKITS = {
     pkg: '@unlaxer/dve-toolkit',
     localKit: 'dve/kit',
     install: 'install.sh', update: 'update.sh',
+    npmInstall: 'dve-install', npmUpdate: 'dve-update',
     desc: { ja: '決定の可視化', en: 'decision visualization' },
     phrase: { ja: '「DVE で見せて」', en: '"show me in DVE"' },
   },
@@ -166,9 +170,10 @@ if (command === 'install') {
       // Monorepo: run install.sh directly from local kit
       runScript(tk, tk.install);
     } else {
-      // npm mode (DDE or non-monorepo)
+      // npm mode
       run(`npm install ${tk.pkg}@latest`);
-      run(`npx ${tk.install}`, { DXE_LANG: lang });
+      const npmCmd = tk.npmInstall || tk.install;
+      run(`npx ${npmCmd}`, { DXE_LANG: lang });
     }
     installed.push(tk);
   }
@@ -190,7 +195,8 @@ if (command === 'install') {
     } else {
       // npm mode
       run(`npm install ${tk.pkg}@latest`);
-      const cmd = hasYes ? `echo y | npx ${tk.update}` : `npx ${tk.update}`;
+      const npmCmd = tk.npmUpdate || tk.update;
+      const cmd = hasYes ? `echo y | npx ${npmCmd}` : `npx ${npmCmd}`;
       run(cmd, { DXE_LANG: lang });
     }
 
