@@ -1,6 +1,6 @@
 {
   "name": "@unlaxer/dve-toolkit",
-  "version": "4.1.1",
+  "version": "4.2.0",
   "description": "DVE (Decision Visualization Engine) — DGE の決定プロセスを可視化するツールキット",
   "license": "MIT",
   "type": "module",
