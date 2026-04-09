@@ -1,6 +1,6 @@
 {
   "name": "@unlaxer/dde-toolkit",
-  "version": "0.1.8",
+  "version": "4.2.0",
   "description": "Document Deficit Extraction — find what's not understood in your docs",
   "license": "MIT",
   "type": "module",
