@@ -94,7 +94,26 @@ auto_merge true なら、同時に isolated subagent（Agent ツール, isolatio
 Gap に Category + Severity。brainstorm はアイデア分類。
 
 ### Step 7: 保存
-flow の output_dir に保存。dge-tool save があれば使う（なければ Write ツール）。
+
+**MUST: 会話劇は毎 Round 即保存。コンテキスト圧縮で消える前に書き出す。**
+
+**保存タイミング**: Step 5 (会話劇生成) + Step 6 (構造化) が終わるたびに即実行。
+auto_iterate 中も毎 Round 実行する。「最後にまとめて保存」は禁止。
+
+**ファイル名**: `{output_dir}/{date}-{theme-slug}.md`（例: `dge/sessions/2026-04-11-monetizer-design.md`）
+
+**保存方法**:
+- **Round 1 (初回)**: `dge-tool save {file}` または Write ツール。会話劇の全文 + Gap テーブルを書き出す。
+- **Round 2 以降**: `dge-tool save {file} --append` で既存ファイルに追記。Write ツールの場合はファイル末尾に `---` セパレータを入れて追記。
+- **上書きは禁止**: Round 2 で Round 1 の会話劇を消さないこと。
+
+**保存する内容** (各 Round で):
+1. セッション/ラウンド番号ヘッダー
+2. 会話劇の全文（Scene + 全キャラの台詞 + ト書き）
+3. Gap テーブル（その Round で発見した分）
+4. マージ結果（auto_merge の場合）
+
+**検証**: 保存後に `wc -l {file}` でファイルが十分な行数か確認。会話劇を含むなら最低 100 行以上になるはず。100 行未満なら会話劇が欠落している可能性がある。
 
 ### Step 8: サマリー + 選択肢
 Gap/アイデア一覧を表示。auto-merge 結果があれば DGE のみ / 素のみ / 両方 でマージ表示。

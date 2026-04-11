@@ -3,7 +3,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const VERSION = '1.0.0';
+const VERSION = '1.1.0';
 const command = process.argv[2];
 const arg = process.argv[3];
 
@@ -19,9 +19,11 @@ function findFlowsDir() {
 function cmdSave() {
   const file = arg;
   if (!file) {
-    console.error('ERROR: file path required. Usage: echo "content" | dge-tool save <file>');
+    console.error('ERROR: file path required. Usage: echo "content" | dge-tool save <file> [--append]');
     process.exit(1);
   }
+
+  const isAppend = process.argv.includes('--append');
 
   const dir = path.dirname(file);
   fs.mkdirSync(dir, { recursive: true });
@@ -30,9 +32,17 @@ function cmdSave() {
   process.stdin.setEncoding('utf8');
   process.stdin.on('data', chunk => { content += chunk; });
   process.stdin.on('end', () => {
-    fs.writeFileSync(file, content);
-    const bytes = Buffer.byteLength(content);
-    console.log(`SAVED: ${file} (${bytes} bytes)`);
+    if (isAppend && fs.existsSync(file)) {
+      const existing = fs.readFileSync(file, 'utf8');
+      const merged = existing + '\n\n---\n\n' + content;
+      fs.writeFileSync(file, merged);
+      const bytes = Buffer.byteLength(merged);
+      console.log(`APPENDED: ${file} (${bytes} bytes total)`);
+    } else {
+      fs.writeFileSync(file, content);
+      const bytes = Buffer.byteLength(content);
+      console.log(`SAVED: ${file} (${bytes} bytes)`);
+    }
   });
 }
 
@@ -178,6 +188,7 @@ function cmdHelp() {
 
 Commands:
   save <file>       Save stdin to file (ensures MUST: always save)
+  save <file> --append  Append stdin to existing file (for multi-round sessions)
   prompt [flow]     Show numbered choices from flow YAML (ensures MUST: show choices)
   compare           Merge DGE + plain gaps from stdin JSON (isolated comparison)
   version           Show version
