@@ -152,6 +152,34 @@ v4.2.0 時点で、DGE / DDE / DRE / DVE の **全 toolkit が同一バージョ
 | workflow の所有 | consumer | consumer | consumer | **owner** |
 | hook の所有 | — | — | — | **owner** |
 
+```mermaid
+graph TB
+    subgraph DGE["DGE — Design-Gap Extraction"]
+        DGE_W["writes\ndge/sessions/*.md\ndge/decisions/DD-NNN.md\ndge/specs/*.md"]
+    end
+    subgraph DDE["DDE — Document-Deficit Extraction"]
+        DDE_W["writes\ndocs/glossary/*.md\nrewrites docs/**/*.md"]
+    end
+    subgraph DVE["DVE — Decision Visualization Engine"]
+        DVE_R["reads\ndge/ · docs/glossary/"]
+        DVE_W["writes\ndve/dist/graph.json\ndve/annotations/\ndve/contexts/"]
+    end
+    subgraph DRE["DRE — Document Rule Engine (owner)"]
+        DRE_H["owns hooks\nPostToolUse · Stop · commit-msg"]
+        DRE_SM["owns workflow\nstate-machine.yaml\ncontext.json"]
+        DRE_P["consumes plugins\ndge-manifest · dde-manifest · dve-manifest"]
+    end
+
+    DGE_W -->|"session/DD/spec artifact"| DVE_R
+    DDE_W -->|"glossary artifact"| DVE_R
+    DVE_R --> DVE_W
+    DRE_H -->|"enforces rules on"| DGE_W
+    DRE_H -->|"enforces rules on"| DVE_W
+    DRE_SM -->|"phase drives"| DGE_W
+    DRE_SM -->|"phase drives"| DDE_W
+    DRE_P -->|"plugin inserts phase"| DRE_SM
+```
+
 ### 2.2 DGE — Design-Gap Extraction
 
 **責務**: session / decision / spec を **writes** する。グラフ・用語集・
@@ -624,6 +652,45 @@ DRE は **二階層のステートマシン** を管理する：
 └──────────────────────────────────────────────┘
 ```
 
+```mermaid
+stateDiagram-v2
+    [*] --> backlog
+
+    backlog --> spec : transition
+    spec --> gap_extraction : transition (DGE plugin inserted)
+    gap_extraction --> impl : transition
+    impl --> review : transition
+    review --> doc_deficit_check : transition (DDE plugin inserted)
+    doc_deficit_check --> release : transition
+    release --> [*]
+
+    state gap_extraction {
+        [*] --> flow_detection
+        flow_detection --> context_collection
+        context_collection --> theme_clarification
+        theme_clarification --> character_selection
+        character_selection --> dialogue_generation
+        dialogue_generation --> gap_structuring
+        gap_structuring --> session_save
+        session_save --> summary
+        summary --> user_choice
+        user_choice --> flow_detection : re_run
+        user_choice --> dialogue_generation : auto_iterate
+        user_choice --> [*] : spec_generation / record_decision / end
+    }
+
+    state doc_deficit_check {
+        [*] --> scan_docs
+        scan_docs --> scan_code
+        scan_code --> cross_reference
+        cross_reference --> deficit_detection
+        deficit_detection --> report_generation
+        report_generation --> user_review
+        user_review --> scan_docs : re_scan
+        user_review --> [*] : fix_docs / skip
+    }
+```
+
 ### 4.2 遷移操作
 
 workflow engine (`dre/kit/engine/engine.js` → alias `dre-engine`) は以下の操作をサポート：
@@ -757,6 +824,37 @@ prefix match により toolkit 単位でバルク操作が可能。
 `|| true` / `|| echo '{"ok": true}'` により、hook script のバグが
 セッションを halt することはない。トレードオフ: **壊れた hook は静かに
 検査を落とす**。運用チームはそれを許容する (ADR-0001 § Consequences)。
+
+```mermaid
+flowchart TD
+    A["Claude Code Tool Event"] --> B{Hook type}
+
+    B -->|"Write / Edit"| C["PostToolUse\npost-check.sh\n(|| true)"]
+    B -->|"Session ends"| D["Stop\nstop-check.sh\n(|| echo ok)"]
+    B -->|"git commit"| E["commit-msg\ncommit-msg.sh\n(exit 0 by default)"]
+
+    C --> C1["1. State machine update\n(.dre/context.json)"]
+    C1 --> C2["2. Enforcement validation\n(dge/sessions · dge/decisions · dve/annotations)"]
+    C2 --> C3["3. Implicit decision detection\n(pattern scan — exclude session/DD/spec)"]
+    C3 --> C4{"Violations?"}
+    C4 -->|"yes"| C5["stderr [ERROR]/[WARN]\n+ dre_notify critical"]
+    C4 -->|"no"| C6["exit 0"]
+
+    D --> D1{"gap_extraction\n& session unsaved?"}
+    D1 -->|"yes"| D2["ok:false — block candidate"]
+    D1 -->|"no"| D3["Check stack depth\ngraph staleness\npending decisions"]
+    D3 --> D4["Return JSON\n{ok, reason}"]
+
+    D2 -.->|"ADR-0001: Stop(LLM prompt) deleted"| NOTE["Stop(LLM prompt) hook\ndeleted in v4.2.0\ncommit 438aa23\n\nReason: LLM output not\npure JSON → random\nsession interruption\n\nReplaced by:\n• stop-check.sh (static)\n• PostToolUse pattern scan\n• discover-decisions.sh (manual)"]
+
+    E --> E1{"Merge/Revert/fixup?"}
+    E1 -->|"yes"| E2["skip — exit 0"]
+    E1 -->|"no"| E3{"Ref: DD-NNN\nin message?"}
+    E3 -->|"yes"| E2
+    E3 -->|"no"| E4{"enforce = block?"}
+    E4 -->|"yes"| E5["exit 1 — reject commit"]
+    E4 -->|"no (default warn)"| E6["print active DD list\nexit 0"]
+```
 
 ### 5.3 PostToolUse `post-check.sh` の検査項目
 
@@ -932,6 +1030,35 @@ npx dxe status                   インストール状況 (monorepo mode / npm m
 
 **i18n**: `--lang=ja` / `--lang=en` または環境変数 `LANG` を見て切り替える。
 help message・installing message だけが翻訳対象。
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant dxe as dxe CLI (bin/dxe.js)
+    participant detect as Monorepo Detector
+    participant toolkit as Toolkit install.sh / dde-install.js
+    participant hooks as .dre/hooks/
+    participant skills as .claude/skills/
+    participant engine as dre-engine (engine.js)
+
+    User->>dxe: npx dxe install
+    dxe->>detect: workspaces[] present?
+    alt monorepo mode
+        detect-->>dxe: yes — use localKit path
+        dxe->>toolkit: bash dge/kit/install.sh
+        dxe->>toolkit: node dde/kit/bin/dde-install.js
+        dxe->>toolkit: bash dre/kit/install.sh
+        dxe->>toolkit: bash dve/kit/install.sh
+    else npm mode
+        detect-->>dxe: no — use npm
+        dxe->>toolkit: npm install @unlaxer/dxe-suite@latest
+        dxe->>toolkit: npx dge-install && npx dre-install && npx dve-install
+    end
+    toolkit->>hooks: copy dre/kit/hooks/*.sh → .dre/hooks/
+    toolkit->>skills: copy skills/ → .claude/skills/disabled/
+    toolkit->>engine: dre-engine init (.dre/state-machine.yaml + context.json)
+    dxe-->>User: Install complete — run "dxe activate all" to enable skills
+```
 
 ### 6.2 `dve` CLI (`dve/kit/cli/dve-tool.ts`)
 
