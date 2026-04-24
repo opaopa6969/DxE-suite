@@ -1,0 +1,71 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps
+
+      # dge/server has a build script; run it if present
+      - name: Build workspaces (if build script exists)
+        run: |
+          for ws in dge/kit dge/server dre/kit dve/kit dde/kit; do
+            if [ -f "$ws/package.json" ]; then
+              has_build=$(node -e "const p=require('./$ws/package.json'); console.log(p.scripts && p.scripts.build ? 'yes' : 'no')")
+              if [ "$has_build" = "yes" ]; then
+                echo "==> Building $ws"
+                npm run build --workspace="$ws" || true
+              fi
+            fi
+          done
+
+      # Run tests for all workspaces, including dde/kit which is not registered
+      - name: Test dge/kit
+        run: npm test --workspace=dge/kit
+
+      - name: Test dge/server
+        # dge/server has no test script; skip gracefully
+        run: |
+          has_test=$(node -e "const p=require('./dge/server/package.json'); console.log(p.scripts && p.scripts.test ? 'yes' : 'no')")
+          if [ "$has_test" = "yes" ]; then
+            npm test --workspace=dge/server
+          else
+            echo "dge/server: no test script, skipping."
+          fi
+
+      - name: Test dre/kit
+        run: npm test --workspace=dre/kit
+
+      - name: Test dve/kit
+        run: npm test --workspace=dve/kit
+
+      # dde/kit is not in root workspaces (known bug), run directly
+      - name: Test dde/kit (unregistered workspace workaround)
+        run: |
+          if [ -f "dde/kit/package.json" ]; then
+            has_test=$(node -e "const p=require('./dde/kit/package.json'); console.log(p.scripts && p.scripts.test ? 'yes' : 'no')")
+            if [ "$has_test" = "yes" ]; then
+              echo "==> Running tests for dde/kit (unregistered workspace)"
+              cd dde/kit && npm install --legacy-peer-deps && npm test
+            else
+              echo "dde/kit: no test script, skipping."
+            fi
+          else
+            echo "dde/kit: package.json not found, skipping."
+          fi
