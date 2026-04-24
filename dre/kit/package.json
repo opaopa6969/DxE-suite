@@ -42,7 +42,7 @@
     "test/"
   ],
   "scripts": {
-    "test": "node test/dre-tool.test.js",
+    "test": "node test/state-machine.test.js",
     "postinstall": "node -e \"console.log('\\n  DRE toolkit installed.\\n  Run: npx dre-install\\n  to set up .claude/ in your project.\\n')\""
   }
 }
