@@ -93,31 +93,50 @@ v4.2.0 時点で、DGE / DDE / DRE / DVE の **全 toolkit が同一バージョ
 
 ### 1.4 ライフサイクル全体像
 
-```
-  DGE (find)            DVE (visualize)        DRE (enforce + distribute)   DDE (doc-link)
-  ─────────             ─────────              ─────────                    ─────────
-  「DGE して」
-      ↓
-  dialogue → gaps
-      ↓                                        PostToolUse hook
-  session saved ──────→ dve build ←─────────── full dialogue text check
-      ↓                    ↓
-  DD recorded ─────────→ graph.json            commit-msg hook
-      ↓                    ↓                   "Ref: DD-NNN" required
-  spec written ────────→ Web UI
-                           ↓
-                      user browses
-                           ↓                                                「DDE して」
-                ┌── annotate / overturn / fork                                ↓
-                ↓                                Stop hook                 terms extracted
-         re-start DGE ←────────────── implicit-decision scan                  ↓
-         (ContextBundle)              pending-decisions → Slack              articles
-                ↓                                                             ↓
-         new DD ─────────────────────→ rules/skills → dre/kit/            dde-link rewrites docs
-                                              ↓
-                                       plugin manifest → Slack
-                                              ↓
-                                       `npx dxe install` → whole team same env
+```mermaid
+flowchart TD
+    subgraph DGE["DGE (find)"]
+        A1["「DGE して」"] --> A2["dialogue → gaps"]
+        A2 --> A3["session saved"]
+        A3 --> A4["DD recorded"]
+        A4 --> A5["spec written"]
+        A6["re-start DGE<br/>(ContextBundle)"] --> A7["new DD"]
+    end
+
+    subgraph DVE["DVE (visualize)"]
+        B1["dve build"] --> B2["graph.json"]
+        B2 --> B3["Web UI"]
+        B3 --> B4["user browses"]
+        B4 --> B5["annotate / overturn / fork"]
+    end
+
+    subgraph DRE["DRE (enforce + distribute)"]
+        C1["PostToolUse hook<br/>full dialogue text check"]
+        C2["commit-msg hook<br/>Ref: DD-NNN required"]
+        C3["Stop hook<br/>implicit-decision scan"]
+        C4["pending-decisions → Slack"]
+        C5["rules/skills → dre/kit/"]
+        C6["plugin manifest → Slack"]
+        C7["npx dxe install<br/>→ whole team same env"]
+    end
+
+    subgraph DDE["DDE (doc-link)"]
+        D1["「DDE して」"] --> D2["terms extracted"]
+        D2 --> D3["articles"]
+        D3 --> D4["dde-link rewrites docs"]
+    end
+
+    A3 -->|"PostToolUse"| C1
+    A3 --> B1
+    A4 --> B2
+    A5 --> B3
+    B5 --> A6
+    C3 --> A6
+    C3 --> C4
+    A7 --> C5
+    C5 --> C6
+    C6 --> C7
+    A3 -->|"commit-msg"| C2
 ```
 
 ### 1.5 成立背景
@@ -155,19 +174,19 @@ v4.2.0 時点で、DGE / DDE / DRE / DVE の **全 toolkit が同一バージョ
 ```mermaid
 graph TB
     subgraph DGE["DGE — Design-Gap Extraction"]
-        DGE_W["writes\ndge/sessions/*.md\ndge/decisions/DD-NNN.md\ndge/specs/*.md"]
+        DGE_W["writes<br/>dge/sessions/*.md<br/>dge/decisions/DD-NNN.md<br/>dge/specs/*.md"]
     end
     subgraph DDE["DDE — Document-Deficit Extraction"]
-        DDE_W["writes\ndocs/glossary/*.md\nrewrites docs/**/*.md"]
+        DDE_W["writes<br/>docs/glossary/*.md<br/>rewrites docs/**/*.md"]
     end
     subgraph DVE["DVE — Decision Visualization Engine"]
-        DVE_R["reads\ndge/ · docs/glossary/"]
-        DVE_W["writes\ndve/dist/graph.json\ndve/annotations/\ndve/contexts/"]
+        DVE_R["reads<br/>dge/ · docs/glossary/"]
+        DVE_W["writes<br/>dve/dist/graph.json<br/>dve/annotations/<br/>dve/contexts/"]
     end
     subgraph DRE["DRE — Document Rule Engine (owner)"]
-        DRE_H["owns hooks\nPostToolUse · Stop · commit-msg"]
-        DRE_SM["owns workflow\nstate-machine.yaml\ncontext.json"]
-        DRE_P["consumes plugins\ndge-manifest · dde-manifest · dve-manifest"]
+        DRE_H["owns hooks<br/>PostToolUse · Stop · commit-msg"]
+        DRE_SM["owns workflow<br/>state-machine.yaml<br/>context.json"]
+        DRE_P["consumes plugins<br/>dge-manifest · dde-manifest · dve-manifest"]
     end
 
     DGE_W -->|"session/DD/spec artifact"| DVE_R
@@ -633,23 +652,34 @@ dre/kit/hooks/
 
 DRE は **二階層のステートマシン** を管理する：
 
-```
-┌─────────────── Base workflow (DRE が所有) ───────────────┐
-│ backlog → spec → gap_extraction → impl → review → release │
-│                       ↑                       ↑           │
-│                  DGE plugin               DDE plugin      │
-│              (gap_extraction を挿入)  (doc_deficit_check を挿入) │
-└─────────────────────────────────────────────────────────┘
-                       ↓
-┌───── Sub-state machine (plugin が所有) ─────┐
-│ (gap_extraction の内部)                      │
-│   flow_detection → context_collection →     │
-│   theme_clarification → character_selection │
-│   → dialogue_generation → gap_structuring → │
-│   session_save → summary → user_choice      │
-│     branches: re_run / auto_iterate /       │
-│               spec_generation / record_decision / end │
-└──────────────────────────────────────────────┘
+```mermaid
+flowchart TB
+    subgraph BASE["Base workflow — DRE が所有"]
+        direction LR
+        P1[backlog] --> P2[spec]
+        P2 -->|"DGE plugin<br/>(gap_extraction を挿入)"| P3[gap_extraction]
+        P3 --> P4[impl]
+        P4 --> P5[review]
+        P5 -->|"DDE plugin<br/>(doc_deficit_check を挿入)"| P6[doc_deficit_check]
+        P6 --> P7[release]
+    end
+
+    subgraph SUB["Sub-state machine — plugin が所有 (gap_extraction の内部)"]
+        direction LR
+        S1[flow_detection] --> S2[context_collection]
+        S2 --> S3[theme_clarification]
+        S3 --> S4[character_selection]
+        S4 --> S5[dialogue_generation]
+        S5 --> S6[gap_structuring]
+        S6 --> S7[session_save]
+        S7 --> S8[summary]
+        S8 --> S9[user_choice]
+        S9 -->|re_run| S1
+        S9 -->|auto_iterate| S5
+        S9 -->|"spec_generation /<br/>record_decision / end"| END([end])
+    end
+
+    P3 --> SUB
 ```
 
 ```mermaid
@@ -829,31 +859,31 @@ prefix match により toolkit 単位でバルク操作が可能。
 flowchart TD
     A["Claude Code Tool Event"] --> B{Hook type}
 
-    B -->|"Write / Edit"| C["PostToolUse\npost-check.sh\n(|| true)"]
-    B -->|"Session ends"| D["Stop\nstop-check.sh\n(|| echo ok)"]
-    B -->|"git commit"| E["commit-msg\ncommit-msg.sh\n(exit 0 by default)"]
+    B -->|"Write / Edit"| C["PostToolUse<br/>post-check.sh<br/>(|| true)"]
+    B -->|"Session ends"| D["Stop<br/>stop-check.sh<br/>(|| echo ok)"]
+    B -->|"git commit"| E["commit-msg<br/>commit-msg.sh<br/>(exit 0 by default)"]
 
-    C --> C1["1. State machine update\n(.dre/context.json)"]
-    C1 --> C2["2. Enforcement validation\n(dge/sessions · dge/decisions · dve/annotations)"]
-    C2 --> C3["3. Implicit decision detection\n(pattern scan — exclude session/DD/spec)"]
+    C --> C1["1. State machine update<br/>(.dre/context.json)"]
+    C1 --> C2["2. Enforcement validation<br/>(dge/sessions · dge/decisions · dve/annotations)"]
+    C2 --> C3["3. Implicit decision detection<br/>(pattern scan — exclude session/DD/spec)"]
     C3 --> C4{"Violations?"}
-    C4 -->|"yes"| C5["stderr [ERROR]/[WARN]\n+ dre_notify critical"]
+    C4 -->|"yes"| C5["stderr [ERROR]/[WARN]<br/>+ dre_notify critical"]
     C4 -->|"no"| C6["exit 0"]
 
-    D --> D1{"gap_extraction\n& session unsaved?"}
+    D --> D1{"gap_extraction<br/>& session unsaved?"}
     D1 -->|"yes"| D2["ok:false — block candidate"]
-    D1 -->|"no"| D3["Check stack depth\ngraph staleness\npending decisions"]
-    D3 --> D4["Return JSON\n{ok, reason}"]
+    D1 -->|"no"| D3["Check stack depth<br/>graph staleness<br/>pending decisions"]
+    D3 --> D4["Return JSON<br/>{ok, reason}"]
 
-    D2 -.->|"ADR-0001: Stop(LLM prompt) deleted"| NOTE["Stop(LLM prompt) hook\ndeleted in v4.2.0\ncommit 438aa23\n\nReason: LLM output not\npure JSON → random\nsession interruption\n\nReplaced by:\n• stop-check.sh (static)\n• PostToolUse pattern scan\n• discover-decisions.sh (manual)"]
+    D2 -.->|"ADR-0001: Stop(LLM prompt) deleted"| NOTE["Stop(LLM prompt) hook<br/>deleted in v4.2.0<br/>commit 438aa23<br/><br/>Reason: LLM output not<br/>pure JSON → random<br/>session interruption<br/><br/>Replaced by:<br/>• stop-check.sh (static)<br/>• PostToolUse pattern scan<br/>• discover-decisions.sh (manual)"]
 
     E --> E1{"Merge/Revert/fixup?"}
     E1 -->|"yes"| E2["skip — exit 0"]
-    E1 -->|"no"| E3{"Ref: DD-NNN\nin message?"}
+    E1 -->|"no"| E3{"Ref: DD-NNN<br/>in message?"}
     E3 -->|"yes"| E2
     E3 -->|"no"| E4{"enforce = block?"}
     E4 -->|"yes"| E5["exit 1 — reject commit"]
-    E4 -->|"no (default warn)"| E6["print active DD list\nexit 0"]
+    E4 -->|"no (default warn)"| E6["print active DD list<br/>exit 0"]
 ```
 
 ### 5.3 PostToolUse `post-check.sh` の検査項目
@@ -1353,29 +1383,21 @@ root の `package.json` は **runtime dependency を一切持たない**。
 
 ### 9.3 toolkit 間の依存グラフ
 
-```
-              ┌──── reads ───→ dge/sessions
-              │             ┌→ dge/decisions
-DVE  ──── reads / renders ──┼→ dge/specs
-              │             └→ docs/glossary  (from DDE)
-              │
-              ├──── writes ──→ dve/annotations
-              │             ├→ dve/contexts
-              │             └→ dve/dist/graph.json
-              │
-DGE  ──── writes ──→ dge/sessions / dge/decisions / dge/specs
-              ↑
-              │    (triggers)
-              │
-DRE  ──── enforces rules on:
-     • dge/sessions/*.md  • dge/decisions/DD-*.md  • dge/specs/*.md
-     • dve/annotations/*.md  • dve/contexts/*.json
-     • commit-msg "Ref: DD-NNN"
-     • .dre/context.json transitions
-     ←── consumes plugin manifests: dge-manifest.yaml, dde-manifest.yaml, dve-manifest.yaml
+```mermaid
+flowchart LR
+    DGE["DGE"] -->|writes| dge_sessions["dge/sessions<br/>dge/decisions<br/>dge/specs"]
+    DDE["DDE"] -->|writes| glossary["docs/glossary/*.md"]
+    DDE -->|rewrites| docs["docs/**/*.md<br/>(Markdown link injection)"]
 
-DDE  ──── writes ──→ docs/glossary/*.md
-              └───── rewrites ──→ docs/**/*.md (Markdown link injection)
+    dge_sessions -->|reads / renders| DVE["DVE"]
+    glossary -->|reads| DVE
+
+    DVE -->|writes| dve_out["dve/annotations<br/>dve/contexts<br/>dve/dist/graph.json"]
+
+    DRE["DRE"] -->|"enforces rules on<br/>dge/sessions · dge/decisions<br/>dge/specs · dve/annotations<br/>dve/contexts<br/>commit-msg Ref: DD-NNN<br/>.dre/context.json transitions"| dge_sessions
+    DRE -->|"enforces rules on"| dve_out
+
+    plugins["dge-manifest.yaml<br/>dde-manifest.yaml<br/>dve-manifest.yaml"] -->|"consumes"| DRE
 ```
 
 **orthogonality**: DGE / DDE は **書く**。DVE は **読む**。DRE は
