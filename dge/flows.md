@@ -6,14 +6,14 @@
 
 ```mermaid
 flowchart TD
-    INPUT["設計課題・テーマ\n（spec / backlog / アイデア）"]
-    TEMPLATE["テンプレート選択\nfeature-planning / api-design\ngo-nogo / incident-review ..."]
-    FLOW["フロー選択\ndesign-review / tribunal\nbrainstorm / investigation ..."]
-    CHARS["キャラクター選択\n（批判役・専門家・悪魔の代弁者...）"]
-    SESSION["会話劇セッション\ndge-session スキル実行"]
-    GAPS["ギャップ抽出\n前提の穴 / 未定義の境界\n矛盾 / リスク"]
-    SPEC["spec / ADR / usecase\n設計ドキュメントに反映"]
-    DRE["DRE-toolkit へ\nrules / skills として積む"]
+    INPUT["設計課題・テーマ<br/>（spec / backlog / アイデア）"]
+    TEMPLATE["テンプレート選択<br/>feature-planning / api-design<br/>go-nogo / incident-review ..."]
+    FLOW["フロー選択<br/>design-review / tribunal<br/>brainstorm / investigation ..."]
+    CHARS["キャラクター選択<br/>（批判役・専門家・悪魔の代弁者...）"]
+    SESSION["会話劇セッション<br/>dge-session スキル実行"]
+    GAPS["ギャップ抽出<br/>前提の穴 / 未定義の境界<br/>矛盾 / リスク"]
+    SPEC["spec / ADR / usecase<br/>設計ドキュメントに反映"]
+    DRE["DRE-toolkit へ<br/>rules / skills として積む"]
 
     INPUT --> TEMPLATE
     TEMPLATE --> FLOW
@@ -29,13 +29,13 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    BRIEF["ブリーフィング\n設計概要をキャラクターに共有"]
-    ROUND["ラウンド開始\n各キャラクターが質問・指摘"]
+    BRIEF["ブリーフィング<br/>設計概要をキャラクターに共有"]
+    ROUND["ラウンド開始<br/>各キャラクターが質問・指摘"]
     RESPONSE["設計者が回答・説明"]
     GAP{ギャップ検出？}
-    LOG["ギャップを記録\nsessions/ に保存"]
+    LOG["ギャップを記録<br/>sessions/ に保存"]
     NEXT{次のラウンド？}
-    SUMMARY["サマリー生成\nギャップ一覧 + 推奨アクション"]
+    SUMMARY["サマリー生成<br/>ギャップ一覧 + 推奨アクション"]
 
     BRIEF --> ROUND
     ROUND --> RESPONSE
@@ -51,11 +51,11 @@ flowchart TD
 
 ```mermaid
 flowchart LR
-    DGE_SESSION["DGEセッション\n会話劇でgap抽出"]
-    SPEC["spec / usecase\n/ architecture"]
-    DRE_RULES["DRE rules\n行動ルール化"]
-    DRE_SKILLS["DRE skills\nスキル化"]
-    PROJECT["プロジェクトに展開\n.claude/"]
+    DGE_SESSION["DGEセッション<br/>会話劇でgap抽出"]
+    SPEC["spec / usecase<br/>/ architecture"]
+    DRE_RULES["DRE rules<br/>行動ルール化"]
+    DRE_SKILLS["DRE skills<br/>スキル化"]
+    PROJECT["プロジェクトに展開<br/>.claude/"]
 
     DGE_SESSION --> SPEC
     SPEC --> DRE_RULES

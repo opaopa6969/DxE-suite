@@ -23,21 +23,21 @@ flowchart TD
     Struct -->|No match| Quick
 
     subgraph "Phase 0 (common to all structures)"
-        P0["Project context auto-collection\nREADME / docs / tree / deps / git log"]
+        P0["Project context auto-collection<br/>README / docs / tree / deps / git log"]
     end
 
     subgraph "Roundtable type (roundtable)"
         Q1["Kit Loading"] --> Q2["Theme Confirmation"]
         Q2 --> Q4["Character Selection (axis-based)"]
-        Q4 --> Q5["Dialogue Generation\nwith response obligation"]
+        Q4 --> Q5["Dialogue Generation<br/>with response obligation"]
         Q5 --> Q7["Save + Gap List + Options"]
     end
 
     subgraph "Multi-phase type (tribunal / wargame / pitch / consult / investigation)"
         M1["Kit Loading"] --> M2["Theme Confirmation + Evaluator/Division Selection ⏸"]
-        M2 --> MP1["Phase 1: Independent Evaluation (non-dialogue)\nFormat enforced"]
-        MP1 --> MP2["Phase 2: Adversarial Dialogue\nwith response obligation"]
-        MP2 --> MP3["Phase 3: Synthesis\nGap List"]
+        M2 --> MP1["Phase 1: Independent Evaluation (non-dialogue)<br/>Format enforced"]
+        MP1 --> MP2["Phase 2: Adversarial Dialogue<br/>with response obligation"]
+        MP2 --> MP3["Phase 3: Synthesis<br/>Gap List"]
         MP3 --> M7["Save + Options"]
     end
 
@@ -53,10 +53,10 @@ flowchart TD
 flowchart TD
     S8["Summary + Options ⏸"] --> C1{"User Selection"}
 
-    C1 -->|"1. Run DGE"| S9B["Previous Context\n+ TreeView"]
-    C1 -->|"2. Auto-iterate"| S9A["Auto-iteration Mode\n(max 5 rounds)"]
+    C1 -->|"1. Run DGE"| S9B["Previous Context<br/>+ TreeView"]
+    C1 -->|"2. Auto-iterate"| S9A["Auto-iteration Mode<br/>(max 5 rounds)"]
     C1 -->|"3. Implement"| S10["Cumulative Spec Generation"]
-    C1 -->|"4. Raw LLM Merge"| S9C["subagent\nRaw Review → Merge"]
+    C1 -->|"4. Raw LLM Merge"| S9C["subagent<br/>Raw Review → Merge"]
     C1 -->|"5. Later"| End([End])
 
     S9B -->|Theme Selection| S2([Go to Step 2])
@@ -78,7 +78,7 @@ flowchart TD
 
 ```mermaid
 flowchart LR
-    S1["Step 1:\ndge-tool version"] -->|Success| TM["🔧 Tool mode"]
+    S1["Step 1:<br/>dge-tool version"] -->|Success| TM["🔧 Tool mode"]
     S1 -->|Failure| SM["📝 Skill mode"]
 
     TM --> S7T["Step 7: dge-tool save"]
@@ -107,9 +107,9 @@ flowchart LR
 
     subgraph Engine["DGE Engine"]
         S0["Step 0: Flow Detection"]
-        S5["Step 5: Dialogue Generation\n(flow.extract.marker)"]
-        S10["Step 10: Spec Generation\n(flow.generate.types)"]
-        S9C["Step 9C: subagent\nRaw LLM Merge"]
+        S5["Step 5: Dialogue Generation<br/>(flow.extract.marker)"]
+        S10["Step 10: Spec Generation<br/>(flow.generate.types)"]
+        S9C["Step 9C: subagent<br/>Raw LLM Merge"]
     end
 
     subgraph Output["Output"]

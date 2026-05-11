@@ -10,13 +10,13 @@ DGE で設計 → DRE で rules 化 → npm 配布 → プロジェクト展開�
 
 ```mermaid
 flowchart TD
-    DGE["DGE-toolkit\n会話劇 → gap → spec"]
-    DRE_DEV["dre/ に rules/skills/agents/\ncommands/profiles を作成"]
+    DGE["DGE-toolkit<br/>会話劇 → gap → spec"]
+    DRE_DEV["dre/ に rules/skills/agents/<br/>commands/profiles を作成"]
     KIT["kit/ にコピーしてパッケージング"]
-    NPM["npm publish\n@unlaxer/dre-toolkit"]
-    INSTALL["npx dre-install\n新プロジェクトに展開"]
-    PROJECT[".claude/\n├ rules/\n├ skills/\n├ agents/\n├ commands/\n└ profiles/"]
-    UPDATE["npx dre-update\nバージョンアップ時"]
+    NPM["npm publish<br/>@unlaxer/dre-toolkit"]
+    INSTALL["npx dre-install<br/>新プロジェクトに展開"]
+    PROJECT[".claude/<br/>├ rules/<br/>├ skills/<br/>├ agents/<br/>├ commands/<br/>└ profiles/"]
+    UPDATE["npx dre-update<br/>バージョンアップ時"]
 
     DGE -->|spec → rules 化| DRE_DEV
     DRE_DEV -->|cp dre/* kit/*| KIT
@@ -69,11 +69,11 @@ stateDiagram-v2
 ```mermaid
 flowchart TD
     START["npx dre-install"]
-    RESOLVE["SRC を解決\nnode_modules/ or kit/"]
+    RESOLVE["SRC を解決<br/>node_modules/ or kit/"]
     MKDIR["mkdir -p .claude/{rules,skills,agents,commands,profiles}"]
-    COPY_LOOP["各ディレクトリをループ\nrules / skills / agents / commands / profiles"]
-    FILE_EXISTS{"対象ファイルが\n.claude/ に存在?"}
-    SKIP["スキップ\n（既存を保護）"]
+    COPY_LOOP["各ディレクトリをループ<br/>rules / skills / agents / commands / profiles"]
+    FILE_EXISTS{"対象ファイルが<br/>.claude/ に存在?"}
+    SKIP["スキップ<br/>（既存を保護）"]
     COPY["ファイルをコピー"]
     VERSION["echo SRC_VERSION > .claude/.dre-version"]
     DONE["Done! v{version} installed."]
@@ -114,16 +114,16 @@ flowchart TD
 flowchart TD
     START["npx dre-update"]
     RESOLVE["SRC を解決"]
-    CHECK_DIR{".claude/ が\n存在するか？"}
+    CHECK_DIR{".claude/ が<br/>存在するか？"}
     ERROR["Error: dre-install 先に実行"]
-    VERSION_CHECK{"SRC_VERSION ==\nLOCAL_VERSION?"}
+    VERSION_CHECK{"SRC_VERSION ==<br/>LOCAL_VERSION?"}
     ALREADY["Already up to date."]
-    SCAN["各ファイルをスキャン\ndiff -q で比較"]
+    SCAN["各ファイルをスキャン<br/>diff -q で比較"]
     REPORT_SKIP["[skip] カスタマイズ済み"]
     REPORT_NEW["[new] 新規ファイル"]
     CONFIRM["更新しますか？ [y/N]"]
     CANCELLED["キャンセル"]
-    DO_UPDATE["新規ファイルのみコピー\nカスタマイズ済みはスキップ"]
+    DO_UPDATE["新規ファイルのみコピー<br/>カスタマイズ済みはスキップ"]
     UPDATE_VER[".dre-version を更新"]
     DONE["Updated to v{version}"]
 
@@ -159,10 +159,10 @@ flowchart TD
 ```mermaid
 flowchart LR
     CMD["dre-tool"]
-    STATUS["status\n読み: .claude/.dre-version\n     kit/version.txt\n出力: バージョン差分 + ファイル数"]
-    LIST["list\n読み: kit/{rules,skills,...}/\n出力: kit に含まれるファイル一覧"]
-    SAVE["save <file>\n読み: stdin\n出力: ファイルに書き込み"]
-    VERSION["version\n出力: dre-tool バージョン"]
+    STATUS["status<br/>読み: .claude/.dre-version<br/>     kit/version.txt<br/>出力: バージョン差分 + ファイル数"]
+    LIST["list<br/>読み: kit/{rules,skills,...}/<br/>出力: kit に含まれるファイル一覧"]
+    SAVE["save <file><br/>読み: stdin<br/>出力: ファイルに書き込み"]
+    VERSION["version<br/>出力: dre-tool バージョン"]
 
     CMD --> STATUS
     CMD --> LIST
@@ -196,8 +196,8 @@ flowchart TD
     CHECK_LOCAL[".claude/.dre-version を読む"]
     CHECK_KIT["node_modules/.../version.txt を読む"]
     SHOW_VERSIONS["現在 vX.X.X → 更新元 vY.Y.Y を表示"]
-    EXPLAIN["更新内容を説明\n（カスタマイズ済みはスキップ）"]
-    WAIT["ユーザー確認を待つ\n← MUST: 勝手に実行しない"]
+    EXPLAIN["更新内容を説明<br/>（カスタマイズ済みはスキップ）"]
+    WAIT["ユーザー確認を待つ<br/>← MUST: 勝手に実行しない"]
     RUN["npx dre-update を案内 or 実行"]
     REPORT["完了報告"]
 
@@ -225,7 +225,7 @@ rules/skills を追加・更新して publish するまでの流れ。
 ```mermaid
 flowchart TD
     DEV["dre/ でルール・スキルを開発"]
-    TEST["ローカルで動作確認\nbash kit/install.sh /tmp/test-project"]
+    TEST["ローカルで動作確認<br/>bash kit/install.sh /tmp/test-project"]
     SYNC["dre/* → kit/* にコピー"]
     BUMP["npm version patch/minor/major"]
     PUBLISH["npm publish --access public"]
@@ -256,11 +256,11 @@ DRE rules を正典として他ツール形式に変換する。
 
 ```mermaid
 flowchart LR
-    RULES["kit/rules/\n（正典）"]
-    CLAUDE[".claude/rules/\nClaude Code"]
-    CURSOR[".cursor/rules/\nCursor"]
-    CODEX["AGENTS.md\nCodex"]
-    GEMINI["GEMINI.md\nGemini CLI"]
+    RULES["kit/rules/<br/>（正典）"]
+    CLAUDE[".claude/rules/<br/>Claude Code"]
+    CURSOR[".cursor/rules/<br/>Cursor"]
+    CODEX["AGENTS.md<br/>Codex"]
+    GEMINI["GEMINI.md<br/>Gemini CLI"]
 
     RULES -->|dre-tool export --claude| CLAUDE
     RULES -->|dre-tool export --cursor| CURSOR

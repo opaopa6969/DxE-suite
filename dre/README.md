@@ -27,13 +27,13 @@ DRE-toolkit は単なるファイル置き場ではなく、**設計から展開
 
 ```mermaid
 flowchart TD
-    DGE["DGE-toolkit\n会話劇 → gap → spec"]
-    DRE_DEV["dre/ に rules/skills/agents/\ncommands/profiles を作成"]
+    DGE["DGE-toolkit<br/>会話劇 → gap → spec"]
+    DRE_DEV["dre/ に rules/skills/agents/<br/>commands/profiles を作成"]
     KIT["kit/ にパッケージング"]
-    NPM["npm publish\n@unlaxer/dre-toolkit"]
-    INSTALL["npx dxe install\n新プロジェクトに展開"]
-    PROJECT[".claude/\n├ rules/\n├ skills/\n├ skills/disabled/\n├ agents/\n├ commands/\n└ profiles/"]
-    UPDATE["npx dxe update\nバージョンアップ時"]
+    NPM["npm publish<br/>@unlaxer/dre-toolkit"]
+    INSTALL["npx dxe install<br/>新プロジェクトに展開"]
+    PROJECT[".claude/<br/>├ rules/<br/>├ skills/<br/>├ skills/disabled/<br/>├ agents/<br/>├ commands/<br/>└ profiles/"]
+    UPDATE["npx dxe update<br/>バージョンアップ時"]
 
     DGE -->|spec → rules 化| DRE_DEV
     DRE_DEV -->|cp dre/* kit/*| KIT
