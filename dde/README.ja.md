@@ -2,6 +2,8 @@
 
 [English](README.md) | [日本語](README.ja.md)
 
+> **権威実装の位置**: このディレクトリ（`DxE-suite/dde/`）が v4.2.0 時点の DDE の正式実装です。旧独立リポ [`opaopa6969/DDE-toolkit`](https://github.com/opaopa6969/DDE-toolkit) は **archived** — そちらに PR を送らないでください。
+
 > 用語を全部抜き出して、誰でも分かる記事を作り、リンクにする。
 
 ## すぐ始める

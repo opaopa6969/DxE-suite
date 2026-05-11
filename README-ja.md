@@ -22,6 +22,17 @@ D*E シリーズ:
 
 ---
 
+## Canonical location（本家はこのリポジトリ）
+
+**DGE / DDE / DVE / DRE の canonical 実装はこの monorepo** です。
+
+- Source of truth: 本リポジトリ（`opaopa6969/DxE-suite`, v4.2.0 以降）の `dge/` `dde/` `dre/` `dve/`。
+- 旧 standalone リポジトリ [`opaopa6969/DDE-toolkit`](https://github.com/opaopa6969/DDE-toolkit) は **archived**（[ADR-0002](docs/decisions/0002-archive-dde-into-monorepo.md)）。PR はそちらではなく DxE-suite に出してください。
+- npm パッケージ [`@unlaxer/dde-toolkit`](./dde/kit/package.json) は本リポジトリの `dde/kit/` から publish されます。今後の standalone リリースは monorepo の subtree split であり、独立 fork ではありません。
+- 既存 DDE-toolkit 利用者の移行手順: [docs/migration-from-dde-toolkit-ja.md](docs/migration-from-dde-toolkit-ja.md)（DDE 固有メモは [dde/MIGRATION.md](dde/MIGRATION.md)）。
+
+---
+
 ## 目次
 
 - [DxE-suite とは](#dxe-suite-とは)
@@ -179,31 +190,43 @@ plugin（DGE / DDE / DVE）が動的にフェーズとサブステートを挿�
 
 ## DGE + DRE + DVE + DDE 連携フロー
 
-```
-  DGE (発見)            DVE (可視化)            DRE (強制+配布)            DDE (ドキュメント)
-  ─────────             ─────────              ─────────                    ─────────
-  「DGE して」
-      ↓
-  会話劇で Gap 発見
-      ↓                                        PostToolUse hook
-  session 保存 ───────→ dve build ←─────────── 会話劇全文の有無をチェック
-      ↓                    ↓
-  DD 記録 ─────────────→ graph.json            commit-msg hook
-      ↓                    ↓                   「Ref: DD-NNN」を要求
-  spec 生成 ───────────→ Web UI
-                           ↓
-                    ユーザー閲覧
-                           ↓                                                「DDE して」
-                ┌── annotation / overturn / fork                              ↓
-                ↓                                Stop hook                  用語抽出
-         DVE → DGE 再起動 ←─────────── 暗黙の決定検出 (stop-check.sh)           ↓
-         (ContextBundle)              pending-decisions Slack 通知            記事生成
-                ↓                                                             ↓
-         新 DD ──────────────────────→ rules/skills → dre/kit/            dde-link で書き戻し
-                                              ↓
-                                       plugin manifest → Slack
-                                              ↓
-                                       `npx dxe install` でチーム全員同じ環境
+```mermaid
+flowchart TD
+    subgraph DGE["DGE (発見)"]
+        D1["「DGE して」"] --> D2[会話劇で Gap 発見]
+        D2 --> D3[session 保存]
+        D3 --> D4[DD 記録]
+        D4 --> D5[spec 生成]
+    end
+
+    subgraph DVE["DVE (可視化)"]
+        V1[dve build] --> V2[graph.json]
+        V2 --> V3[Web UI]
+        V3 --> V4[ユーザー閲覧]
+        V4 --> V5[annotation / overturn / fork]
+    end
+
+    subgraph DRE["DRE (強制+配布)"]
+        R1["PostToolUse hook<br/>会話劇全文の有無をチェック"]
+        R2["commit-msg hook<br/>「Ref: DD-NNN」を要求"]
+        R3["Stop hook<br/>暗黙の決定検出 (stop-check.sh)<br/>pending-decisions Slack 通知"]
+        R4["rules/skills → dre/kit/"]
+        R5["plugin manifest → Slack"]
+        R6["npx dxe install でチーム全員同じ環境"]
+        R4 --> R5 --> R6
+    end
+
+    subgraph DDE["DDE (ドキュメント)"]
+        E1["「DDE して」"] --> E2[用語抽出] --> E3[記事生成] --> E4[dde-link で書き戻し]
+    end
+
+    D3 --> V1
+    R1 --> V1
+    D4 --> V2
+    D5 --> V3
+    V5 --> NewSession[DVE → DGE 再起動<br/>ContextBundle]
+    R3 --> NewSession
+    NewSession --> NewDD[新 DD] --> R4
 ```
 
 ---

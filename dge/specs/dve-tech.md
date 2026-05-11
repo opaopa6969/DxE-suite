@@ -8,22 +8,24 @@
 
 ## Architecture
 
-```
-dve/kit (data layer)          dve/app (view layer)
-┌──────────────────┐          ┌──────────────────┐
-│ parser/           │          │ Preact            │
-│   session-parser  │──JSON──→│ Cytoscape.js      │
-│   decision-parser │          │ Vite (SSG)        │
-│   annotation-parser│         └──────────────────┘
-│ graph/            │                ↑
-│   schema          │          graph.json
-│   builder         │          changelog.json
-│   query           │
-│ context/          │
-│   bundle          │──JSON──→ DGE (prompt text)
-│ cli/              │
-│   dve-tool        │
-└──────────────────┘
+```mermaid
+flowchart LR
+    subgraph Kit["dve/kit (data layer)"]
+        Parser["parser/<br/>session-parser<br/>decision-parser<br/>annotation-parser"]
+        Graph["graph/<br/>schema<br/>builder<br/>query"]
+        Context["context/<br/>bundle"]
+        CLI["cli/<br/>dve-tool"]
+    end
+    subgraph App["dve/app (view layer)"]
+        UI["Preact<br/>Cytoscape.js<br/>Vite (SSG)"]
+    end
+    DGE["DGE (prompt text)"]
+    Files["graph.json<br/>changelog.json"]
+
+    Parser -- JSON --> UI
+    Graph --> Files
+    Files --> UI
+    Context -- JSON --> DGE
 ```
 
 **原則**: kit と app は完全に分離。kit は JSON を吐く。app は JSON を食う。app を差し替えても kit に影響しない。

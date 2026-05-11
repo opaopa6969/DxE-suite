@@ -1,0 +1,3 @@
+- [DVE design session](project_dve_design.md) — DVE設計完了、Spec 3件+DD 5件
+- [DVE implementation complete](project_dve_complete.md) — DVE全実装完了、DRE enforcement engine、3 toolkit揃い
+- [DD not ADR](feedback_dd_not_adr.md) — 設計判断は DD-NNN で統一、ADR は使わない

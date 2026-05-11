@@ -21,6 +21,17 @@ D*E series:
 
 ---
 
+## Canonical location
+
+**This monorepo is the canonical implementation** of DGE, DDE, DVE, and DRE.
+
+- Source of truth: `dge/`, `dde/`, `dre/`, `dve/` in **this repository** (`opaopa6969/DxE-suite`, v4.2.0+).
+- The former standalone repository [`opaopa6969/DDE-toolkit`](https://github.com/opaopa6969/DDE-toolkit) is **archived** ([ADR-0002](docs/decisions/0002-archive-dde-into-monorepo.md)). Do not send PRs there — open them against DxE-suite instead.
+- npm releases of [`@unlaxer/dde-toolkit`](./dde/kit/package.json) are published from `dde/kit/` in this repo; any future standalone releases are subtree splits of the monorepo, not independent forks.
+- Migration path for existing DDE-toolkit users: [docs/migration-from-dde-toolkit.md](docs/migration-from-dde-toolkit.md) (per-toolkit notes in [dde/MIGRATION.md](dde/MIGRATION.md)).
+
+---
+
 ## Table of Contents
 
 - [What DxE-suite is](#what-dxe-suite-is)
@@ -174,31 +185,43 @@ Plugins (DGE, DDE, DVE) dynamically insert phases and sub-states into the base w
 
 ## DGE + DRE + DVE + DDE lifecycle
 
-```
-  DGE (find)            DVE (visualize)        DRE (enforce + distribute)   DDE (doc-link)
-  ─────────             ─────────              ─────────                    ─────────
-  "run DGE"
-      ↓
-  dialogue → gaps
-      ↓                                        PostToolUse hook
-  session saved ──────→ dve build ←─────────── full dialogue text check
-      ↓                    ↓
-  DD recorded ─────────→ graph.json            commit-msg hook
-      ↓                    ↓                   "Ref: DD-NNN" required
-  spec written ────────→ Web UI
-                           ↓
-                      user browses
-                           ↓                                                "run DDE"
-                ┌── annotate / overturn / fork                                ↓
-                ↓                                Stop hook                 terms extracted
-         re-start DGE ←────────────── implicit-decision scan (LLM)            ↓
-         (ContextBundle)              pending-decisions Slack                 articles
-                ↓                                                             ↓
-         new DD ─────────────────────→ rules/skills → dre/kit/            dde-link rewrites docs
-                                              ↓
-                                       plugin manifest → Slack
-                                              ↓
-                                       `npx dxe install` → whole team same env
+```mermaid
+flowchart TD
+    subgraph DGE["DGE (find)"]
+        D1["'run DGE'"] --> D2[dialogue → gaps]
+        D2 --> D3[session saved]
+        D3 --> D4[DD recorded]
+        D4 --> D5[spec written]
+    end
+
+    subgraph DVE["DVE (visualize)"]
+        V1[dve build] --> V2[graph.json]
+        V2 --> V3[Web UI]
+        V3 --> V4[user browses]
+        V4 --> V5[annotate / overturn / fork]
+    end
+
+    subgraph DRE["DRE (enforce + distribute)"]
+        R1["PostToolUse hook<br/>full dialogue text check"]
+        R2["commit-msg hook<br/>'Ref: DD-NNN' required"]
+        R3["Stop hook<br/>implicit-decision scan (LLM)<br/>pending-decisions Slack"]
+        R4["rules/skills → dre/kit/"]
+        R5["plugin manifest → Slack"]
+        R6["npx dxe install → whole team same env"]
+        R4 --> R5 --> R6
+    end
+
+    subgraph DDE["DDE (doc-link)"]
+        E1["'run DDE'"] --> E2[terms extracted] --> E3[articles] --> E4[dde-link rewrites docs]
+    end
+
+    D3 --> V1
+    R1 --> V1
+    D4 --> V2
+    D5 --> V3
+    V5 --> NewSession[re-start DGE<br/>ContextBundle]
+    R3 --> NewSession
+    NewSession --> NewDD[new DD] --> R4
 ```
 
 ---

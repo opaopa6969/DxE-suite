@@ -8,32 +8,38 @@ A multi-project agent orchestration platform where AI coding agents work autonom
 
 ## What AskOS Does
 
-```
-Human Operator
-  ├─ Web Dashboard (React)          ← questions, tasks, agents, documents
-  ├─ AI Terminal (Claude Code)      ← bottom panel, auto-launched
-  └─ Slack (planned)
-        │
-  Orchestrator API (Express, 48+ endpoints)
-        │
-  ┌─────┴──────────────────────────────────────────────┐
-  │                                                    │
-  Portfolio Commander     Project Commanders            │
-  (cross-project          (per-project triage,          │
-   coordination)           spec/decision matching)      │
-        │                        │                      │
-        │              ┌─────────┼─────────┐            │
-        │              Impl      Reviewer   Adopted     │
-        │              Agent     Agent      Agent       │
-        │                   │                           │
-  Workflow Engine            Runtime Adapter (tmux)      │
-  (contract-based            ├─ stdout-watcher          │
-   step execution,           ├─ inbox delivery          │
-   YAML definitions)         └─ session lifecycle       │
-        │                                               │
-  DGE Workflow (planned)                                │
-  (dialogue → spec discovery)                           │
-  └────────────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    Human[Human Operator]
+    Web["Web Dashboard (React)<br/>questions, tasks, agents, documents"]
+    AIT["AI Terminal (Claude Code)<br/>bottom panel, auto-launched"]
+    Slack["Slack (planned)"]
+    API["Orchestrator API (Express, 48+ endpoints)"]
+    PortCmdr["Portfolio Commander<br/>cross-project coordination"]
+    ProjCmdr["Project Commanders<br/>per-project triage,<br/>spec/decision matching"]
+    Impl[Impl Agent]
+    Reviewer[Reviewer Agent]
+    Adopted[Adopted Agent]
+    WFE["Workflow Engine<br/>contract-based step execution<br/>YAML definitions"]
+    Runtime["Runtime Adapter (tmux)<br/>- stdout-watcher<br/>- inbox delivery<br/>- session lifecycle"]
+    DGE["DGE Workflow (planned)<br/>dialogue → spec discovery"]
+
+    Human --- Web
+    Human --- AIT
+    Human --- Slack
+    Web --> API
+    AIT --> API
+    Slack --> API
+    API --> PortCmdr
+    API --> ProjCmdr
+    ProjCmdr --> Impl
+    ProjCmdr --> Reviewer
+    ProjCmdr --> Adopted
+    Impl --> Runtime
+    Reviewer --> Runtime
+    Adopted --> Runtime
+    API --> WFE
+    WFE --> DGE
 ```
 
 ## Key Features

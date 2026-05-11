@@ -8,32 +8,38 @@ AIコーディングエージェントが自律的に作業し、人間のオペ
 
 ## AskOS が何をするか
 
-```
-人間オペレーター
-  ├─ Web ダッシュボード (React)     ← 質問、タスク、エージェント、ドキュメント
-  ├─ AI ターミナル (Claude Code)    ← 常駐パネル、自動起動
-  └─ Slack (予定)
-        │
-  オーケストレーター API (Express, 48+ エンドポイント)
-        │
-  ┌─────┴──────────────────────────────────────────────┐
-  │                                                    │
-  Portfolio Commander     Project Commanders            │
-  (プロジェクト横断         (プロジェクト別トリアージ、     │
-   調整)                    spec/意思決定マッチング)      │
-        │                        │                      │
-        │              ┌─────────┼─────────┐            │
-        │              実装       レビュー    Adopted     │
-        │              Agent     Agent      Agent       │
-        │                   │                           │
-  Workflow Engine            Runtime Adapter (tmux)      │
-  (contract ベースの         ├─ stdout-watcher           │
-   ステップ実行、            ├─ inbox 配信               │
-   YAML 定義)               └─ セッション管理            │
-        │                                               │
-  DGE ワークフロー (予定)                                │
-  (会話劇 → spec 発見)                                   │
-  └────────────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    Human[人間オペレーター]
+    Web["Web ダッシュボード (React)<br/>質問、タスク、エージェント、ドキュメント"]
+    AIT["AI ターミナル (Claude Code)<br/>常駐パネル、自動起動"]
+    Slack["Slack (予定)"]
+    API["オーケストレーター API (Express, 48+ エンドポイント)"]
+    PortCmdr["Portfolio Commander<br/>プロジェクト横断調整"]
+    ProjCmdr["Project Commanders<br/>プロジェクト別トリアージ・<br/>spec/意思決定マッチング"]
+    Impl[実装 Agent]
+    Reviewer[レビュー Agent]
+    Adopted[Adopted Agent]
+    WFE["Workflow Engine<br/>contract ベースのステップ実行<br/>YAML 定義"]
+    Runtime["Runtime Adapter (tmux)<br/>- stdout-watcher<br/>- inbox 配信<br/>- セッション管理"]
+    DGE["DGE ワークフロー (予定)<br/>会話劇 → spec 発見"]
+
+    Human --- Web
+    Human --- AIT
+    Human --- Slack
+    Web --> API
+    AIT --> API
+    Slack --> API
+    API --> PortCmdr
+    API --> ProjCmdr
+    ProjCmdr --> Impl
+    ProjCmdr --> Reviewer
+    ProjCmdr --> Adopted
+    Impl --> Runtime
+    Reviewer --> Runtime
+    Adopted --> Runtime
+    API --> WFE
+    WFE --> DGE
 ```
 
 ## 主な機能

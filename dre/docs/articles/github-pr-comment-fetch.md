@@ -74,17 +74,21 @@ for r in json.load(sys.stdin):
 
 ## 判定フロー（将来のフロー定義用）
 
-```
-PR のコメント対応を開始する
-  │
-  ├─ /issues/{pr}/comments      → イシューコメント一覧を取得
-  ├─ /pulls/{pr}/comments       → 行コメント一覧を取得
-  └─ /pulls/{pr}/reviews        → レビュー一覧を取得
-       │
-       ├─ body が非空のレビューがある → 返答対象リストに追加
-       └─ body が空 → スキップ
-  │
-  すべて収集してから返答処理を開始する
+```mermaid
+flowchart TD
+    Start[PR のコメント対応を開始する]
+    Issue["/issues/{pr}/comments<br/>イシューコメント一覧を取得"]
+    Line["/pulls/{pr}/comments<br/>行コメント一覧を取得"]
+    Reviews["/pulls/{pr}/reviews<br/>レビュー一覧を取得"]
+    NonEmpty["body が非空のレビュー<br/>返答対象リストに追加"]
+    Empty["body が空 → スキップ"]
+    End[すべて収集してから返答処理を開始する]
+
+    Start --> Issue --> End
+    Start --> Line --> End
+    Start --> Reviews
+    Reviews --> NonEmpty --> End
+    Reviews --> Empty
 ```
 
 ---

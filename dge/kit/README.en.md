@@ -74,10 +74,15 @@ See [patterns.md](./patterns.md) for details.
 
 ## DGE Flow
 
-```
-Discover Gaps via dialogue → Auto-generate Specs → Review → Implement
-         ↑                                             |
-         └── Run again / Auto-iterate ─────────────────┘
+```mermaid
+flowchart LR
+    Gap[Discover Gaps via dialogue]
+    Spec[Auto-generate Specs]
+    Review[Review]
+    Impl[Implement]
+
+    Gap --> Spec --> Review --> Impl
+    Impl -- "Run again / Auto-iterate" --> Gap
 ```
 
 ## Folder Structure

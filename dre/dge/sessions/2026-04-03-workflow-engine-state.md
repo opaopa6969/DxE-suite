@@ -30,21 +30,19 @@
 
 ## 設計サマリー
 
-```
-plugin manifest (YAML)
-    ↓ install 時 merge + validate
-.dre/state-machine.yaml  ← SM Definition（静的検証可能）
-    ↓
-Claude Code hook (engine / controller)
-    ├─ .dre/context.json を読み書き（stack + frames）
-    ├─ SM Definition に従って next state を決定
-    └─ next prompt を生成して LLM へ
+```mermaid
+flowchart TD
+    PM["plugin manifest (YAML)"]
+    SM["state-machine.yaml<br/>SM Definition（静的検証可能）"]
+    Hook["Claude Code hook (engine / controller)<br/>- .dre/context.json を読み書き (stack + frames)<br/>- SM Definition に従って next state を決定<br/>- next prompt を生成して LLM へ"]
+    LLM["LLM (executor)<br/>tool を呼ぶ"]
+    Tool["tool (model)<br/>{ state, stack, transition, context, side_effects } を返す"]
 
-LLM (executor)
-    └─ tool を呼ぶ
-
-tool (model)
-    └─ { state, stack, transition, context, side_effects } を返す
+    PM -- "install 時 merge + validate" --> SM
+    SM --> Hook
+    Hook --> LLM
+    LLM --> Tool
+    Tool --> Hook
 ```
 
 ### tool レスポンス スキーマ

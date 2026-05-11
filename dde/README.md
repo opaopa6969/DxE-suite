@@ -2,6 +2,8 @@
 
 [English](README.md) | [日本語](README.ja.md)
 
+> **Authoritative location**: this directory (`DxE-suite/dde/`) is the canonical implementation of DDE as of v4.2.0. The former standalone repository [`opaopa6969/DDE-toolkit`](https://github.com/opaopa6969/DDE-toolkit) is **archived** — do not send PRs there.
+
 > Extract all terms, generate articles everyone can understand, auto-link.
 
 ## Quick Start
