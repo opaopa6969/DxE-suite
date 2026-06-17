@@ -1,2 +1,11 @@
 *:Zone.Identifier
 node_modules/
+target/
+build/
+out/
+__pycache__/
+dist/
+.gradle/
+.next/
+.nuxt/
+bower_components/
