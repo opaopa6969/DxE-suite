@@ -10,7 +10,7 @@ flowchart TD
     CONTEXT["2. Context<br/>読者層を設定<br/>（記事のトーン調整に使用）"]
     LENGTH["3. Length<br/>記事の長さを設定<br/>short / medium / long"]
     EXTRACT["4. Extract ✦ LLM<br/>ドキュメントから全用語を抽出<br/>↓ 用語リストをレビュー・除外"]
-    ARTICLEIZE["5. Articleize ✦ LLM<br/>1ファイル・3セクションで記事生成<br/>docs/glossary/<term>.md"]
+    ARTICLEIZE["5. Articleize ✦ LLM<br/>1用語1ファイルで記事生成（educational narrative）<br/>docs/glossary/<term>.md"]
     LINK["6. Link ✦ CLI<br/>dde-link でドキュメントにリンク埋め込み<br/>[term](docs/glossary/xxx.md)"]
 
     SELECT --> CONTEXT

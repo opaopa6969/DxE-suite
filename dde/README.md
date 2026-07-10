@@ -19,6 +19,8 @@ Just talk to Claude Code:
 npx dde-link README.md             # Embed links in document
 npx dde-link README.md --check     # CI: detect missing links (exit 1 on fail)
 npx dde-link README.md --dry-run   # Preview changes (no overwrite)
+dde-tool save <file>               # MUST-enforcement helper (save from stdin) used by the skill
+dde-tool prompt quick              # Show the numbered choices from a flow YAML
 
 --- Maintenance ---
 "Update DDE"                       → Toolkit update guide
@@ -36,7 +38,7 @@ npx dde-link README.md --dry-run   # Preview changes (no overwrite)
                 ↓
 4. Extract  — Extract ALL terms from the document group (no level filter)  ✦ LLM
               ↓ Review the term list, exclude unwanted terms
-5. Articleize — Generate 1 file · 3 sections per term                      ✦ LLM
+5. Articleize — Generate 1 file per term (educational narrative)           ✦ LLM
               → docs/glossary/<term>.md
                 ↓
 6. Link     — dde-link embeds links in the same document group             ✦ CLI
@@ -121,7 +123,7 @@ dde/
 ├── sessions/              ← Session output (auto-saved)
 └── version.txt
 docs/
-└── glossary/              ← Glossary articles (1 file · 3 sections per term)
+└── glossary/              ← Glossary articles (1 file per term)
     ├── jwt.md
     ├── jwt.ja.md
     └── dictionary.yaml    ← Japanese/alias term mappings (optional)
@@ -142,9 +144,14 @@ D*E Series:
 
 ## Proven at Scale
 
+Figures from the first real-world deployment, **volta-auth-proxy** (a separate
+project — not bundled in this repo):
+
 - 241 glossary articles (120 EN + 121 JA)
 - 334 clickable links in README
-- 3-level reader coverage
+
+> Note: this repository ships no `examples/` dataset, so these numbers are not
+> reproducible from `DxE-suite/dde/` itself.
 
 ## License
 
