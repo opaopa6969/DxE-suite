@@ -1,11 +1,11 @@
 {
   "enforcement": {
-    "level": "full",
-    "comment": "full = command + LLM prompt hooks. lite = command only (no token cost)"
+    "level": "lite",
+    "comment": "full = command + LLM prompt hooks. lite = command only (no token cost). v4.2.0: LLM prompt hook was removed (commit 438aa23, see DD-006), so full is currently unavailable."
   },
   "stop_hook": {
-    "llm_decision_review": true,
-    "comment": "true = LLM reviews conversation for implicit decisions on Stop (costs tokens). false = command-only check."
+    "llm_decision_review": false,
+    "comment": "true = LLM reviews conversation for implicit decisions on Stop (costs tokens). false = command-only check. Set to false in v4.2.0 since LLM prompt hook was removed (see DD-006)."
   },
   "decision_detection": {
     "realtime": true,
