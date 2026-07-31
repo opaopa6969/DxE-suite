@@ -21,10 +21,16 @@ FINDINGS=0
 declare -A CAPABILITIES
 # pattern → DxE toolkit that provides it
 CAPABILITIES=(
-  ["*glossary*linker*|*GlossaryLinker*|*auto-link*"]="DDE dde-link (npx dde-link --fix)"
+  ["*glossary*linker*|*GlossaryLinker*|*auto-link*"]="DDE dde-link (npx dde-link --fix) — migration: docs/migration-from-dde-toolkit.md"
   ["*state-machine*|*state_machine*|*workflow-engine*"]="DRE workflow engine (dre-engine init)"
   ["*gap-extract*|*gap_extract*|*design-review*"]="DGE session (dge-session skill)"
   ["*decision-vis*|*decision_vis*"]="DVE (dve build + dve serve)"
+)
+
+# Per-finding migration guides (when available). Keyed by toolkit short name.
+declare -A MIGRATION_GUIDES
+MIGRATION_GUIDES=(
+  ["DDE"]="docs/migration-from-dde-toolkit.md (suite) · dde/MIGRATION.md (DDE-specific)"
 )
 
 for patterns in "${!CAPABILITIES[@]}"; do
@@ -43,6 +49,13 @@ for patterns in "${!CAPABILITIES[@]}"; do
         echo "     ${f#$PROJECT_DIR/}"
       done
       echo "     → Already available: ${TOOLKIT}"
+      # Emit migration-guide pointer when the finding matches a known toolkit.
+      for key in "${!MIGRATION_GUIDES[@]}"; do
+        if [[ "$TOOLKIT" == ${key}* ]]; then
+          echo "     → Migration guide: ${MIGRATION_GUIDES[$key]}"
+          break
+        fi
+      done
       echo ""
       FINDINGS=$((FINDINGS + 1))
     fi
@@ -84,6 +97,7 @@ if [ -d "$PROJECT_DIR/docs/glossary" ]; then
       echo "  💡 DDE linker is installed but hasn't been used recently"
       echo "     docs/glossary/ exists with $(ls "$PROJECT_DIR/docs/glossary/"*.md 2>/dev/null | wc -l) articles"
       echo "     Run: npx dde-link --check README.md"
+      echo "     Migration guide: ${MIGRATION_GUIDES[DDE]}"
       echo ""
       FINDINGS=$((FINDINGS + 1))
     fi
