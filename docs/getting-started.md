@@ -15,10 +15,7 @@ npm install
 ```
 
 `npm install` at the root installs and hoists `dge/kit`, `dge/server`,
-`dre/kit`, `dve/kit`. **Not** `dde/kit` — that workspace is currently
-missing from `package.json`. `npx dxe install dde` still works because the
-CLI invokes `dde/kit/bin/dde-install.js` directly; see
-[architecture.md § 2.2](architecture.md#22-what-is-missing--known-bug).
+`dre/kit`, `dde/kit`, and `dve/kit`.
 
 ### Option B — via npm (per project)
 

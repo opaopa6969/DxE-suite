@@ -101,8 +101,7 @@ DxE-suite/                              (v4.2.0)
 ├── .dre/                               ワークフロー状態 (state-machine.yaml + context.json)
 ├── bin/dxe.js                          `dxe` CLI 本体
 ├── dve.config.json                     マルチプロジェクト DVE 設定
-└── package.json                        workspaces: dge/kit, dge/server, dre/kit, dve/kit
-                                        (⚠️ dde/kit は未登録 — 既知の問題を参照)
+└── package.json                        workspaces: dge/kit, dge/server, dre/kit, dde/kit, dve/kit
 ```
 
 詳細は [docs/architecture-ja.md](docs/architecture-ja.md)。
@@ -233,11 +232,6 @@ flowchart TD
 
 ## 既知の問題
 
-- **`dde/kit` および `dge/kit` が `package.json` の `workspaces` に登録されていない。**
-  現在 `workspaces` には `dge/kit, dge/server, dre/kit, dve/kit` のみが入っており、**`dde/kit` が抜けている**。
-  `dxe install dde` 自体は `bin/dxe.js` が `dde/kit/bin/dde-install.js` を直接叩くため動作するが、
-  hoisted `node_modules` は DDE 分構築されない。詳細は [docs/architecture-ja.md](docs/architecture-ja.md)、
-  経緯は [docs/decisions/0002-archive-dde-into-monorepo.md](docs/decisions/0002-archive-dde-into-monorepo.md)。
 - **Stop(LLM prompt) hook は v4.1.0 で削除**された。LLM prompt hook が JSON 以外を返す問題が解消できなかったため。
   現在は command hook の `stop-check.sh` 1 本で暗黙の決定検出を担う。詳細は [ADR-0001](docs/decisions/0001-remove-stop-llm-prompt-hook.md)。
 

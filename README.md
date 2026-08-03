@@ -97,8 +97,7 @@ DxE-suite/                              (v4.2.0)
 ├── .dre/                               Workflow state (state-machine.yaml + context.json)
 ├── bin/dxe.js                          The `dxe` CLI
 ├── dve.config.json                     Multi-project DVE config
-└── package.json                        workspaces: dge/kit, dge/server, dre/kit, dve/kit
-                                        (⚠️ dde/kit is NOT registered — see Known issues)
+└── package.json                        workspaces: dge/kit, dge/server, dre/kit, dde/kit, dve/kit
 ```
 
 Full details: [docs/architecture.md](docs/architecture.md).
@@ -228,8 +227,6 @@ flowchart TD
 
 ## Known issues
 
-- **`dde/kit` and `dge/kit` are not registered in `package.json` `workspaces`.**
-  The npm workspaces array currently lists `dge/kit, dge/server, dre/kit, dve/kit` — **it is missing `dde/kit`**, and additionally the surrounding tooling treats `dge/kit` as a workspace only via the DGE install script. `dxe install dde` still works because `bin/dxe.js` drives `dde/kit/bin/dde-install.js` directly, but hoisted `node_modules` is not set up for DDE. See [docs/architecture.md](docs/architecture.md) for the full impact list and [docs/decisions/0002-archive-dde-into-monorepo.md](docs/decisions/0002-archive-dde-into-monorepo.md) for the historical context.
 - The Stop(LLM prompt) hook was **removed** in v4.1.0 because it kept returning non-JSON text. Implicit-decision auditing is now entirely handled by `stop-check.sh` — see [ADR-0001](docs/decisions/0001-remove-stop-llm-prompt-hook.md).
 
 ---

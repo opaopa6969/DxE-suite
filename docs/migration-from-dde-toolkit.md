@@ -116,19 +116,15 @@ only deposits the **skills + CLIs** into your project's `.claude/` and
 
 ## 6. Collisions to watch for
 
-When `dde/kit` is *also* added to `package.json` `workspaces` (see
-[architecture.md § 2.2](architecture.md#22-what-is-missing--known-bug)),
-its `bin` entries will be hoisted into the monorepo's `node_modules/.bin/`.
-Names to check before landing that fix:
+`dde/kit` is included in `package.json` `workspaces`, so its `bin` entries
+are hoisted into the monorepo's `node_modules/.bin/`. The names are:
 
 - `dde-install` — unique to DDE.
 - `dde-tool` — unique to DDE.
 - `dde-link` — unique to DDE.
 
-None currently collide with DGE / DRE / DVE bin names (which are
-`dge-*`, `dre-*`, `dve-*`, `dxe`). Collisions would be a blocker for
-adding `dde/kit` to workspaces; a quick grep says we're fine, but verify
-on the tip of main before shipping.
+None collide with DGE / DRE / DVE bin names (which are `dge-*`, `dre-*`,
+`dve-*`, `dxe`).
 
 ## 7. Rollback plan
 
@@ -138,10 +134,7 @@ If the monorepo integration gives you trouble:
 # 1. Remove the monorepo-installed skills
 npx dxe deactivate dde
 
-# 2. Delete dde/kit from node_modules hoisting (if workspaces was edited)
-#    — not necessary as of 4.2.0 because dde/kit is NOT in workspaces
-
-# 3. Reinstall the standalone package
+# 2. Reinstall the standalone package, if needed
 npm install --save-dev @unlaxer/dde-toolkit@^0.1
 npx dde-install
 ```
@@ -160,12 +153,9 @@ No. From 4.2.0 onwards, the monorepo is the source of truth. Any
 standalone releases of `@unlaxer/dde-toolkit` will be *subtree splits*
 of the monorepo.
 
-**Q. Why is `dde/kit` not in `workspaces`?**
-A known integration bug; see
-[ADR-0002 § Mitigations](decisions/0002-archive-dde-into-monorepo.md#mitigations)
-and [architecture.md § 2.2](architecture.md#22-what-is-missing--known-bug).
-`npx dxe install dde` still works because the CLI invokes DDE's
-installer directly.
+**Q. Is `dde/kit` in `workspaces`?**
+Yes. Since the 2026-07-31 monorepo update, root `npm install` and
+`npm run --workspace=dde/kit ...` include DDE like the other toolkits.
 
 ## References
 

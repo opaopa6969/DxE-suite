@@ -11,7 +11,7 @@ between DGE, DDE, DVE and DRE.
 ```
 DxE-suite/                              (monorepo root, v4.2.0)
 ├── bin/dxe.js                          unified CLI (install / update / status / activate / deactivate)
-├── package.json                        workspaces: dge/kit, dge/server, dre/kit, dve/kit
+├── package.json                        workspaces: dge/kit, dge/server, dre/kit, dde/kit, dve/kit
 ├── dve.config.json                     multi-project DVE config (projects list + shared paths)
 │
 ├── dge/                                DGE — Design-Gap Extraction
@@ -70,7 +70,7 @@ DxE-suite/                              (monorepo root, v4.2.0)
     └── pending-decisions.json          decisions detected but not yet recorded as DD
 ```
 
-## 2. npm workspaces — registered and **not** registered
+## 2. npm workspaces
 
 The `package.json` at the root declares:
 
@@ -79,53 +79,18 @@ The `package.json` at the root declares:
   "dge/kit",
   "dge/server",
   "dre/kit",
+  "dde/kit",
   "dve/kit"
 ]
 ```
 
 ### 2.1 What this means
 
-`npm install` at the root hoists `dge/kit`, `dge/server`, `dre/kit` and
-`dve/kit` into the root `node_modules/`. Scripts in those packages can
+`npm install` at the root hoists `dge/kit`, `dge/server`, `dre/kit`,
+`dde/kit` and `dve/kit` into the root `node_modules/`. Scripts in those packages can
 resolve cross-workspace dependencies normally, and their `bin/` entries
 show up under `node_modules/.bin/`.
 
-### 2.2 What is missing — known bug
-
-The `dde/kit` workspace is **not registered**. As a result:
-
-- `npm install` at the root does **not** hoist `dde/kit`'s dependencies,
-  and `dde/kit/node_modules` is not populated via workspaces.
-- `dde/kit/bin/dde-install.js` continues to work because it is invoked
-  **directly** by `bin/dxe.js` (see `TOOLKITS.dde` in `bin/dxe.js`), with
-  its `runWith: 'node'` flag. So users can still run `npx dxe install dde`.
-- However, any dev workflow that relies on `npm run ... --workspace=dde/kit`
-  or that expects `dde-toolkit` packages to be resolvable from within
-  `dge/kit` (for example) will **fail**.
-
-`dge/kit` is registered as a workspace but is also used via direct
-invocation (`dge/kit/install.sh`) — so it behaves correctly either way.
-
-This bug is tracked as *documentation-first* for now: the intent (keep DDE
-as a subtree — see [ADR-0002](decisions/0002-archive-dde-into-monorepo.md))
-is not in doubt, but the `package.json` edit to add `"dde/kit"` to
-`workspaces` has not yet been made. Do not "fix" it without first
-verifying that `dde/kit/package.json` is compatible with npm workspace
-hoisting (it declares its own `bin` entries, which can collide).
-
-The workspace list should read:
-
-```json
-"workspaces": [
-  "dge/kit",
-  "dge/server",
-  "dde/kit",
-  "dre/kit",
-  "dve/kit"
-]
-```
-
-…once the above is verified.
 
 ## 3. Responsibility boundaries
 
