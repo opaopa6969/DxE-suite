@@ -53,7 +53,7 @@ DxE-suite is the single entry point you install into a project (or into your she
 
 You install it once. You get:
 
-- **22 Claude Code skills** (DGE 3 + DRE 13 + DVE 6) plus the DDE skills, all version-controlled.
+- **21 Claude Code skills** (DGE 3 + DRE 12 + DVE 6) plus the DDE skills, all version-controlled.
 - **Hook-enforced workflow** — PostToolUse, Stop, and commit-msg hooks verify that every design decision is actually recorded as a `DD-NNN`, every `DGE` session has its dialogue text preserved, and every commit message references the right DD.
 - **A visual decision graph** — every Session → Gap → DD → Spec is a node in `graph.json`, rendered by the DVE Web UI.
 - **An auto-linking glossary** — DDE extracts terms, generates educational articles, and rewrites your docs with `[term](docs/glossary/xxx.md)` links.
@@ -86,14 +86,14 @@ DxE-suite/                              (v4.2.0)
 ├── dde/                                DDE — Document-Deficit Extraction  (archived into this repo — ADR-0002)
 │   └── kit/                            @unlaxer/dde-toolkit (linker + glossary articleizer)
 ├── dre/                                DRE toolkit + enforcement engine
-│   └── kit/                            @unlaxer/dre-toolkit (13 skills)
+│   └── kit/                            @unlaxer/dre-toolkit (12 skills)
 │       ├── engine/                     Workflow SM (state-machine.yaml + context.json)
 │       ├── hooks/                      PostToolUse + Stop + commit-msg + notify
 │       └── plugins/                    DGE/DDE/DVE plugin manifests (dynamic sub-states)
 ├── dve/                                DVE — Decision Visualization Engine
 │   ├── kit/                            @unlaxer/dve-toolkit (6 skills)
 │   └── app/                            Web UI (Preact + Cytoscape.js + Vite)
-├── .claude/                            Hooks + 22 skills (installed into this repo itself)
+├── .claude/                            Hooks + 21 skills (installed into this repo itself)
 ├── .dre/                               Workflow state (state-machine.yaml + context.json)
 ├── bin/dxe.js                          The `dxe` CLI
 ├── dve.config.json                     Multi-project DVE config

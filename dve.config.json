@@ -1,9 +1,9 @@
 {
-  "outputDir": "/home/opa/work/AskOS-workspace/DxE-suite/dve/dist",
+  "outputDir": "dve/dist",
   "projects": [
     {
-      "name": "kit",
-      "path": "../DDE-toolkit/kit"
+      "name": "dde-kit",
+      "path": "./dde/kit"
     },
     {
       "name": "DxE-suite",

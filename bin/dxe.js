@@ -306,13 +306,14 @@ if (command === 'install') {
   const SKILL_PREFIXES = {
     dge: ['dge-'],
     dde: ['dde-'],
-    dre: ['dre-', 'architect-', 'backlog-', 'doc-to-', 'phase', 'release', 'spec-', 'story-', 'test'],
+    dre: ['dre-', 'dxe-', 'architect-', 'backlog-', 'doc-to-', 'phase', 'release', 'spec-', 'story-', 'test'],
     dve: ['dve-'],
+    all: null, // all skills
   };
 
   const target = (targets_[0] || '').toLowerCase();
-  if (!SKILL_PREFIXES[target]) {
-    console.error('Usage: dxe deactivate <dge|dde|dre|dve>');
+  if (target !== 'all' && !SKILL_PREFIXES[target]) {
+    console.error('Usage: dxe deactivate <dge|dde|dre|dve|all>');
     process.exit(1);
   }
 
@@ -325,7 +326,7 @@ if (command === 'install') {
 
   for (const file of skills) {
     if (PROTECTED.includes(file)) continue;
-    const match = prefixes.some(p => file.startsWith(p));
+    const match = prefixes === null || prefixes.some(p => file.startsWith(p));
     if (!match) continue;
 
     const src = path.join(skillsDir, file);

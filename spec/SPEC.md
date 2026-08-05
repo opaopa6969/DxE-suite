@@ -286,7 +286,7 @@ Markdown を `[term](docs/glossary/xxx.md)` 形式で書き換える。
 - 出力: `.dre/context.json` の書き戻し、`.dre/pending-decisions.json`、
   `.dre/notifications.json`、violation の stderr、Slack 通知
 
-**配布される skill** (13 個):
+**配布される skill** (12 個):
 - `dre-activate.md` / `dre-reset.md` / `dre-uninstall.md` — DRE 自体の操作
 - `dxe-command.md` — `dxe` CLI のヘルプを agent に読ませるため
 - `architect-to-task.md` / `backlog-management.md` / `doc-to-instruction.md` /
@@ -779,7 +779,7 @@ Claude Code の skill ローダは `.claude/skills/` 全体を走査するが、
 - `dre-activate.md` — `dxe activate` 実行用の skill。これを deactivate すると
   復帰できなくなる。
 
-### 4.6 Skill 一覧 (22 個)
+### 4.6 Skill 一覧 (21 個)
 
 #### DGE (3)
 
@@ -787,7 +787,7 @@ Claude Code の skill ローダは `.claude/skills/` 全体を走査するが、
 - `dge-update.md` — kit 更新
 - `dge-character-create.md` — カスタム character 追加
 
-#### DRE (13)
+#### DRE (12)
 
 - `dre-activate.md` (保護) / `dre-reset.md` / `dre-uninstall.md`
 - `dxe-command.md` (保護)
@@ -1484,7 +1484,7 @@ execution log を `.dre/hooks-log.json` に残して、`dxe status` に
 | `dde/kit/__tests__/` | あり | dde-link / articleizer の unit test |
 | `dge/kit/test/` | あり | install.sh / update.sh の scenario test |
 | `dre/kit/test/` | あり | engine.js の YAML parse / merge / transition test |
-| `dve/kit/` | なし (試験的) | parser / graph builder に unit test 欲しい |
+| `dve/kit/test/` | あり | decision-parser / session-parser の unit test (`parser.test.js`) |
 | `dve/app/` | なし | Preact component test 未整備 |
 | hook scripts | なし | bash hook の integration test 未整備 |
 | `bin/dxe.js` | なし | CLI の smoke test 未整備 |

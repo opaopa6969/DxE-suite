@@ -34,13 +34,13 @@ DxE-suite/                              (monorepo root, v4.2.0)
 │   └── README.md / README.ja.md        methodology
 │
 ├── dre/                                DRE — Document Rule Engine
-│   ├── kit/                            npm: @unlaxer/dre-toolkit (13 skills)
+│   ├── kit/                            npm: @unlaxer/dre-toolkit (12 skills)
 │   │   ├── engine/                     workflow engine (state-machine.yaml + context.json)
 │   │   ├── hooks/                      post-check.sh / stop-check.sh / commit-msg.sh / notify.sh
 │   │   │   └── settings.json           Claude Code hooks manifest (shared with .claude/)
 │   │   ├── plugins/                    dge-plugin.yaml, dde-plugin.yaml, dve-plugin.yaml
 │   │   ├── rules/                      MUST rules
-│   │   └── skills/                     13 skills, all disabled/ by default
+│   │   └── skills/                     12 skills, all disabled/ by default
 │   └── docs/                           flows.md, strategy.md
 │
 ├── dve/                                DVE — Decision Visualization Engine

@@ -53,7 +53,7 @@ D*E シリーズ:
 DxE-suite は、プロジェクト（あるいは開発者のシェル）に 1 度インストールするだけで、
 D\*E の全機能が配線された状態で使えるようになる**単一の入口**。
 
-- **22 の Claude Code skills**（DGE 3 + DRE 13 + DVE 6）+ DDE の skills をバージョン管理下で配布
+- **21 の Claude Code skills**（DGE 3 + DRE 12 + DVE 6）+ DDE の skills をバージョン管理下で配布
 - **Hook ベースのワークフロー強制** — PostToolUse / Stop / commit-msg hook が、
   - すべての設計判断が `DD-NNN` として保存されているか
   - DGE session に会話劇の本文が残っているか
@@ -90,14 +90,14 @@ DxE-suite/                              (v4.2.0)
 ├── dde/                                DDE — Document-Deficit Extraction  (この repo に統合済み — ADR-0002)
 │   └── kit/                            @unlaxer/dde-toolkit (linker + glossary 生成)
 ├── dre/                                DRE toolkit + enforcement engine
-│   └── kit/                            @unlaxer/dre-toolkit (13 skills)
+│   └── kit/                            @unlaxer/dre-toolkit (12 skills)
 │       ├── engine/                     ワークフロー SM (state-machine.yaml + context.json)
 │       ├── hooks/                      PostToolUse + Stop + commit-msg + notify
 │       └── plugins/                    DGE/DDE/DVE plugin manifest（サブステート動的挿入）
 ├── dve/                                DVE — Decision Visualization Engine
 │   ├── kit/                            @unlaxer/dve-toolkit (6 skills)
 │   └── app/                            Web UI (Preact + Cytoscape.js + Vite)
-├── .claude/                            このリポジトリ自身に配置された hooks + 22 skills
+├── .claude/                            このリポジトリ自身に配置された hooks + 21 skills
 ├── .dre/                               ワークフロー状態 (state-machine.yaml + context.json)
 ├── bin/dxe.js                          `dxe` CLI 本体
 ├── dve.config.json                     マルチプロジェクト DVE 設定
