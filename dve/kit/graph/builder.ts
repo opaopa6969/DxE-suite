@@ -32,12 +32,27 @@ export function buildGraph(opts: BuildOptions): DVEGraph {
   const edges: Edge[] = [];
   const warnings: { file: string; message: string }[] = [];
 
+  // Indexes for O(1) lookups (avoids O(n²) scans as graph grows).
+  // nodeIds: every node id pushed so far — used for existence checks.
+  // gapsBySession: session_id → Map<gapNum(zero-padded 3), GraphNode>
+  // gapSuffixById: node id → zero-padded gap number — used for #N matching.
+  const nodeIds = new Set<string>();
+  const gapsBySession = new Map<string, Map<string, GraphNode>>();
+  // Running counters per type — replaces the 5 full scans in stats.
+  const counts = { session: 0, dialogue: 0, gap: 0, decision: 0, annotation: 0, spec: 0 };
+
+  function trackNode(node: GraphNode) {
+    nodes.push(node);
+    nodeIds.add(node.id);
+    counts[node.type] = (counts[node.type] ?? 0) + 1;
+  }
+
   // 1. Parse sessions
   const sessionFiles = scanMd(opts.sessionsDir);
   for (const file of sessionFiles) {
     const { session, gaps } = parseSession(file);
     if (session.node.id) {
-      nodes.push({
+      trackNode({
         type: "session",
         id: session.node.id!,
         data: session.node as any,
@@ -53,7 +68,7 @@ export function buildGraph(opts: BuildOptions): DVEGraph {
     const dialogueId = `${session.node.id!}#dialogue`;
     const hasDialogue = !!(session.node as any).content &&
       /Scene|先輩|ナレーション|☕|👤|🎩|😰|⚔|🎨|📊/.test((session.node as any).content ?? "");
-    nodes.push({
+    trackNode({
       type: "dialogue" as any,
       id: dialogueId,
       data: {
@@ -73,9 +88,15 @@ export function buildGraph(opts: BuildOptions): DVEGraph {
       confidence: "explicit",
     });
 
+    const sessId = session.node.id!;
+    const gapMap = new Map<string, GraphNode>();
     for (const gap of gaps) {
       if (gap.node.id) {
-        nodes.push({
+        // Extract zero-padded gap number from id "{session_id}#G-{n}"
+        const gapNum = sessId && gap.node.id!.startsWith(sessId + "#G-")
+          ? gap.node.id!.slice(sessId.length + 3)
+          : "";
+        trackNode({
           type: "gap",
           id: gap.node.id!,
           data: gap.node as any,
@@ -89,11 +110,13 @@ export function buildGraph(opts: BuildOptions): DVEGraph {
           type: "discovers",
           confidence: "explicit",
         });
+        if (gapNum) gapMap.set(gapNum, nodes[nodes.length - 1]);
         for (const w of gap.warnings) {
           warnings.push({ file, message: `${gap.node.id}: ${w}` });
         }
       }
     }
+    if (gapMap.size > 0) gapsBySession.set(sessId, gapMap);
   }
 
   // 2. Parse decisions
@@ -101,7 +124,7 @@ export function buildGraph(opts: BuildOptions): DVEGraph {
   for (const file of ddFiles) {
     const dd = parseDecision(file);
     if (dd.node.id) {
-      nodes.push({
+      trackNode({
         type: "decision",
         id: dd.node.id!,
         data: dd.node as any,
@@ -113,18 +136,14 @@ export function buildGraph(opts: BuildOptions): DVEGraph {
       }
 
       // resolves edges: find gaps that this DD references
-      // Match session_refs to gaps in those sessions
+      // Match session_refs to gaps in those sessions via index (O(1) lookup).
       for (const sessionRef of dd.node.session_refs ?? []) {
-        const sessionGaps = nodes.filter(
-          (n) => n.type === "gap" && (n.data as any).session_id === sessionRef
-        );
+        const sessionGaps = gapsBySession.get(sessionRef);
         // If DD has specific gap_refs (#N), match them
         if (dd.node.gap_refs && dd.node.gap_refs.length > 0) {
           for (const gapRef of dd.node.gap_refs) {
-            const gapNum = gapRef.replace("#", "");
-            const matchingGap = sessionGaps.find((g) =>
-              g.id.endsWith(`#G-${gapNum.padStart(3, "0")}`)
-            );
+            const gapNum = gapRef.replace("#", "").padStart(3, "0");
+            const matchingGap = sessionGaps?.get(gapNum);
             if (matchingGap) {
               edges.push({
                 source: matchingGap.id,
@@ -164,7 +183,7 @@ export function buildGraph(opts: BuildOptions): DVEGraph {
   for (const file of annFiles) {
     const ann = parseAnnotation(file);
     if (ann.node.id) {
-      nodes.push({
+      trackNode({
         type: "annotation",
         id: ann.node.id!,
         data: ann.node as any,
@@ -188,16 +207,16 @@ export function buildGraph(opts: BuildOptions): DVEGraph {
   for (const file of specFiles) {
     const spec = parseSpec(file);
     if (spec.node.id) {
-      nodes.push({
+      trackNode({
         type: "spec",
         id: spec.node.id!,
         data: spec.node as any,
         confidence: spec.confidence,
         warnings: spec.warnings,
       });
-      // produces edges: Decision → Spec
+      // produces edges: Decision → Spec (O(1) existence check via nodeIds)
       for (const ddRef of spec.node.decision_refs ?? []) {
-        if (nodes.some((n) => n.id === ddRef)) {
+        if (nodeIds.has(ddRef)) {
           edges.push({
             source: ddRef,
             target: spec.node.id!,
@@ -212,12 +231,16 @@ export function buildGraph(opts: BuildOptions): DVEGraph {
 
   // 5. Git linker
   if (opts.enableGitLinker !== false) {
-    const ddIds = new Set(nodes.filter((n) => n.type === "decision").map((n) => n.id));
+    // Reuse running counts.decision instead of scanning nodes again.
+    const ddIds = new Set<string>();
+    for (let i = 0; i < nodes.length; i++) {
+      if (nodes[i].type === "decision") ddIds.add(nodes[i].id);
+    }
     const gitEdges = gitLinkerEdges(opts.cwd, ddIds);
     for (const edge of gitEdges) {
-      // Add commit as external ref node if not exists
-      if (!nodes.some((n) => n.id === edge.target)) {
-        nodes.push({
+      // Add commit as external ref node if not exists (O(1) via nodeIds)
+      if (!nodeIds.has(edge.target)) {
+        trackNode({
           type: "annotation" as any, // reuse for external refs
           id: edge.target,
           data: { type: "commit", ref: edge.target, evidence: edge.evidence } as any,
@@ -229,13 +252,13 @@ export function buildGraph(opts: BuildOptions): DVEGraph {
     }
   }
 
-  // Stats
+  // Stats — use running counters (single-pass accounting via trackNode).
   const stats = {
-    sessions: nodes.filter((n) => n.type === "session").length,
-    gaps: nodes.filter((n) => n.type === "gap").length,
-    decisions: nodes.filter((n) => n.type === "decision").length,
-    annotations: nodes.filter((n) => n.type === "annotation").length,
-    specs: nodes.filter((n) => n.type === "spec").length,
+    sessions: counts.session ?? 0,
+    gaps: counts.gap ?? 0,
+    decisions: counts.decision ?? 0,
+    annotations: counts.annotation ?? 0,
+    specs: counts.spec ?? 0,
   };
 
   // Build glossary from completed graph

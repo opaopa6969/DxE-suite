@@ -10,10 +10,10 @@ const SESSION_LINK_RE = /\[([^\]]+)\]\(\.\.\/sessions\/([^)]+)\)/g;
 const GAP_REF_RE = /#(\d+)/g;
 const SUPERSEDES_RE = /Supersedes[:：]\s*(DD-\d+(?:\s*,\s*DD-\d+)*)/i;
 const SUPERSEDED_BY_RE = /Superseded\s+by[:：]\s*(DD-\d+(?:\s*,\s*DD-\d+)*)/i;
+const RATIONALE_RE = /^##\s+(Rationale|Decision)/i;
 
 export function parseDecision(filePath: string): ParseResult<Decision> {
   const content = readFileSync(filePath, "utf-8");
-  const lines = content.split("\n");
   const warnings: string[] = [];
   const stem = path.basename(filePath, ".md");
 
@@ -21,58 +21,59 @@ export function parseDecision(filePath: string): ParseResult<Decision> {
   const idMatch = stem.match(DD_ID_RE);
   const id = idMatch ? `DD-${idMatch[1]}` : stem;
 
-  // Title from H1
-  const h1 = lines.find((l) => l.startsWith("# "));
-  const title = h1?.replace(/^#\s+/, "").replace(/^DD-\d+[:：]?\s*/, "") ?? "";
-
-  // Fields from frontmatter-style metadata
+  // Single-pass over lines: extract H1 title, frontmatter fields, rationale,
+  // supersedes/superseded-by (line-based, avoids full-content .match() scans).
   const fields: Record<string, string> = {};
+  let title = "";
+  let rationale = "";
+  let inRationale = false;
+  const supersedes: string[] = [];
+  const supersededBy: string[] = [];
+
+  const lines = content.split("\n");
   for (const line of lines) {
+    // H1 title (first occurrence)
+    if (!title && line.startsWith("# ")) {
+      title = line.replace(/^#\s+/, "").replace(/^DD-\d+[:：]?\s*/, "");
+    }
+
+    // Frontmatter-style fields
     const m = line.match(FIELD_RE);
     if (m) fields[m[1].trim().toLowerCase()] = m[2].trim();
+
+    // Rationale section
+    if (RATIONALE_RE.test(line)) {
+      inRationale = true;
+      continue;
+    }
+    if (inRationale) {
+      if (line.startsWith("## ")) break;
+      const trimmed = line.trim();
+      if (trimmed) rationale += (rationale ? " " : "") + trimmed;
+    }
   }
+
+  // Supersedes / superseded-by via single full-content scan each (rare lines,
+  // but anchored regex is cheaper than per-line testing for these patterns).
+  const supMatch = content.match(SUPERSEDES_RE);
+  if (supMatch) supersedes.push(...supMatch[1].split(/\s*,\s*/));
+  const supByMatch = content.match(SUPERSEDED_BY_RE);
+  if (supByMatch) supersededBy.push(...supByMatch[1].split(/\s*,\s*/));
 
   const date = fields["date"] ?? "";
 
   // Session refs from links
   const sessionRefs: string[] = [];
   for (const match of content.matchAll(SESSION_LINK_RE)) {
-    const sessionFile = match[2].replace(".md", "");
-    sessionRefs.push(sessionFile);
+    sessionRefs.push(match[2].replace(".md", ""));
   }
 
   // Gap refs from # numbers
   const gapRefs: string[] = [];
   const gapField = fields["gap"] ?? "";
-  for (const match of gapField.matchAll(GAP_REF_RE)) {
-    gapRefs.push(match[0]);
-  }
-
-  // Supersedes
-  const supersedes: string[] = [];
-  const supMatch = content.match(SUPERSEDES_RE);
-  if (supMatch) {
-    supersedes.push(...supMatch[1].split(/\s*,\s*/));
-  }
-
-  // Superseded by
-  const supersededBy: string[] = [];
-  const supByMatch = content.match(SUPERSEDED_BY_RE);
-  if (supByMatch) {
-    supersededBy.push(...supByMatch[1].split(/\s*,\s*/));
-  }
-
-  // Rationale — text under ## Rationale or ## Decision
-  let rationale = "";
-  let inRationale = false;
-  for (const line of lines) {
-    if (/^##\s+(Rationale|Decision)/i.test(line)) {
-      inRationale = true;
-      continue;
-    }
-    if (inRationale && line.startsWith("## ")) break;
-    if (inRationale && line.trim()) {
-      rationale += (rationale ? " " : "") + line.trim();
+  if (gapField) {
+    for (const match of gapField.matchAll(GAP_REF_RE)) {
+      gapRefs.push(match[0]);
     }
   }
 
