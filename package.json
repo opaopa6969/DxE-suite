@@ -12,8 +12,13 @@
     "dge/server",
     "dre/kit",
     "dde/kit",
-    "dve/kit"
+    "dve/kit",
+    "mcp"
   ],
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "zod": "^3.23.0"
+  },
   "files": [
     "bin/",
     "README.md",
