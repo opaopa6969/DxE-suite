@@ -1,0 +1,19 @@
+[Unit]
+Description=DxE Suite MCP server (namespace: dxe)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/opa/DxE-suite/mcp
+Environment=PORT=9243
+Environment=DGE_DB_PATH=/home/opa/DxE-suite/dge/server/data/dge.db
+EnvironmentFile=-/home/opa/volta-secrets/dxe-suite-mcp.env
+ExecStart=/home/opa/DxE-suite/mcp/run.sh
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=default.target
