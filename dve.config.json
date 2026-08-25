@@ -1,29 +1,109 @@
 {
-  "outputDir": "dve/dist",
+  "outputDir": "/home/opa/work/DxE-suite/dve/dist",
   "projects": [
     {
-      "name": "dde-kit",
-      "path": "./dde/kit"
+      "name": "AskOS",
+      "path": "/home/opa/work/AskOS-workspace/AskOS"
+    },
+    {
+      "name": "agent-log-broker",
+      "path": "/home/opa/work/AskOS-workspace/agent-log-broker"
     },
     {
       "name": "DxE-suite",
-      "path": "."
+      "path": "/home/opa/work/DxE-suite"
     },
     {
-      "name": "propstack",
-      "path": "../propstack"
+      "name": "building-hierarchy",
+      "path": "/home/opa/work/adoyose-workspace/building-hierarchy"
     },
     {
-      "name": "syslenz",
-      "path": "../syslenz"
+      "name": "volta-auth-console",
+      "path": "/home/opa/work/auth-test/volta-auth-console"
     },
     {
       "name": "volta-auth-proxy",
-      "path": "../volta-auth-proxy"
+      "path": "/home/opa/work/auth-test/volta-auth-proxy"
+    },
+    {
+      "name": "volta-gateway",
+      "path": "/home/opa/work/auth-test/volta-gateway"
+    },
+    {
+      "name": "bh-fix",
+      "path": "/home/opa/work/bh-fix"
+    },
+    {
+      "name": "kit",
+      "path": "/home/opa/work/dxe-workspace/DDE-toolkit/kit"
+    },
+    {
+      "name": "syslenz",
+      "path": "/home/opa/work/syslenz"
+    },
+    {
+      "name": "propstack",
+      "path": "/home/opa/work/tools-workspace/propstack"
+    },
+    {
+      "name": "propstack-issue-fix",
+      "path": "/home/opa/work/tools-workspace/propstack-issue-fix"
+    },
+    {
+      "name": "syslenz",
+      "path": "/home/opa/work/tools-workspace/syslenz"
+    },
+    {
+      "name": "tramli",
+      "path": "/home/opa/work/tramli-workspace/tramli"
+    },
+    {
+      "name": "tinyexpression",
+      "path": "/home/opa/work/unlaxer-workspace/tinyexpression"
+    },
+    {
+      "name": "tinyexpression-group",
+      "path": "/home/opa/work/unlaxer-workspace/tinyexpression-group"
+    },
+    {
+      "name": "unlaxer-parser",
+      "path": "/home/opa/work/unlaxer-workspace/unlaxer-parser"
+    },
+    {
+      "name": "building-hierarchy",
+      "path": "/home/opa/work/vacant-dev-workspace/building-hierarchy"
+    },
+    {
+      "name": "volta-auth-console",
+      "path": "/home/opa/work/volta-workspace/volta-auth-console"
+    },
+    {
+      "name": "volta-auth-proxy",
+      "path": "/home/opa/work/volta-workspace/volta-auth-proxy"
+    },
+    {
+      "name": "volta-auth-proxy-issue-fix",
+      "path": "/home/opa/work/volta-workspace/volta-auth-proxy-issue-fix"
+    },
+    {
+      "name": "volta-gateway",
+      "path": "/home/opa/work/volta-workspace/volta-gateway"
+    },
+    {
+      "name": "volta-monetizer",
+      "path": "/home/opa/work/volta-workspace/volta-monetizer"
+    },
+    {
+      "name": "volta-monetizer-issue-fix",
+      "path": "/home/opa/work/volta-workspace/volta-monetizer-issue-fix"
     },
     {
       "name": "volta-platform",
-      "path": "../volta-platform"
+      "path": "/home/opa/work/volta-workspace/volta-platform"
+    },
+    {
+      "name": "work-os",
+      "path": "/home/opa/work/work-os"
     }
   ]
 }
