@@ -8,3 +8,13 @@ node_modules/
 
 # ローカルの MCP 接続設定（このマシンの絶対パスを含む）
 .mcp.json
+
+target/
+build/
+out/
+__pycache__/
+dist/
+.gradle/
+.next/
+.nuxt/
+bower_components/
