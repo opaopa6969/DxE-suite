@@ -14,11 +14,8 @@ cd DxE-suite
 npm install
 ```
 
-ルート `npm install` で `dge/kit` / `dge/server` / `dre/kit` / `dve/kit` が
-hoist される。**`dde/kit` は workspaces 未登録**のため hoist されない。
-`npx dxe install dde` 自体は CLI が `dde/kit/bin/dde-install.js` を
-直接呼ぶので動作する。詳細は
-[architecture-ja.md § 2.2](architecture-ja.md#22-既知のバグ--未登録項目)。
+ルート `npm install` で `dge/kit` / `dge/server` / `dre/kit` / `dde/kit` /
+`dve/kit` が hoist される。
 
 ### オプション B — npm 経由（プロジェクト単位）
 

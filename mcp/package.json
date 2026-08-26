@@ -1,0 +1,21 @@
+{
+  "name": "@unlaxer/dxe-mcp-server",
+  "version": "4.2.0",
+  "description": "DxE MCP server — Streamable HTTP /mcp wrapping DGE + DVE",
+  "license": "MIT",
+  "type": "module",
+  "main": "server.ts",
+  "scripts": {
+    "start": "tsx server.ts",
+    "dev": "tsx watch server.ts",
+    "test": "tsx --test test/e2e.test.ts"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.0.0"
+  },
+  "devDependencies": {
+    "tsx": "^4.0.0",
+    "@types/node": "^22.0.0",
+    "@types/better-sqlite3": "^7.0.0"
+  }
+}

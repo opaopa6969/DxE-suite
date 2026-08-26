@@ -39,13 +39,13 @@ const MESSAGES = {
     unknownToolkit:    name => `Unknown toolkit: ${name}`,
     agentHint:   (desc, phrase) => `  ${desc} → コーディングエージェントで ${phrase}`,
     help: `
-  DxE Suite — DGE / DRE toolkit manager (monorepo)
+  DxE Suite — DGE / DDE / DRE / DVE toolkit manager (monorepo)
 
   Usage:
-    npx dxe install           DGE + DRE をインストール
+    npx dxe install           DGE + DRE + DVE をインストール
     npx dxe install dge       DGE のみ
     npx dxe install dre       DRE のみ
-    npx dxe install dde       DDE (別リポジトリ)
+    npx dxe install dde       DDE のみ
     npx dxe update            全toolkit をアップデート
     npx dxe update --yes      確認なしでアップデート
     npx dxe activate all      全スキル有効化
@@ -61,13 +61,13 @@ const MESSAGES = {
     unknownToolkit:    name => `Unknown toolkit: ${name}`,
     agentHint:   (desc, phrase) => `  ${desc} → tell your coding agent ${phrase}`,
     help: `
-  DxE Suite — DGE / DRE toolkit manager (monorepo)
+  DxE Suite — DGE / DDE / DRE / DVE toolkit manager (monorepo)
 
   Usage:
-    npx dxe install           install DGE + DRE
+    npx dxe install           install DGE + DRE + DVE
     npx dxe install dge       DGE only
     npx dxe install dre       DRE only
-    npx dxe install dde       DDE (separate repo)
+    npx dxe install dde       DDE only
     npx dxe update            update all toolkits
     npx dxe update --yes      update without confirmation
     npx dxe status            show installed versions
@@ -306,13 +306,14 @@ if (command === 'install') {
   const SKILL_PREFIXES = {
     dge: ['dge-'],
     dde: ['dde-'],
-    dre: ['dre-', 'architect-', 'backlog-', 'doc-to-', 'phase', 'release', 'spec-', 'story-', 'test'],
+    dre: ['dre-', 'dxe-', 'architect-', 'backlog-', 'doc-to-', 'phase', 'release', 'spec-', 'story-', 'test'],
     dve: ['dve-'],
+    all: null, // all skills
   };
 
   const target = (targets_[0] || '').toLowerCase();
-  if (!SKILL_PREFIXES[target]) {
-    console.error('Usage: dxe deactivate <dge|dde|dre|dve>');
+  if (target !== 'all' && !SKILL_PREFIXES[target]) {
+    console.error('Usage: dxe deactivate <dge|dde|dre|dve|all>');
     process.exit(1);
   }
 
@@ -325,7 +326,7 @@ if (command === 'install') {
 
   for (const file of skills) {
     if (PROTECTED.includes(file)) continue;
-    const match = prefixes.some(p => file.startsWith(p));
+    const match = prefixes === null || prefixes.some(p => file.startsWith(p));
     if (!match) continue;
 
     const src = path.join(skillsDir, file);

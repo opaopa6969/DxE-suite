@@ -10,7 +10,7 @@ workspaces 構成、DGE / DDE / DVE / DRE 間の責務境界 — を説明する
 ```
 DxE-suite/                              (monorepo ルート, v4.2.0)
 ├── bin/dxe.js                          統合 CLI (install / update / status / activate / deactivate)
-├── package.json                        workspaces: dge/kit, dge/server, dre/kit, dve/kit
+├── package.json                        workspaces: dge/kit, dge/server, dre/kit, dde/kit, dve/kit
 ├── dve.config.json                     マルチプロジェクト DVE 設定
 │
 ├── dge/                                DGE — Design-Gap Extraction
@@ -33,13 +33,13 @@ DxE-suite/                              (monorepo ルート, v4.2.0)
 │   └── README.md / README.ja.md        方法論
 │
 ├── dre/                                DRE — Document Rule Engine
-│   ├── kit/                            npm: @unlaxer/dre-toolkit (13 skills)
+│   ├── kit/                            npm: @unlaxer/dre-toolkit (12 skills)
 │   │   ├── engine/                     workflow engine (state-machine.yaml + context.json)
 │   │   ├── hooks/                      post-check.sh / stop-check.sh / commit-msg.sh / notify.sh
 │   │   │   └── settings.json           Claude Code hooks manifest (.claude/ と共有)
 │   │   ├── plugins/                    dge-plugin.yaml, dde-plugin.yaml, dve-plugin.yaml
 │   │   ├── rules/                      MUST ルール群
-│   │   └── skills/                     13 skills（デフォルトで disabled/ に配置）
+│   │   └── skills/                     12 skills（デフォルトで disabled/ に配置）
 │   └── docs/                           flows.md, strategy.md
 │
 ├── dve/                                DVE — Decision Visualization Engine
@@ -69,7 +69,7 @@ DxE-suite/                              (monorepo ルート, v4.2.0)
     └── pending-decisions.json          検出されたが未記録の決定
 ```
 
-## 2. npm workspaces — 登録済みと**未登録**
+## 2. npm workspaces
 
 ルート `package.json`:
 
@@ -78,6 +78,7 @@ DxE-suite/                              (monorepo ルート, v4.2.0)
   "dge/kit",
   "dge/server",
   "dre/kit",
+  "dde/kit",
   "dve/kit"
 ]
 ```
@@ -85,41 +86,9 @@ DxE-suite/                              (monorepo ルート, v4.2.0)
 ### 2.1 動作
 
 ルートで `npm install` すると、`dge/kit` / `dge/server` / `dre/kit` /
-`dve/kit` の依存がルート `node_modules/` に hoist される。各パッケージの
+`dde/kit` / `dve/kit` の依存がルート `node_modules/` に hoist される。各パッケージの
 `bin/` は `node_modules/.bin/` から呼べるようになる。
 
-### 2.2 既知のバグ — 未登録項目
-
-**`dde/kit` が `workspaces` に登録されていない。** 結果:
-
-- ルート `npm install` では `dde/kit` の依存が hoist されず、
-  workspaces 経由では `dde/kit/node_modules` が整わない。
-- `dde/kit/bin/dde-install.js` が動くのは、`bin/dxe.js`（`TOOLKITS.dde`）
-  が `runWith: 'node'` 指定で**直接**起動しているから。
-  `npx dxe install dde` 自体は問題なく動く。
-- ただし `npm run ... --workspace=dde/kit` のような workspaces 依存の
-  dev ワークフロー、あるいは `dge/kit` 側から `dde-toolkit` を解決させる
-  ようなケースは**失敗する**。
-
-`dge/kit` は workspaces に登録されている一方で、DGE install script
-（`dge/kit/install.sh`）でも直接使われる。両方の経路で動くので問題はない。
-
-この修正は「DDE を subtree として抱え込む」意図（[ADR-0002](decisions/0002-archive-dde-into-monorepo.md)）
-に対する追加作業として認識されている。`"dde/kit"` を `workspaces` に足す
-編集はまだ入っていない。作業前に **`dde/kit/package.json` の `bin`
-エントリが他 workspace と衝突しないか**を確認すること。
-
-最終的には以下の形を目指す:
-
-```json
-"workspaces": [
-  "dge/kit",
-  "dge/server",
-  "dde/kit",
-  "dre/kit",
-  "dve/kit"
-]
-```
 
 ## 3. 責務境界
 

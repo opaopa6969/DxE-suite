@@ -1,44 +1,53 @@
-# DDE-toolkit Structure
+# DDE Structure (`DxE-suite/dde/`)
+
+This is the canonical DDE tree as of v4.2.0 (see the top-level
+[README](README.md)). The former standalone `opaopa6969/DDE-toolkit` repo is
+archived.
+
+Legend: (empty) = directory exists but has no files · (planned) = referenced by
+design docs but not yet in the repo.
 
 ```
-DDE-toolkit/
+dde/
   README.md                    ← EN overview
   README.ja.md                 ← JA overview
   STRUCTURE.md                 ← this file
+  MIGRATION.md                 ← standalone → monorepo migration notes
+  flows.md                     ← Mermaid flow diagrams
 
   kit/                         ← npm package (@unlaxer/dde-toolkit)
     package.json
+    package-lock.json
+    LICENSE
+    method.md                  ← DDE methodology (the real location — no docs/method.md)
+    version.txt
+    agents-dde-section.md      ← AGENTS.md / GEMINI.md / .cursorrules snippet
     bin/
       dde-install.js           ← installer (copies to project)
-      dde-tool.js              ← CLI tool
+      dde-link.js              ← auto-linker CLI (main entry: npx dde-link)
+      dde-tool.js              ← MUST-enforcement CLI (save / prompt)
+    lib/                       ← dde-link implementation
+      linker.js                ← orchestrator
+      dictionary.js            ← filename → term mapping
+      markdown.js              ← Markdown AST handling
     flows/
-      quick.yaml               ← quick document review
-      full-review.yaml         ← comprehensive review
-      glossary-build.yaml      ← glossary extraction + generation
-      link-check.yaml          ← auto-linker pass
-    templates/
-      glossary-article.md      ← article template (expert)
-      glossary-beginner.md     ← article template (beginner)
-      glossary-grandma.md      ← article template (grandma)
-      diagram-proposal.md      ← diagram suggestion template
-      gap-report.md            ← reader gap report template
+      quick.yaml               ← quick document review (only flow implemented)
+      # planned: full-review.yaml / glossary-build.yaml / link-check.yaml
     skills/                    ← Claude Code skills
-      dde-session.md           ← main skill (document review)
-      dde-glossary.md          ← term extraction + article gen
-      dde-linker.md            ← auto-link skill
+      dde-session.md           ← main skill (extract → articleize → link)
       dde-update.md            ← toolkit updater
-    config/
-      reader-levels.yaml       ← reader level definitions
-      linker-rules.yaml        ← auto-linker configuration
-
-  docs/                        ← DDE's own documentation
-    method.md                  ← DDE methodology
-    philosophy.md              ← "Hell to write, heaven to read"
-
-  examples/                    ← example outputs
-    volta-auth-proxy/          ← real-world example from volta
+      # planned (not present): dde-glossary.md / dde-linker.md
+    __tests__/                 ← unit tests (dictionary / linker / markdown)
+    # planned (not present): templates/ — article style is derived from existing
+    #                        glossary articles via the match_existing intent
+    # planned (not present): config/ — reader-levels.yaml / linker-rules.yaml
 
   design-materials/            ← DGE sessions for DDE itself
+  tasks/                       ← implementation task notes
+
+  # planned (not present): docs/ and examples/ — DDE's own docs live in
+  #   kit/method.md; there is no bundled example dataset (see "Proven at
+  #   Scale" in README.md for the volta-auth-proxy source of the 241/334 numbers)
 ```
 
 ## Relationship to DGE

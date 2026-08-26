@@ -1,0 +1,134 @@
+name: Publish to npm
+
+# Trigger on version tags. Scheme:
+#   v4.2.0              → publish every toolkit that matches this version
+#   dde-v4.2.1          → publish only @unlaxer/dde-toolkit
+#   dge-v4.2.1          → publish only @unlaxer/dge-toolkit
+#   dre-v4.2.1          → ...
+#   dve-v4.2.1          → ...
+# Manual dispatch is also supported for ad-hoc republish.
+
+on:
+  push:
+    tags:
+      - 'v*'
+      - 'dge-v*'
+      - 'dde-v*'
+      - 'dre-v*'
+      - 'dve-v*'
+  workflow_dispatch:
+    inputs:
+      toolkit:
+        description: 'Which toolkit to publish (all | dge | dde | dre | dve)'
+        required: true
+        default: 'all'
+        type: choice
+        options: [all, dge, dde, dre, dve]
+      dry_run:
+        description: 'Run npm publish --dry-run only'
+        required: false
+        default: 'false'
+        type: choice
+        options: ['true', 'false']
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    strategy:
+      fail-fast: false
+      matrix:
+        toolkit:
+          - { name: dge, dir: dge/kit, pkg: '@unlaxer/dge-toolkit' }
+          - { name: dde, dir: dde/kit, pkg: '@unlaxer/dde-toolkit' }
+          - { name: dre, dir: dre/kit, pkg: '@unlaxer/dre-toolkit' }
+          - { name: dve, dir: dve/kit, pkg: '@unlaxer/dve-toolkit' }
+
+    steps:
+      - name: Decide whether this job should run
+        id: gate
+        run: |
+          REF="${GITHUB_REF_NAME:-}"
+          TOOLKIT="${{ matrix.toolkit.name }}"
+          EVENT="${{ github.event_name }}"
+          SELECTED="${{ github.event.inputs.toolkit }}"
+
+          should_run=false
+          if [ "$EVENT" = "workflow_dispatch" ]; then
+            if [ "$SELECTED" = "all" ] || [ "$SELECTED" = "$TOOLKIT" ]; then
+              should_run=true
+            fi
+          else
+            case "$REF" in
+              v*)              should_run=true ;;
+              "${TOOLKIT}-v"*) should_run=true ;;
+            esac
+          fi
+          echo "run=$should_run" >> "$GITHUB_OUTPUT"
+          echo "Toolkit=$TOOLKIT ref=$REF run=$should_run"
+
+      - uses: actions/checkout@v4
+        if: steps.gate.outputs.run == 'true'
+
+      - name: Setup Node.js
+        if: steps.gate.outputs.run == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+          cache: 'npm'
+
+      - name: Install dependencies
+        if: steps.gate.outputs.run == 'true'
+        run: npm install --legacy-peer-deps
+
+      - name: Build (if script exists)
+        if: steps.gate.outputs.run == 'true'
+        working-directory: ${{ matrix.toolkit.dir }}
+        run: |
+          has_build=$(node -e "const p=require('./package.json'); console.log(p.scripts && p.scripts.build ? 'yes' : 'no')")
+          if [ "$has_build" = "yes" ]; then
+            npm run build
+          else
+            echo "No build script for ${{ matrix.toolkit.pkg }}, skipping."
+          fi
+
+      - name: Test (if script exists)
+        if: steps.gate.outputs.run == 'true'
+        working-directory: ${{ matrix.toolkit.dir }}
+        run: |
+          has_test=$(node -e "const p=require('./package.json'); console.log(p.scripts && p.scripts.test ? 'yes' : 'no')")
+          if [ "$has_test" = "yes" ]; then
+            npm test
+          else
+            echo "No test script, skipping."
+          fi
+
+      - name: Verify tag version matches package.json
+        if: steps.gate.outputs.run == 'true' && github.event_name == 'push'
+        working-directory: ${{ matrix.toolkit.dir }}
+        run: |
+          REF="${GITHUB_REF_NAME}"
+          # Strip optional "<name>-" prefix and the leading "v"
+          TAG_VERSION="${REF#${{ matrix.toolkit.name }}-}"
+          TAG_VERSION="${TAG_VERSION#v}"
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          if [ "$TAG_VERSION" != "$PKG_VERSION" ]; then
+            echo "::error::Tag version ($TAG_VERSION) does not match package.json version ($PKG_VERSION) in ${{ matrix.toolkit.dir }}"
+            exit 1
+          fi
+
+      - name: Publish to npm
+        if: steps.gate.outputs.run == 'true'
+        working-directory: ${{ matrix.toolkit.dir }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          DRY="${{ github.event.inputs.dry_run }}"
+          if [ "$DRY" = "true" ]; then
+            npm publish --access public --dry-run
+          else
+            npm publish --access public --provenance
+          fi

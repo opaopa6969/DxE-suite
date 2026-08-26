@@ -1,0 +1,25 @@
+{
+  "id": "dxe-suite-mcp",
+  "name": "DxE Suite MCP",
+  "description": "DGE/DDE/DVE/DRE の 4 ツールキットを束ねる monorepo の MCP サーバ。設計ギャップ抽出→決定可視化→ルール配布の lifecycle を tool で提供。",
+  "type": "node",
+  "hostname": "dxe-suite-mcp.unlaxer.org",
+  "port": 9243,
+  "host": "192.168.1.50",
+  "runtime": "systemd",
+  "exec_start": "/home/opa/DxE-suite/mcp/run.sh",
+  "user": "opa",
+  "auth": "minRole:MEMBER",
+  "health_check": "/healthz",
+  "tags": ["mcp", "dxe", "dge", "dve", "dde", "dre", "design", "opa"],
+  "repo_url": "https://github.com/opaopa6969/DxE-suite",
+  "mcp": {
+    "enabled": true,
+    "port": 9243,
+    "path": "/mcp",
+    "namespace": "dxe",
+    "min_role": "MEMBER",
+    "timeoutMs": 110000,
+    "description": "DGE/DDE/DVE/DRE の lifecycle を MCP tool で提供（セッション一覧・キャラ推奨・決定グラフ・drift 検出等）"
+  }
+}

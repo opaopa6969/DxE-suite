@@ -19,6 +19,8 @@ Claude Code で話しかけるだけ:
 npx dde-link README.md          # リンクを埋め込む
 npx dde-link README.md --check  # リンク漏れチェック（CI 用、exit 1 で失敗）
 npx dde-link README.md --dry-run # プレビュー（上書きなし）
+dde-tool save <file>            # MUST 強制ヘルパー（stdin から保存）。skill が使用
+dde-tool prompt quick           # フロー YAML の番号付き選択肢を表示
 
 --- メンテナンス ---
 「DDE を更新して」               → toolkit 更新案内
@@ -36,7 +38,7 @@ npx dde-link README.md --dry-run # プレビュー（上書きなし）
                 ↓
 4. Extract  — 全用語を一括抽出（レベルで絞らない）              ✦ LLM
               ↓ 用語一覧を確認・除外指定
-5. Articleize — 1用語1ファイル・3セクション記事を生成           ✦ LLM
+5. Articleize — 1用語1ファイル記事を生成（educational narrative） ✦ LLM
               → docs/glossary/<term>.md
                 ↓
 6. Link     — dde-link が同じドキュメント群にリンクを埋め込む   ✦ CLI
@@ -121,7 +123,7 @@ dde/
 ├── sessions/              ← セッション出力（自動保存）
 └── version.txt
 docs/
-└── glossary/              ← 用語集記事（1用語1ファイル・3セクション）
+└── glossary/              ← 用語集記事（1用語1ファイル）
     ├── jwt.md
     ├── jwt.ja.md
     └── dictionary.yaml    ← 日本語・別名マッピング（任意）
@@ -142,9 +144,13 @@ D*E シリーズ:
 
 ## 実績（volta-auth-proxy）
 
+最初の実運用プロジェクト **volta-auth-proxy**（本リポジトリには同梱していない別プロジェクト）での数値:
+
 - 241 の用語集記事（120 EN + 121 JA）
 - README に 334 のクリッカブルリンク
-- 3 段階の読者レベル対応
+
+> 注: 本リポジトリ（`DxE-suite/dde/`）は `examples/` データセットを同梱していないため、
+> この数値はこのリポジトリからは再現できない。
 
 ## ライセンス
 

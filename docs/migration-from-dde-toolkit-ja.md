@@ -113,17 +113,15 @@ skills + CLI だけで、プロジェクト側の `.claude/` と `dde/kit/` 近�
 
 ## 6. 衝突に注意
 
-`dde/kit` を `package.json` `workspaces` に追加する未来の作業
-（[architecture-ja.md § 2.2](architecture-ja.md#22-既知のバグ--未登録項目) 参照）
-では、DDE の `bin` エントリが `node_modules/.bin/` に hoist される。
-事前に確認すべき名前:
+`dde/kit` は `package.json` `workspaces` に登録されているため、DDE の
+`bin` エントリも `node_modules/.bin/` に hoist される。名前は次の通り:
 
 - `dde-install` — DDE 固有
 - `dde-tool` — DDE 固有
 - `dde-link` — DDE 固有
 
 いずれも DGE / DRE / DVE の bin 名（`dge-*`・`dre-*`・`dve-*`・`dxe`）と
-被らない。作業着手時点の main で最終確認すること。
+被らない。
 
 ## 7. ロールバック手順
 
@@ -133,10 +131,7 @@ monorepo 統合で問題が起きた場合:
 # 1. monorepo インストールされた skill を無効化
 npx dxe deactivate dde
 
-# 2. workspaces 編集済みなら dde/kit の hoisting を解除
-#    — 4.2.0 時点では dde/kit は未登録なので不要
-
-# 3. 単独パッケージを再インストール
+# 2. 単独パッケージを再インストール（必要な場合）
 npm install --save-dev @unlaxer/dde-toolkit@^0.1
 npx dde-install
 ```
@@ -153,11 +148,9 @@ npx dde-install
 ない。4.2.0 以降、monorepo が truth の源泉。
 `@unlaxer/dde-toolkit` の単独リリースは monorepo の subtree split で行う。
 
-**Q. なぜ `dde/kit` が `workspaces` に入っていない？**
-既知の統合バグ。
-[ADR-0002 § Mitigations](decisions/0002-archive-dde-into-monorepo.md#mitigations)
-と [architecture-ja.md § 2.2](architecture-ja.md#22-既知のバグ--未登録項目) を参照。
-`npx dxe install dde` は CLI が DDE installer を直接呼ぶため動作する。
+**Q. `dde/kit` は `workspaces` に入っている？**
+入っている。2026-07-31 の monorepo 更新以降、ルート `npm install` と
+`npm run --workspace=dde/kit ...` は他の toolkit と同じく DDE を対象にする。
 
 ## 関連
 

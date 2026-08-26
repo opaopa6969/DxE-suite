@@ -1,2 +1,20 @@
 *:Zone.Identifier
 node_modules/
+
+# DRE のランタイム状態（マシン固有・hooks が再生成する）
+.dre/notifications.json
+.dre/pending-decisions.json
+.claude/.dre-version
+
+# ローカルの MCP 接続設定（このマシンの絶対パスを含む）
+.mcp.json
+
+target/
+build/
+out/
+__pycache__/
+dist/
+.gradle/
+.next/
+.nuxt/
+bower_components/

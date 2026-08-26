@@ -1,0 +1,76 @@
+{
+  "repo": "DxE-suite",
+  "surveyed_at": "2026-08-21T23:08:00Z",
+  "kind": "workspace",
+  "summary": "DGE / DDE / DVE / DRE の 4 ツールキットを束ねる monorepo（v4.2.0）。設計ギャップ抽出（DGE）→ドキュメント欠陥補完（DDE）→決定の可視化（DVE）→ルール配布・強制（DRE）の lifecycle を 1 つの dxe CLI で管理。DVE は Web UI + API サーバ、DGE はオプション API サーバを持つが、DDE/DRE は Claude Code skill/hook 駆動でサーバを持たない。",
+  "decision": "wrap",
+  "decision_reason": "monorepo だが、内 2 サブツールキット（DGE/DVE）が既に独自 HTTP API を持ち、うち DVE は既に volta catalog に dve-app としてホスト済み。新規フル MCP サーバを起こすより、既存の DGE API（3456）と DVE API（4174）を薄く MCP ラップして namespace dxe に束ねるのが最もコスト低で価値が早く出る。DDE/DRE は skill/hook 駆動なので tool 化不要（skill 配信で十分）。workspace は原則 skip だが、既にサーバ化されたサブツールキットを含み他サービスとの協調余地があるため例外的に wrap とする。",
+  "existing": {
+    "http_api": true,
+    "cli": true,
+    "mcp": false,
+    "healthz": false,
+    "volta_manifest": false,
+    "hosted_url": "https://dve.unlaxer.org"
+  },
+  "proposed_namespace": "dxe",
+  "capabilities": [
+    { "verb": "DGE セッションの対話テキストと gap 一覧を取得する", "kind": "tool", "name": "list_sessions", "io": "{project?} → [{id, theme, template, characters, gap_count, ...}]", "side_effect": "read", "long_running": false, "maps_to": "dge/server/src/index.ts:121 GET /api/sessions" },
+    { "verb": "DGE キャラクター一覧と推奨キャラセットを返す", "kind": "tool", "name": "recommend_characters", "io": "{agenda, template?, max?} → {characters: [...], preset: ...}", "side_effect": "read", "long_running": false, "maps_to": "dge/server/src/index.ts:77 POST /api/characters/recommend" },
+    { "verb": "DGE パターン・プリセット一覧を返す", "kind": "tool", "name": "list_patterns", "io": "{} → {presets: {key: {patterns, label}}}", "side_effect": "read", "long_running": false, "maps_to": "dge/server/src/index.ts:98 GET /api/patterns" },
+    { "verb": "DVE 決定グラフを取得する", "kind": "tool", "name": "get_graph", "io": "{project?} → DVEGraph JSON", "side_effect": "read", "long_running": false, "maps_to": "dve/kit/server/api.ts:41 /api (graph.json 配下)" },
+    { "verb": "DVE ノードの因果連鎖（DD→Gap→Session）を辿る", "kind": "tool", "name": "trace", "io": "{ddId} → [{type, id, label, ...}]", "side_effect": "read", "long_running": false, "maps_to": "dve/kit/cli/dve-tool.ts:247 traceDecision / dve/kit/graph/query.ts" },
+    { "verb": "DVE ノードの下流インパクトを算出する", "kind": "tool", "name": "impact", "io": "{nodeId} → [{type, id, label}]", "side_effect": "read", "long_running": false, "maps_to": "dve/kit/cli/dve-tool.ts:277 impactOf / dve/kit/graph/query.ts" },
+    { "verb": "決定に紐付かない orphan gap を列挙する", "kind": "tool", "name": "orphans", "io": "{} → [{id, summary, severity}]", "side_effect": "read", "long_running": false, "maps_to": "dve/kit/cli/dve-tool.ts:296 orphanGaps / dve/kit/graph/query.ts" },
+    { "verb": "決定グラフを全文検索する", "kind": "tool", "name": "search", "io": "{keyword} → [{type, id, label}]", "side_effect": "read", "long_running": false, "maps_to": "dve/kit/cli/dve-tool.ts:314 search / dve/kit/graph/query.ts" },
+    { "verb": "決定グラフから drift（コード乖離）を検出する", "kind": "tool", "name": "drift", "io": "{} → [{dd, file, lastModified, ddDate}]", "side_effect": "read", "long_running": false, "maps_to": "dve/kit/server/api.ts:79 GET /api/drift" },
+    { "verb": "DVE プロジェクト状態（DRE phase + sub-state）を返す", "kind": "tool", "name": "status", "io": "{} → {projects: [{name, dre, workflow}]}", "side_effect": "read", "long_running": false, "maps_to": "dve/kit/server/api.ts:209 GET /api/status" },
+    { "verb": "ノードにアノテーションを作成する", "kind": "tool", "name": "annotate", "io": "{target, action, author, body} → {ok, file}", "side_effect": "write", "long_running": false, "maps_to": "dve/kit/server/api.ts:49 POST /api/annotations" },
+    { "verb": "決定クラスタ（supersedes 連鎖）を返す", "kind": "tool", "name": "clusters", "io": "{} → [{label, ddIds, gapCount}]", "side_effect": "read", "long_running": false, "maps_to": "dve/kit/cli/dve-tool.ts:478 clusterBySupersedes / dve/kit/graph/cluster.ts" },
+    { "verb": "DGE セッションを記録する", "kind": "tool", "name": "record_session", "io": "{theme, template?, pattern?, characters?, gaps...} → {id}", "side_effect": "write", "long_running": false, "maps_to": "dge/server/src/index.ts:132 POST /api/sessions" },
+    { "verb": "DGE ContextBundle を生成し DGE 再開用プロンプトを返す", "kind": "tool", "name": "build_context", "io": "{originId, constraints?} → {suggested_action, summary, prompt_template}", "side_effect": "read", "long_running": false, "maps_to": "dve/kit/cli/dve-tool.ts:360 generateBundle / dve/kit/context/bundle.ts" },
+    { "verb": "DxE suite の能力仕様", "kind": "resource", "name": "spec", "uri": "dxe://spec" },
+    { "verb": "DxE suite の使い方（lifecycle: DGE→DDE→DVE→DRE）", "kind": "resource", "name": "guide", "uri": "dxe://guide" },
+    { "verb": "DGE セッションを再開する手順（ContextBundle → DGE プロンプト）", "kind": "skill", "name": "dxe-restart-session", "locality": "repo" },
+    { "verb": "DDE でドキュメントの穴を補完する手順（term 抽出 → article 生成 → dde-link）", "kind": "skill", "name": "dxe-run-dde", "locality": "repo" },
+    { "verb": "DRE ワークフローを初期化・運用する手順（init → transition → hooks）", "kind": "skill", "name": "dxe-dre-workflow", "locality": "repo" }
+  ],
+  "composition_examples": [
+    "dxe__list_sessions → dxe__build_context → kamishibai__validate（DGE session の gap を台本構造の検証材料にする）",
+    "dxe__get_graph → dxe__orphans → dxe__annotate（未決定 gap を抽出し Web UI にコメント付け → DGE 再開のトリガ）",
+    "dxe__recommend_characters → dxe__record_session → dxe__drift（推奨キャラで DGE を回し、記録後 drift を監視）"
+  ],
+  "dependencies": [
+    { "repo": "volta-mcp", "direction": "depends_on", "capability": "MCP ファサード（catalog/probe/skill の配信基盤）", "exists_now": true, "note": "dxe namespace を追加するには services.json の mcp エントリと gateway_routes_apply が要る" },
+    { "repo": "DGE-toolkit (archived)", "direction": "provides_to", "capability": "DGE セッション・キャラクター API（旧スタンドアロン、現 dge/server に統合済み）", "exists_now": false, "note": "catalog の dge-toolkit は retired。dxe namespace で包むことで旧エンドポイント 3456 を再公開できる" },
+    { "repo": "DRE-toolkit (archived)", "direction": "provides_to", "capability": "DRE rules/skills 配布（現 dre/kit に統合済み）", "exists_now": false, "note": "skill 配信のみ。tool 化は不要" },
+    { "repo": "DDE-toolkit (archived)", "direction": "provides_to", "capability": "DDE glossary linker（現 dde/kit に統合済み）", "exists_now": false, "note": "skill 配信のみ。tool 化は不要" }
+  ],
+  "library_serve": {
+    "needed": true,
+    "new_work": [
+      "healthz エンドポイント（DGE: /api/health を /healthz に正規化、DVE: API 4174 に /healthz 追加）",
+      "PORT 環境変数対応（DGE は DGE_PORT、DVE は固定 4174 → PORT に統一）",
+      "0.0.0.0 bind の確認（DVE は既に 0.0.0.0、DGE は --host 必須 → デフォルト化）",
+      "MCP サーバ（Streamable HTTP /mcp）を dge/server と dve/kit/server に追加、または軽量ブリッジ 1 プロセスで両 API を束ねる",
+      "volta.service.json manifest",
+      "systemd unit または既存 dve-app サービスの拡張"
+    ],
+    "runtime": "node",
+    "estimated_effort": "M"
+  },
+  "risks": [
+    "DGE API は SQLite を使う（better-sqlite3）。MCP サーバ化して常駐させる場合、DB パスとマイグレーション（migrations/）の取り回しを考慮する必要がある",
+    "DVE API は git log を実行して drift を検出する（execSync）。外部ディレクトリの git を叩くため、MCP 経由で任意ディレクトリを渡されるとパストラバーサルの懸念がある。tool 化する場合は許可ディレクトリをホワイトリスト化すべき",
+    "annotate（ファイル書き込み）は破壊的。confirm: bool=false で dry-run を実装する必要がある",
+    "record_session（DB 書き込み）も破壊的。同じく confirm 必須",
+    "DGE/DVE は別プロセス・別ポート。1 namespace に束ねるならブリッジプロセスか、ファサード側で 2 バックエンドをルーティングする設計が必要",
+    "monorepo 内の dge/server と dve/kit/server は独立にビルド・起動される。MCP 化で両方を健康に保つ運用コストが乗る"
+  ],
+  "open_questions": [
+    "DGE API（3456）と DVE API（4174）を 1 つの dxe MCP サーバに束ねるか、2 つのバックエンドとして別々に volta に登録するか。持ち主の好みを確認したい",
+    "catalog の dge-toolkit（retired）を dxe namespace に統合して retired を解除するか、そのまま残すか",
+    "DDE/DRE の skill を MCP の skill 配信（skill://dxe-run-dde 等）として出すか、Claude Code skill のまま運用するか。エージェント以外からも呼べるようにするなら前者",
+    "dve.config.json が外部プロジェクト（../propstack, ../syslenz 等）を参照している。MCP 経由でこれらのグラフも公開してよいか"
+  ]
+}

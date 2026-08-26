@@ -30,7 +30,7 @@
 5. [ビジネスロジック — skill 有効化規則、hook 戦略](#5-ビジネスロジック--skill-有効化規則hook-戦略)
 6. [API / 外部境界 — dxe CLI / dve CLI / dre CLI](#6-api--外部境界--dxe-cli--dve-cli--dre-cli)
 7. [UI — Preact + Cytoscape.js DVE Web UI](#7-ui--preact--cytoscapejs-dve-web-ui)
-8. [設定 — workspaces bug を明示](#8-設定--workspaces-bug-を明示)
+8. [設定 — workspace の登録状態](#8-設定--workspace-の登録状態)
 9. [依存関係 — monorepo 内部、DDE subtree](#9-依存関係--monorepo-内部dde-subtree)
 10. [非機能要件 — hook latency](#10-非機能要件--hook-latency)
 11. [テスト戦略](#11-テスト戦略)
@@ -241,8 +241,8 @@ Markdown を `[term](docs/glossary/xxx.md)` 形式で書き換える。
 **CI 用モード**: `npx dde-link --check` で CI 用に dangling reference を
 検出。失敗時に exit 1。
 
-**既知の未整備箇所**: `dde/kit` は npm workspaces に **未登録** である
-（詳細は §8.2）。
+`dde/kit` も npm workspaces に登録されており、他の toolkit と同じく
+ルート `npm install` の対象になる。
 
 ### 2.4 DVE — Decision Visualization Engine
 
@@ -286,7 +286,7 @@ Markdown を `[term](docs/glossary/xxx.md)` 形式で書き換える。
 - 出力: `.dre/context.json` の書き戻し、`.dre/pending-decisions.json`、
   `.dre/notifications.json`、violation の stderr、Slack 通知
 
-**配布される skill** (13 個):
+**配布される skill** (12 個):
 - `dre-activate.md` / `dre-reset.md` / `dre-uninstall.md` — DRE 自体の操作
 - `dxe-command.md` — `dxe` CLI のヘルプを agent に読ませるため
 - `architect-to-task.md` / `backlog-management.md` / `doc-to-instruction.md` /
@@ -779,7 +779,7 @@ Claude Code の skill ローダは `.claude/skills/` 全体を走査するが、
 - `dre-activate.md` — `dxe activate` 実行用の skill。これを deactivate すると
   復帰できなくなる。
 
-### 4.6 Skill 一覧 (22 個)
+### 4.6 Skill 一覧 (21 個)
 
 #### DGE (3)
 
@@ -787,7 +787,7 @@ Claude Code の skill ローダは `.claude/skills/` 全体を走査するが、
 - `dge-update.md` — kit 更新
 - `dge-character-create.md` — カスタム character 追加
 
-#### DRE (13)
+#### DRE (12)
 
 - `dre-activate.md` (保護) / `dre-reset.md` / `dre-uninstall.md`
 - `dxe-command.md` (保護)
@@ -1275,7 +1275,7 @@ derived state で表現する。
 
 ---
 
-## 8. 設定 — workspaces bug を明示
+## 8. 設定 — workspace の登録状態
 
 ### 8.1 `package.json` (monorepo root)
 
@@ -1286,6 +1286,7 @@ derived state で表現する。
   "workspaces": [
     "dge/kit",
     "dge/server",
+    "dde/kit",
     "dre/kit",
     "dve/kit"
   ],
@@ -1293,37 +1294,12 @@ derived state で表現する。
 }
 ```
 
-### 8.2 **既知のバグ — `dde/kit` が workspaces に未登録**
+### 8.2 workspace の登録状態
 
-`workspaces` 配列に **`dde/kit` が含まれていない**。結果として：
-
-| 影響 | 症状 |
-|---|---|
-| `npm install` at root | `dde/kit/node_modules/` に hoist されない |
-| `npm run --workspace=dde/kit …` | 動作しない (workspace 認識されない) |
-| `@unlaxer/dde-toolkit` の cross-workspace resolve (from `dge/kit` 等) | fail |
-| `npx dxe install dde` | **動作する** — `bin/dxe.js` が直接 `dde/kit/bin/dde-install.js` を node 呼び出しするため、workspaces 登録に依存しない |
-
-**本来あるべき設定** ([docs/architecture.md § 2.2](../docs/architecture.md#22-what-is-missing--known-bug)):
-
-```json
-"workspaces": [
-  "dge/kit",
-  "dge/server",
-  "dde/kit",
-  "dre/kit",
-  "dve/kit"
-]
-```
-
-**修正が保留されている理由**: `dde/kit/package.json` が
-`dde-install` / `dde-tool` / `dde-link` / `dde-update` という 4 つの `bin`
-エントリを定義している。これらが hoist 時に他 workspace の bin と
-衝突しないかを事前検証してから `"dde/kit"` を追加する必要がある
-([migration-from-dde-toolkit.md § collisions-to-watch-for](../docs/migration-from-dde-toolkit.md#collisions-to-watch-for))。
-
-**このバグは documentation-first** として扱われている: 直す意図は確定
-しているが、`package.json` 編集は未着手 (ADR-0002 § Consequences § Negative)。
+`dde/kit` は `package.json` の `workspaces` に登録されている。
+`npm install` は DGE / DDE / DRE / DVE の各 workspace を解決し、
+`npm run --workspace=dde/kit ...` も利用できる。DDE の bin 名
+（`dde-install` / `dde-tool` / `dde-link`）は他 workspace の bin 名と衝突しない。
 
 ### 8.3 `dve.config.json` (multi-project)
 
@@ -1508,7 +1484,7 @@ execution log を `.dre/hooks-log.json` に残して、`dxe status` に
 | `dde/kit/__tests__/` | あり | dde-link / articleizer の unit test |
 | `dge/kit/test/` | あり | install.sh / update.sh の scenario test |
 | `dre/kit/test/` | あり | engine.js の YAML parse / merge / transition test |
-| `dve/kit/` | なし (試験的) | parser / graph builder に unit test 欲しい |
+| `dve/kit/test/` | あり | decision-parser / session-parser の unit test (`parser.test.js`) |
 | `dve/app/` | なし | Preact component test 未整備 |
 | hook scripts | なし | bash hook の integration test 未整備 |
 | `bin/dxe.js` | なし | CLI の smoke test 未整備 |
@@ -1844,7 +1820,6 @@ v4.2.0 時点で **暗黙 deprecation** の扱いのもの:
 
 ## Appendix C. 今後の課題 (v4.3.0 以降の候補)
 
-- [`dde/kit` を workspaces に登録する](#82-known-bug) — `bin` 衝突検証後。
 - Hook execution log の永続化と `dxe status` への表示。
 - `graph.json` の lazy-content モード (`dve build --no-content`)。
 - `dge/decisions/INDEX.md` の自動維持 (DD 1000 件超を見据えて)。
@@ -2325,7 +2300,6 @@ decision の紐付けが弱い" というテーマで DGE session を行う場�
 
 | # | 項目 | 状態 | 追跡先 |
 |---|---|---|---|
-| I-01 | `dde/kit` が `workspaces` 未登録 | 未修正 (意図的保留) | §8.2 / ADR-0002 |
 | I-02 | Stop(LLM prompt) hook の削除による implicit decision 検出弱化 | accepted trade-off | ADR-0001 |
 | I-03 | hook failure の silent drop | accepted trade-off | ADR-0001 |
 | I-04 | DVE app の component test が未整備 | backlog | `dve/BACKLOG.md` |
@@ -2340,6 +2314,7 @@ decision の紐付けが弱い" というテーマで DGE session を行う場�
 
 ## Appendix J. 変更履歴 (この SPEC.md)
 
+- **2026-08-01**: `dde/kit` の workspace 登録後の実装に合わせ、§2 / §8 と
+  known issue 一覧を更新。
 - **2026-04-19**: 初版。v4.2.0 時点の仕様を記述。ADR-0001 / ADR-0002
   を取り込み。workspaces bug を明示化。
-
