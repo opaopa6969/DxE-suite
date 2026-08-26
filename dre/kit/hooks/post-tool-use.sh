@@ -59,7 +59,7 @@ ERRORS=0
 if [[ "$FILE_PATH" == *"dge/sessions/"* ]] && [[ "$FILE_PATH" == *.md ]]; then
   # MUST: Full dialogue (not just summary)
   HAS_DIALOGUE=$(echo "$CONTENT" | grep -cE "Scene|先輩|ナレーション|☕|👤|🎩|😰|⚔|🎨|📊" || true)
-  HAS_GAP=$(echo "$CONTENT" | grep -cE "Gap 発見|Gap一覧|→.*Gap" || true)
+  HAS_GAP=$(echo "$CONTENT" | grep -cE "Gap 発見|Gap 一覧|→ Gap" || true)
 
   if [ "$HAS_GAP" -eq 0 ]; then
     VIOLATIONS="${VIOLATIONS}[ERROR] dge-session: No Gap markers found.\n"
