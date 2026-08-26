@@ -1,4 +1,11 @@
 
+## Repository context
+
+DxE Suite is a monorepo for the DGE, DDE, DVE, and DRE toolkits. `bin/dxe.js`
+provides the unified `dxe` CLI, and DRE enforcement hooks live under
+`dre/kit/hooks/`. See `README.md` for the current repository structure and
+`spec/SPEC.md` for the detailed contract.
+
 ## DGE — Dialogue-driven Gap Extraction
 
 When the user says "DGE", "run DGE", "DGE して", "壁打ち", "find gaps", "brainstorm":
