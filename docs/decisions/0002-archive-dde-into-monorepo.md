@@ -93,6 +93,18 @@ but the **authoritative** source is now this monorepo.
   [architecture.md § 2.2](../architecture.md#22-what-is-missing--known-bug);
   it is a **known bug of this ADR**, not a deliberate choice.
 
+  > **Resolved** (commit `70e5498`, 2026): `dde/kit` is now listed in
+  > `package.json` `"workspaces"`. `npm install` resolves the
+  > `@unlaxer/dde-toolkit` symlink at the root `node_modules/`, and
+  > `npm test --workspace=dde/kit` runs the DDE tests via the standard
+  > workspace path. The DDE bin names (`dde-install` / `dde-tool` /
+  > `dde-link`) were checked for collisions before hoisting and do not
+  > collide with the other toolkits. `spec/SPEC.md §8.2` describes the
+  > current (resolved) state. The CI workaround in
+  > `.github/workflows/ci.yml` that re-ran `npm install` inside
+  > `dde/kit/` has been replaced by the standard
+  > `npm test --workspace=dde/kit` step.
+
 ### Mitigations
 
 - The workspace-registration bug is scheduled to be fixed by adding
@@ -100,6 +112,11 @@ but the **authoritative** source is now this monorepo.
   because `dde/kit/package.json` has `bin` entries (`dde-install`,
   `dde-tool`) that need to be checked for collisions before they are
   hoisted. See [migration-from-dde-toolkit.md](../migration-from-dde-toolkit.md#collisions-to-watch-for).
+
+  > **Resolved** (commit `70e5498`, 2026): The bin collision check
+  > passed (DDE bin names do not collide with DGE/DRE/DVE), and
+  > `dde/kit` was added to `workspaces`. See the note under
+  > Consequences → Negative above.
 - Any future divergence between the monorepo's `dde/` and the upstream
   `@unlaxer/dde-toolkit` npm package should be *reconciled in the
   monorepo*, then re-published to npm. The monorepo is now the source.
