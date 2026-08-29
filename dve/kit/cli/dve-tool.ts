@@ -632,14 +632,22 @@ switch (cmd) {
         for (const [patterns, toolkit] of CAPABILITIES) {
           for (const pat of patterns) {
             try {
-              const { execSync: ex } = await import("child_process");
-              const found = ex(
-                `find "${r.path}" -path "*/node_modules" -prune -o -path "*/.git" -prune -o -path "*/dge" -prune -o -path "*/dre" -prune -o -path "*/dve" -prune -o -path "*/dde" -prune -o -name "*${pat}*" -print 2>/dev/null | head -3`,
-                { encoding: "utf-8", timeout: 5000 }
-              ).trim();
-              if (found) {
+              const { spawnSync: ss } = await import("child_process");
+              const prunePaths = ["*/node_modules", "*/.git", "*/dge", "*/dre", "*/dve", "*/dde"];
+              const findArgs: string[] = [r.path];
+              for (const p of prunePaths) {
+                findArgs.push("-path", p, "-prune", "-o");
+              }
+              findArgs.push("-name", `*${pat}*`, "-print");
+              const findRes = ss("find", findArgs, {
+                encoding: "utf-8", timeout: 5000,
+              });
+              const found = (findRes.stdout ?? "").trim();
+              // Limit to first 3 matches (replace `| head -3`)
+              const foundLines = found ? found.split("\n").slice(0, 3).join("\n") : "";
+              if (foundLines) {
                 if (projFindings === 0) console.log(`  ${r.name}:`);
-                for (const f of found.split("\n")) {
+                for (const f of foundLines.split("\n")) {
                   console.log(`    ⚠️  ${f.replace(r.path + "/", "")} → ${toolkit}`);
                 }
                 projFindings++;

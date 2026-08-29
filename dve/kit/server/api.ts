@@ -3,7 +3,7 @@
 
 import { createServer } from "node:http";
 import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync, statSync } from "node:fs";
-import { execSync } from "node:child_process";
+import { spawnSync } from "node:child_process";
 import path from "node:path";
 import type { DVEGraph } from "../graph/schema.js";
 import { detectProjectState } from "../parser/state-detector.js";
@@ -59,7 +59,8 @@ export function startAPIServer(config: APIConfig, port = 4174) {
         : 0;
       const annNum = String(existing + 1).padStart(3, "0");
       const slug = target.replace(/[^a-zA-Z0-9-]/g, "_");
-      const filename = `${annNum}-${slug}-${action ?? "comment"}.md`;
+      const safeAction = (action ?? "comment").replace(/[^a-zA-Z0-9-]/g, "_");
+      const filename = `${annNum}-${slug}-${safeAction}.md`;
       const filePath = path.join(config.annotationsDir, filename);
 
       const content = `---
@@ -95,10 +96,15 @@ ${text}
           // Check git: files changed since DD date
           try {
             const since = data.date || "2020-01-01";
-            const log = execSync(
-              `git log --oneline --since="${since}" -- .`,
+            // Guard: only accept sane date strings to avoid passing garbage to git.
+            if (!/^\d{4}-\d{2}-\d{2}([ T]\S*)?$/.test(since)) continue;
+            const logRes = spawnSync(
+              "git",
+              ["log", "--oneline", `--since=${since}`, "--", "."],
               { cwd: proj.path, encoding: "utf-8", timeout: 5000 }
-            ).trim();
+            );
+            if (logRes.status !== 0) continue;
+            const log = (logRes.stdout ?? "").trim();
             if (log.split("\n").length > 5) {
               // Many commits since DD — potential drift
               const ddFile = path.join(proj.path, data.file_path);

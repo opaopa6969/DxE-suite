@@ -233,9 +233,14 @@ if (command === 'install') {
   // Slack notification for updates
   if (process.env.DRE_NOTIFY_URL) {
     const names = targets.map(n => n.toUpperCase()).join(', ');
+    const cwdBase = path.basename(process.cwd());
     try {
-      const { execSync } = require('child_process');
-      execSync(`curl -sf -X POST "${process.env.DRE_NOTIFY_URL}" -H 'Content-Type: application/json' -d '{"text": "[DxE update] ${names} updated in ${path.basename(process.cwd())}"}'`, { timeout: 5000 });
+      const { spawnSync } = require('child_process');
+      spawnSync('curl', [
+        '-sf', '-X', 'POST', process.env.DRE_NOTIFY_URL,
+        '-H', 'Content-Type: application/json',
+        '-d', `{"text": "[DxE update] ${names} updated in ${cwdBase}"}`,
+      ], { timeout: 5000, stdio: 'ignore' });
     } catch {}
   }
 
