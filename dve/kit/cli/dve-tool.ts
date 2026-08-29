@@ -402,11 +402,15 @@ switch (cmd) {
     break;
   case "annotate": {
     const target = args[0];
+    const flagAt = (name: string): string | undefined => {
+      const i = args.indexOf(name);
+      return i >= 0 ? args[i + 1] : undefined;
+    };
     const actionFlag = args.find((a) => a.startsWith("--action="))?.split("=")[1]
-      ?? args[args.indexOf("--action") + 1]
+      ?? flagAt("--action")
       ?? "comment";
     const bodyFlag = args.find((a) => a.startsWith("--body="))?.split("=")[1]
-      ?? args[args.indexOf("--body") + 1]
+      ?? flagAt("--body")
       ?? "";
     if (!target || !bodyFlag) {
       console.error('Usage: dve annotate <target-id> --action <type> --body "text"');
