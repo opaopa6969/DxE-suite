@@ -106,6 +106,17 @@ test('save shows byte count', () => {
   fs.unlinkSync(tmpFile);
 });
 
+test('save overwrites existing file (replace, not append)', () => {
+  const tmpFile = path.join(os.tmpdir(), `dge-test-overwrite-${Date.now()}.md`);
+  fs.writeFileSync(tmpFile, 'OLD CONTENT THAT IS LONGER THAN NEW');
+  const out = run(`save ${tmpFile}`, 'new');
+  assert(out.includes('SAVED:'), `expected SAVED, got "${out}"`);
+  const read = fs.readFileSync(tmpFile, 'utf8');
+  assert(read === 'new', `expected full replace to "new", got "${read}"`);
+  assert(!read.includes('OLD'), `old content leaked: "${read}"`);
+  fs.unlinkSync(tmpFile);
+});
+
 test('save without file arg shows error', () => {
   try {
     run('save', '');
@@ -179,6 +190,14 @@ test('compare with empty lists', () => {
   const out = run('compare', input);
   assert(out.includes('マージ結果'), 'should handle empty');
   assert(out.includes('DGE のみ: 0'), 'expected 0');
+});
+
+test('compare with missing dge/plain keys treats as empty', () => {
+  const input = JSON.stringify({});
+  const out = run('compare', input);
+  assert(out.includes('マージ結果'), `expected merge header, got "${out}"`);
+  assert(out.includes('Gap 総数 | 0'), `expected zero totals, got "${out}"`);
+  assert(out.includes('両方: 0'), `expected zero overlap, got "${out}"`);
 });
 
 test('compare with invalid JSON shows error', () => {

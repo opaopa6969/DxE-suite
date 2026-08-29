@@ -83,6 +83,17 @@ describe('processMarkdown', () => {
     expect(changeCount).toBe(0);
   });
 
+  it('辞書が null/undefined の場合は変更なし（falsy 境界）', () => {
+    const md = 'JWT is a token.\n';
+    const { content, changeCount } = processMarkdown(md, null, 'en');
+    expect(content).toBe(md);
+    expect(changeCount).toBe(0);
+
+    const r2 = processMarkdown(md, undefined, 'en');
+    expect(r2.content).toBe(md);
+    expect(r2.changeCount).toBe(0);
+  });
+
   it('テーブルセル内の用語はリンクされる', () => {
     const md = '| 機能 | 説明 |\n|------|------|\n| JWT | 認証トークン |\n';
     const { content } = processMarkdown(md, DICT, 'en');
@@ -101,6 +112,20 @@ describe('findUnlinked', () => {
 
   it('既存リンクは検出しない', () => {
     const md = '[JWT](docs/glossary/jwt.md) is linked.\n';
+    const unlinked = findUnlinked(md, DICT, 'en');
+    const terms = unlinked.map(u => u.term);
+    expect(terms).not.toContain('JWT');
+  });
+
+  it('コードブロック内の用語は検出されない', () => {
+    const md = '```\nJWT token here\n```\n';
+    const unlinked = findUnlinked(md, DICT, 'en');
+    const terms = unlinked.map(u => u.term);
+    expect(terms).not.toContain('JWT');
+  });
+
+  it('インラインコード内の用語は検出されない', () => {
+    const md = 'Use `JWT` for auth.\n';
     const unlinked = findUnlinked(md, DICT, 'en');
     const terms = unlinked.map(u => u.term);
     expect(terms).not.toContain('JWT');

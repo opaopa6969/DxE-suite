@@ -56,6 +56,11 @@ test('parseDecision extracts supersedes list', () => {
   assert.deepEqual(result.node.supersedes, ['DD-001']);
 });
 
+test('parseDecision extracts superseded_by list', () => {
+  const result = parseDecision(path.join(fixtures, 'DD-003-superseded.md'));
+  assert.deepEqual(result.node.superseded_by, ['DD-002']);
+});
+
 test('parseDecision returns confidence 1.0 when date and title present', () => {
   const result = parseDecision(path.join(fixtures, 'DD-001-test.md'));
   assert.equal(result.confidence, 1.0);
