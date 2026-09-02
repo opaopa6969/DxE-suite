@@ -21,14 +21,14 @@ CTX_FILE=".dre/context.json"
 if [ -f "$CTX_FILE" ]; then
   STATE=$(echo "$INPUT" | jq -r '.tool_result.content // empty' 2>/dev/null | jq -r '.state // empty' 2>/dev/null)
   if [ -n "$STATE" ] && [ "$STATE" != "null" ]; then
-    TRANSITION=$(echo "$INPUT" | jq -r '.tool_result.content.transition.on_complete // empty' 2>/dev/null)
+    TRANSITION=$(echo "$INPUT" | jq -r '.tool_result.content // empty' 2>/dev/null | jq -r '.transition.on_complete // empty' 2>/dev/null)
     CURRENT=$(cat "$CTX_FILE")
     TS=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
     if [ "$TRANSITION" = "POP" ]; then
       echo "$CURRENT" | jq --arg ts "$TS" --arg state "$STATE" '
-        .stack = (.stack[:-1] // []),
-        .current_phase = (.stack[-2] // .current_phase),
+        .stack = (.stack[:-1] // []) |
+        .current_phase = (.stack[-1] // .current_phase) |
         .history += [{ phase: $state, timestamp: $ts, action: "pop" }]
       ' > "$CTX_FILE"
     else
