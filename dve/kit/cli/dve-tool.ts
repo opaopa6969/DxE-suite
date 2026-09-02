@@ -6,7 +6,7 @@ import path from "node:path";
 import { buildGraph } from "../graph/builder.js";
 import { traceDecision, impactOf, orphanGaps, search } from "../graph/query.js";
 import { generateBundle } from "../context/bundle.js";
-import { loadConfig, singleProjectConfig, resolveProjectDirs } from "../config.js";
+import { loadConfig, singleProjectConfig, resolveProjectDirs, projectFileStems } from "../config.js";
 import { startAPIServer } from "../server/api.js";
 import { clusterBySupersedes } from "../graph/cluster.js";
 import { detectDrift } from "../parser/drift-detector.js";
@@ -96,6 +96,7 @@ function build() {
   mkdirSync(DIST_DIR, { recursive: true });
 
   const isMulti = config.projects.length > 1;
+  const fileStems = projectFileStems(config.projects);
   const multiGraph: MultiProjectGraph = {
     version: "1.0.0",
     generated_at: new Date().toISOString(),
@@ -104,13 +105,13 @@ function build() {
 
   console.log(`\nDVE build — ${config.projects.length} project(s)`);
 
-  for (const project of config.projects) {
+  for (const [index, project] of config.projects.entries()) {
     const start = Date.now();
     const dirs = resolveProjectDirs(project);
     const graph = buildGraph({ ...dirs, enableGitLinker: true });
 
     const graphFile = isMulti
-      ? path.join(DIST_DIR, `graph-${project.name}.json`)
+      ? path.join(DIST_DIR, `graph-${fileStems[index]}.json`)
       : path.join(DIST_DIR, "graph.json");
 
     // Changelog
@@ -122,7 +123,7 @@ function build() {
     writeFileSync(graphFile, JSON.stringify(graph, null, 2));
     if (changelog) {
       const clFile = isMulti
-        ? path.join(DIST_DIR, `changelog-${project.name}.json`)
+        ? path.join(DIST_DIR, `changelog-${fileStems[index]}.json`)
         : path.join(DIST_DIR, "changelog.json");
       writeFileSync(clFile, JSON.stringify(changelog, null, 2));
     }
@@ -139,7 +140,7 @@ function build() {
       projects: multiGraph.projects.map((p) => ({
         name: p.name,
         path: p.path,
-        graphFile: `graph-${p.name}.json`,
+        graphFile: `graph-${fileStems[multiGraph.projects.indexOf(p)]}.json`,
         stats: p.graph.stats,
       })),
     };
@@ -154,13 +155,14 @@ function build() {
       warnings: [],
       glossary: [],
     };
-    for (const p of multiGraph.projects) {
+    for (const [index, p] of multiGraph.projects.entries()) {
+      const projectKey = fileStems[index];
       // Prefix node IDs with project name to avoid collisions
       for (const node of p.graph.nodes) {
-        merged.nodes.push({ ...node, id: `${p.name}/${node.id}` });
+        merged.nodes.push({ ...node, id: `${projectKey}/${node.id}` });
       }
       for (const edge of p.graph.edges) {
-        merged.edges.push({ ...edge, source: `${p.name}/${edge.source}`, target: `${p.name}/${edge.target}` });
+        merged.edges.push({ ...edge, source: `${projectKey}/${edge.source}`, target: `${projectKey}/${edge.target}` });
       }
       merged.warnings.push(...p.graph.warnings);
       merged.stats.sessions += p.graph.stats.sessions;
@@ -612,15 +614,36 @@ switch (cmd) {
 
     // Auto-register
     if (autoRegister) {
+      const existing = existsSync(CONFIG_PATH)
+        ? JSON.parse(readFileSync(CONFIG_PATH, "utf-8")) as { outputDir?: string; projects?: Array<{ name?: string; path: string }> }
+        : {};
+      const projects = [...(existing.projects ?? [])];
+      const registeredPaths = new Set(projects.map((p) => path.resolve(CWD, p.path)));
+      const usedNames = new Set(projects.map((p) => p.name ?? path.basename(p.path)));
+      let added = 0;
+      for (const result of results) {
+        if (registeredPaths.has(path.resolve(result.path))) continue;
+        let name = result.name;
+        if (usedNames.has(name)) {
+          const suffix = path.relative(CWD, result.path).replace(/[^a-zA-Z0-9._-]+/g, "-").replace(/^-|-$/g, "") || "project";
+          name = `${name}-${suffix}`;
+          let n = 2;
+          while (usedNames.has(name)) name = `${result.name}-${suffix}-${n++}`;
+          console.warn(`  Warning: duplicate project name ${result.name}; registered as ${name}`);
+        }
+        projects.push({ name, path: path.relative(CWD, result.path) || "." });
+        registeredPaths.add(path.resolve(result.path));
+        usedNames.add(name);
+        added++;
+      }
       const newConfig = {
-        outputDir: config.outputDir.startsWith("/") ? config.outputDir : path.relative(CWD, path.resolve(CWD, config.outputDir)) || "dve/dist",
-        projects: results.map((r) => ({
-          name: r.name,
-          path: path.relative(CWD, r.path) || ".",
-        })),
+        outputDir: existing.outputDir ?? (config.outputDir.startsWith("/")
+          ? config.outputDir
+          : path.relative(CWD, path.resolve(CWD, config.outputDir)) || "dve/dist"),
+        projects,
       };
       writeFileSync(CONFIG_PATH, JSON.stringify(newConfig, null, 2) + "\n");
-      console.log(`\n  Registered ${results.length} projects to ${CONFIG_PATH}`);
+      console.log(`\n  Registered ${added} new project(s) to ${CONFIG_PATH} (preserved ${projects.length - added} existing)`);
       console.log(`  Run: dve build`);
     } else {
       console.log(`\n  Add --register (-r) to save to dve.config.json`);
