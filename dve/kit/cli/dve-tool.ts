@@ -345,10 +345,12 @@ function annotate(targetId: string, action: string, body: string) {
   const ANN_DIR = annDir();
   mkdirSync(ANN_DIR, { recursive: true });
 
-  const existing = existsSync(ANN_DIR)
-    ? readdirSync(ANN_DIR).filter((f) => f.endsWith(".md")).length
-    : 0;
-  const annNum = String(existing + 1).padStart(3, "0");
+  const annNum = String(
+    readdirSync(ANN_DIR)
+      .map((f) => /^([0-9]+)-.*\.md$/.exec(f)?.[1])
+      .filter(Boolean)
+      .reduce((max, value) => Math.max(max, Number(value)), 0) + 1,
+  ).padStart(3, "0");
   const slug = targetId.replace(/[^a-zA-Z0-9-]/g, "_");
   const filename = `${annNum}-${slug}-${action}.md`;
   const filePath = path.join(ANN_DIR, filename);

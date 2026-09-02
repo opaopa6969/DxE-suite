@@ -54,10 +54,12 @@ export function startAPIServer(config: APIConfig, port = 4174) {
       }
 
       mkdirSync(config.annotationsDir, { recursive: true });
-      const existing = existsSync(config.annotationsDir)
-        ? readdirSync(config.annotationsDir).filter((f) => f.endsWith(".md")).length
-        : 0;
-      const annNum = String(existing + 1).padStart(3, "0");
+      const annNum = String(
+        readdirSync(config.annotationsDir)
+          .map((f) => /^([0-9]+)-.*\.md$/.exec(f)?.[1])
+          .filter(Boolean)
+          .reduce((max, value) => Math.max(max, Number(value)), 0) + 1,
+      ).padStart(3, "0");
       const slug = target.replace(/[^a-zA-Z0-9-]/g, "_");
       const safeAction = (action ?? "comment").replace(/[^a-zA-Z0-9-]/g, "_");
       const filename = `${annNum}-${slug}-${safeAction}.md`;
