@@ -3,7 +3,9 @@
 const fs = require('fs');
 const path = require('path');
 
-const VERSION = '0.2.1';
+const VERSION = JSON.parse(
+  fs.readFileSync(path.join(__dirname, '..', 'package.json'), 'utf8')
+).version;
 const command = process.argv[2];
 const arg = process.argv[3];
 
