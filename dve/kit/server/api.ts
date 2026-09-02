@@ -109,7 +109,9 @@ ${text}
             const log = (logRes.stdout ?? "").trim();
             if (log.split("\n").length > 5) {
               // Many commits since DD — potential drift
-              const ddFile = path.join(proj.path, data.file_path);
+              // file_path is absolute when it comes from the decision parser;
+              // resolve also keeps relative paths anchored to the project.
+              const ddFile = path.resolve(proj.path, data.file_path);
               if (existsSync(ddFile)) {
                 const stat = statSync(ddFile);
                 drifted.push({
