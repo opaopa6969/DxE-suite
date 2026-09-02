@@ -141,8 +141,11 @@ ${text}
       const sessions = graph.nodes.filter((n) => n.type === "session");
       for (const session of sessions) {
         const chars = (session.data as any).characters ?? [];
+        const dialogueIds = new Set(graph.edges
+          .filter((e) => e.source === session.id && e.type === "contains")
+          .map((e) => e.target));
         const sessionGaps = graph.edges
-          .filter((e) => e.source === session.id && e.type === "discovers")
+          .filter((e) => dialogueIds.has(e.source) && e.type === "discovers")
           .map((e) => graph.nodes.find((n) => n.id === e.target))
           .filter(Boolean);
 
