@@ -17,8 +17,11 @@ function findNode(graph: DVEGraph, id: string): GraphNode | undefined {
 }
 
 function sessionGaps(graph: DVEGraph, sessionId: string): GraphNode[] {
+  const dialogueIds = new Set(graph.edges
+    .filter((e) => e.source === sessionId && e.type === "contains")
+    .map((e) => e.target));
   const gapIds = graph.edges
-    .filter((e) => e.source === sessionId && e.type === "discovers")
+    .filter((e) => dialogueIds.has(e.source) && e.type === "discovers")
     .map((e) => e.target);
   return graph.nodes.filter((n) => gapIds.includes(n.id));
 }

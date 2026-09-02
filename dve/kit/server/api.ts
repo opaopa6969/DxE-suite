@@ -109,7 +109,9 @@ ${text}
             const log = (logRes.stdout ?? "").trim();
             if (log.split("\n").length > 5) {
               // Many commits since DD — potential drift
-              const ddFile = path.join(proj.path, data.file_path);
+              // file_path is absolute when it comes from the decision parser;
+              // resolve also keeps relative paths anchored to the project.
+              const ddFile = path.resolve(proj.path, data.file_path);
               if (existsSync(ddFile)) {
                 const stat = statSync(ddFile);
                 drifted.push({
@@ -139,8 +141,11 @@ ${text}
       const sessions = graph.nodes.filter((n) => n.type === "session");
       for (const session of sessions) {
         const chars = (session.data as any).characters ?? [];
+        const dialogueIds = new Set(graph.edges
+          .filter((e) => e.source === session.id && e.type === "contains")
+          .map((e) => e.target));
         const sessionGaps = graph.edges
-          .filter((e) => e.source === session.id && e.type === "discovers")
+          .filter((e) => dialogueIds.has(e.source) && e.type === "discovers")
           .map((e) => graph.nodes.find((n) => n.id === e.target))
           .filter(Boolean);
 
