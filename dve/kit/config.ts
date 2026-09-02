@@ -2,6 +2,7 @@
 
 import { readFileSync, existsSync } from "node:fs";
 import path from "node:path";
+import { createHash } from "node:crypto";
 
 export interface ProjectConfig {
   name: string;
@@ -61,4 +62,22 @@ export function resolveProjectDirs(project: ProjectConfig) {
     annotationsDir: path.join(project.path, project.annotationsDir),
     cwd: project.path,
   };
+}
+
+/** Return stable, filesystem-safe stems for per-project output files. */
+export function projectFileStems(projects: ProjectConfig[]): string[] {
+  const counts = new Map<string, number>();
+  for (const project of projects) counts.set(project.name, (counts.get(project.name) ?? 0) + 1);
+  const used = new Set<string>();
+
+  return projects.map((project) => {
+    const base = project.name.replace(/[^a-zA-Z0-9._-]+/g, "-") || "project";
+    let stem = counts.get(project.name)! > 1
+      ? `${base}-${createHash("sha1").update(project.path).digest("hex").slice(0, 8)}`
+      : base;
+    let suffix = 2;
+    while (used.has(stem)) stem = `${base}-${suffix++}`;
+    used.add(stem);
+    return stem;
+  });
 }

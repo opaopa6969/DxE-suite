@@ -15,7 +15,7 @@
   },
   "scripts": {
     "build": "tsc",
-    "test": "npm run build && node --test test/parser.test.js"
+    "test": "npm run build && node --test test/parser.test.js test/security.test.js test/config.test.js"
   },
   "dependencies": {
     "unified": "^11.0.0",
