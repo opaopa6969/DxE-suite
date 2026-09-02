@@ -13,6 +13,17 @@ import { detectDrift } from "../parser/drift-detector.js";
 import { detectProjectState } from "../parser/state-detector.js";
 import type { DVEGraph, MultiProjectGraph, Changelog, Gap } from "../graph/schema.js";
 
+const VERSION = [
+  new URL("../version.txt", import.meta.url),
+  new URL("../../version.txt", import.meta.url),
+].find((file) => existsSync(file))
+  ? readFileSync(
+      [new URL("../version.txt", import.meta.url), new URL("../../version.txt", import.meta.url)].find(
+        (file) => existsSync(file),
+      )!,
+      "utf8",
+    ).trim()
+  : "unknown";
 const CWD = process.cwd();
 const CONFIG_PATH = path.join(CWD, "dve.config.json");
 const config = loadConfig(CONFIG_PATH) ?? singleProjectConfig(CWD);
@@ -714,7 +725,7 @@ switch (cmd) {
     break;
   }
   case "version":
-    console.log("DVE toolkit v4.0.0");
+    console.log(`DVE toolkit v${VERSION}`);
     break;
   default:
     console.log(`
