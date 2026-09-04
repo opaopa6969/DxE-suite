@@ -33,10 +33,15 @@ if [ ! -f "${TARGET_DIR}/.dre/state-machine.yaml" ]; then
   fi
 fi
 
-# Compile kit if dist doesn't exist
-if [ ! -d "${SRC}/dist" ]; then
+# A directory alone is not evidence of a complete build.
+CLI_ENTRY="${SRC}/dist/cli/dve-tool.js"
+if [ ! -f "${CLI_ENTRY}" ]; then
   echo "  Compiling DVE kit..."
-  (cd "${SRC}" && npx tsc 2>/dev/null || true)
+  (cd "${SRC}" && npm run build)
+fi
+if [ ! -f "${CLI_ENTRY}" ]; then
+  echo "Error: DVE CLI build did not produce ${CLI_ENTRY}." >&2
+  exit 1
 fi
 
 # Install app dependencies if needed
@@ -62,11 +67,9 @@ if [ -d "${SRC}/skills" ]; then
 fi
 
 # Build graph.json
-if [ -f "${SRC}/dist/cli/dve-tool.js" ]; then
-  echo ""
-  echo "  Building graph.json..."
-  (cd "${TARGET_DIR}" && node "${SRC}/dist/cli/dve-tool.js" build 2>/dev/null || true)
-fi
+echo ""
+echo "  Building graph.json..."
+(cd "${TARGET_DIR}" && node "${CLI_ENTRY}" build)
 
 echo ""
 echo "DVE toolkit v${SRC_VERSION} installed."
