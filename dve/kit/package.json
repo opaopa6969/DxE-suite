@@ -17,7 +17,7 @@
     "clean": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\"",
     "build": "tsc",
     "prepack": "npm run clean && npm run build",
-    "test": "npm run build && node --test test/*.test.js"
+    "test": "npm run build && node --test --test-concurrency=1 test/*.test.js"
   },
   "files": ["dist/", "skills/", "scripts/", "CHANGELOG.md", "install.sh", "update.sh", "version.txt"],
   "dependencies": {

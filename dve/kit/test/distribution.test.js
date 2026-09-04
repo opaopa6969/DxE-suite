@@ -15,12 +15,14 @@ test("packed CLI installs and runs outside the source tree", () => {
   mkdirSync(packDir);
   mkdirSync(consumerDir);
 
-  const packed = JSON.parse(execFileSync("npm", ["pack", "--json", "--pack-destination", packDir], {
+  const report = JSON.parse(execFileSync("npm", ["pack", "--json", "--pack-destination", packDir], {
     cwd: kitDir,
     encoding: "utf8",
   }));
-  const tarball = path.join(packDir, packed[0].filename);
-  const paths = new Set(packed[0].files.map((file) => file.path));
+  // npm <= 11 reports an array of packages; npm >= 12 reports an object keyed by name.
+  const packed = (Array.isArray(report) ? report : Object.values(report))[0];
+  const tarball = path.join(packDir, packed.filename);
+  const paths = new Set(packed.files.map((file) => file.path));
 
   assert(paths.has("dist/cli/dve-tool.js"));
   assert(paths.has("dist/graph/builder.js"));
@@ -36,7 +38,8 @@ test("packed CLI installs and runs outside the source tree", () => {
     cwd: consumerDir,
     encoding: "utf8",
   });
-  assert.equal(output.trim(), "DVE toolkit v4.2.0");
+  const version = readFileSync(path.join(kitDir, "version.txt"), "utf8").trim();
+  assert.equal(output.trim(), `DVE toolkit v${version}`);
 });
 
 test("installer fails closed when compilation fails", () => {
@@ -91,6 +94,29 @@ test("updater propagates graph rebuild failure", () => {
 
   const result = spawnSync("bash", [path.join(sourceDir, "update.sh"), targetDir], { encoding: "utf8" });
   assert.equal(result.status, 29);
+  assert.doesNotMatch(result.stdout, /Updated to/);
+});
+
+test("updater fails closed when compilation fails", () => {
+  const root = mkdtempSync(path.join(tmpdir(), "dve-update-compile-"));
+  const sourceDir = path.join(root, "source");
+  const targetDir = path.join(root, "target");
+  const binDir = path.join(root, "bin");
+  mkdirSync(sourceDir);
+  mkdirSync(path.join(targetDir, "dve", "kit"), { recursive: true });
+  mkdirSync(binDir);
+  cpSync(path.join(kitDir, "update.sh"), path.join(sourceDir, "update.sh"));
+  writeFileSync(path.join(sourceDir, "version.txt"), "4.2.0\n");
+  writeFileSync(path.join(targetDir, "dve", "kit", "version.txt"), "4.1.0\n");
+  writeFileSync(path.join(sourceDir, "package.json"), '{"scripts":{"build":"exit 19"}}\n');
+  writeFileSync(path.join(binDir, "npm"), "#!/bin/sh\nexit 19\n");
+  chmodSync(path.join(binDir, "npm"), 0o755);
+
+  const result = spawnSync("bash", [path.join(sourceDir, "update.sh"), targetDir], {
+    encoding: "utf8",
+    env: { ...process.env, PATH: `${binDir}:${process.env.PATH}` },
+  });
+  assert.notEqual(result.status, 0);
   assert.doesNotMatch(result.stdout, /Updated to/);
 });
 
