@@ -9,14 +9,17 @@
     "url": "https://github.com/opaopa6969/DxE-suite"
   },
   "bin": {
-    "dve": "./cli/dve-tool.js",
+    "dve": "./dist/cli/dve-tool.js",
     "dve-install": "./install.sh",
     "dve-update": "./update.sh"
   },
   "scripts": {
+    "clean": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\"",
     "build": "tsc",
-    "test": "npm run build && node --test test/parser.test.js test/security.test.js test/config.test.js test/context.test.js"
+    "prepack": "npm run clean && npm run build",
+    "test": "npm run build && node --test test/*.test.js"
   },
+  "files": ["dist/", "skills/", "scripts/", "CHANGELOG.md", "install.sh", "update.sh", "version.txt"],
   "dependencies": {
     "unified": "^11.0.0",
     "remark-parse": "^11.0.0",

@@ -7,3 +7,4 @@
 | [DD-003](DD-003-dve-tech-stack.md) | DVE 技術スタック（Preact + Cytoscape.js + Vite） | [2026-04-05-dve-design](../sessions/2026-04-05-dve-design.md) | 2026-04-05 |
 | [DD-004](DD-004-dve-dge-hub.md) | DVE = DGE のハブ（6 UC） | [2026-04-05-dve-design](../sessions/2026-04-05-dve-design.md) | 2026-04-05 |
 | [DD-005](DD-005-dve-model-view-separation.md) | DVE の model/view 完全分離 | [2026-04-05-dve-design](../sessions/2026-04-05-dve-design.md) | 2026-04-05 |
+| [DD-007](DD-007-dve-distribution-fail-closed.md) | DVE distribution must fail closed | [2026-09-05-dve-distribution-readiness](../sessions/2026-09-05-dve-distribution-readiness.md) | 2026-09-05 |

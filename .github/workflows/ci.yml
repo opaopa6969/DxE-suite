@@ -30,7 +30,7 @@ jobs:
               has_build=$(node -e "const p=require('./$ws/package.json'); console.log(p.scripts && p.scripts.build ? 'yes' : 'no')")
               if [ "$has_build" = "yes" ]; then
                 echo "==> Building $ws"
-                npm run build --workspace="$ws" || true
+                npm run build --workspace="$ws"
               fi
             fi
           done

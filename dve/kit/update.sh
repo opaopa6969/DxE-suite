@@ -18,6 +18,16 @@ echo "  Local:  ${LOCAL_VERSION}"
 echo "  Source: ${SRC_VERSION}"
 echo ""
 
+CLI_ENTRY="${SRC}/dist/cli/dve-tool.js"
+if [ ! -f "${CLI_ENTRY}" ]; then
+  echo "  Compiling kit..."
+  (cd "${SRC}" && npm run build)
+fi
+if [ ! -f "${CLI_ENTRY}" ]; then
+  echo "Error: DVE CLI build did not produce ${CLI_ENTRY}." >&2
+  exit 1
+fi
+
 if [ "${SRC_VERSION}" = "${LOCAL_VERSION}" ]; then
   echo "Already up to date."
   exit 0
@@ -47,7 +57,7 @@ fi
 # Recompile
 if [ -f "${SRC}/tsconfig.json" ]; then
   echo "  Compiling kit..."
-  (cd "${SRC}" && npx tsc 2>/dev/null || true)
+  (cd "${SRC}" && npm run build)
 fi
 
 # Copy new skills
@@ -64,10 +74,8 @@ if [ -d "${SRC}/skills" ]; then
 fi
 
 # Rebuild graph
-if [ -f "${SRC}/dist/cli/dve-tool.js" ]; then
-  echo "  Rebuilding graph.json..."
-  (cd "${TARGET_DIR}" && node "${SRC}/dist/cli/dve-tool.js" build 2>/dev/null || true)
-fi
+echo "  Rebuilding graph.json..."
+(cd "${TARGET_DIR}" && node "${CLI_ENTRY}" build)
 
 echo ""
 echo "Updated to v${SRC_VERSION}."
