@@ -33,7 +33,7 @@ on:
 
 jobs:
   publish:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, X64, DxE-suite-ci]
     permissions:
       contents: read
       id-token: write

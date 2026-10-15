@@ -8,7 +8,7 @@ on:
 
 jobs:
   build-and-test:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, X64, DxE-suite-ci]
 
     steps:
       - uses: actions/checkout@v4
